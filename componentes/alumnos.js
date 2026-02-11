@@ -1,5 +1,5 @@
 const alumnos = {
-    props: ['forms'],
+    props:['forms'],
     data(){
         return{
             alumno:{
@@ -12,16 +12,17 @@ const alumnos = {
             },
             accion:'nuevo',
             idAlumno:0,
-            buscar:'',
-            alumnos:[]
+            data_alumnos:[]
         }
     },
     methods:{
-        async obtenerAlumnos(){
-            this.alumnos = await db.alumnos.filter(
-                alumno => alumno.codigo.toLowerCase().includes(this.buscar.toLowerCase()) 
-                    || alumno.nombre.toLowerCase().includes(this.buscar.toLowerCase())
-            ).toArray();
+         buscarAlumnos(){
+            this.forms.busqueda_alumnos.mostrar = !this.forms.busqueda_alumnos.mostrar;
+            this.$emit('buscar');
+        },
+        modificarAlumnos(alumno){
+            this.forms.busqueda_alumnos.mostrar = !this.forms.busqueda_alumnos.mostrar;
+            this.$emit('modificar', alumno);           
         },
         modificarAlumno(alumno){
             this.accion = 'modificar';
@@ -42,15 +43,15 @@ const alumnos = {
                 telefono: this.alumno.telefono
             };
             this.buscar = datos.codigo;
-            await this.obtenerAlumnos();
+            await this.buscarAlumnos();
 
-            if(this.alumnos.length > 0 && this.accion=='nuevo'){
-                alert("El codigo del alumno ya existe, "+ this.alumnos[0].nombre);
+            if(this.data_alumnos.length > 0 && this.accion=='nuevo'){
+                alert("El codigo del alumno ya existe, "+ this.data_alumnos[0].nombre);
                 return; //Termina la ejecucion de la funcion
             }
             db.alumnos.put(datos);
             this.limpiarFormulario();
-            this.obtenerAlumnos();
+            //this.obtenerAlumnos();
         },
         getId(){
             return new Date().getTime();
@@ -118,12 +119,14 @@ const alumnos = {
                                 <div class="col text-center">
                                     <button type="submit" id="btnGuardarAlumno" class="btn btn-primary">GUARDAR</button>
                                     <button type="reset" id="btnCancelarAlumno" class="btn btn-warning">NUEVO</button>
+                                    <button type="button" @click="buscarAlumnos" id="btnBuscarAlumnos" class="btn btn-success">BUSCAR</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </form>
             </div>
+            <busqueda_alumnos v-show="forms.busqueda_alumnos.mostrar"></busqueda_alumnos>
         </div>
     `
 };
