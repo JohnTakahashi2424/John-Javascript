@@ -246,7 +246,7 @@ const matricula = {
                         <div class="row mb-3">
                             <div class="col-6">
                                 <label class="form-label text-muted small fw-semibold text-uppercase">Código</label>
-                                <input placeholder="MAT-001" required v-model="matricula.codigo" type="text" class="form-control form-control-sm">
+                                <input placeholder="MATR-001" required v-model="matricula.codigo" type="text" class="form-control form-control-sm" pattern="[A-Z]{4}[0-9]{3}" title="Formato requerido: 4 letras mayúsculas seguidas de 3 dígitos (ej. MATR001)" @input="matricula.codigo = matricula.codigo.toUpperCase()">
                             </div>
                             <div class="col-6">
                                 <label class="form-label text-muted small fw-semibold text-uppercase">Fecha</label>
