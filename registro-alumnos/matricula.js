@@ -20,6 +20,125 @@ const matricula = {
             alumnoSeleccionado: null,
             buscandoAlumno: false,
             sinAlumnos: false,
+            // Selector de carrera por pestañas
+            tabActiva: 0,
+            facultades: [
+                {
+                    nombre: 'Ing. y Arquitectura',
+                    icono: 'bi-cpu',
+                    carreras: [
+                        'Ingeniería en Sistemas Informáticos',
+                        'Ingeniería Civil',
+                        'Ingeniería Industrial',
+                        'Ingeniería Mecatrónica',
+                        'Ingeniería Eléctrica',
+                        'Ingeniería Mecánica',
+                        'Ingeniería Química',
+                        'Ingeniería Biomédica',
+                        'Ingeniería en Telecomunicaciones',
+                        'Ingeniería Ambiental',
+                        'Ingeniería en Energías Renovables',
+                        'Ingeniería de Alimentos',
+                        'Ingeniería en Petróleos y Gas',
+                        'Ingeniería de Minas',
+                        'Arquitectura',
+                        'Licenciatura en Diseño de Interiores',
+                        'Licenciatura en Urbanismo',
+                    ]
+                },
+                {
+                    nombre: 'Ciencias de la Salud',
+                    icono: 'bi-heart-pulse',
+                    carreras: [
+                        'Doctorado en Medicina',
+                        'Licenciatura en Enfermería',
+                        'Doctorado en Cirugía Dental',
+                        'Licenciatura en Nutrición y Dietética',
+                        'Licenciatura en Psicología Clínica',
+                        'Licenciatura en Fisioterapia',
+                        'Licenciatura en Laboratorio Clínico',
+                        'Licenciatura en Química y Farmacia',
+                        'Licenciatura en Optometría',
+                        'Licenciatura en Radiología',
+                        'Licenciatura en Anestesiología',
+                        'Doctorado en Medicina Veterinaria',
+                        'Licenciatura en Fonoaudiología',
+                    ]
+                },
+                {
+                    nombre: 'Economía y Negocios',
+                    icono: 'bi-graph-up-arrow',
+                    carreras: [
+                        'Licenciatura en Administración de Empresas',
+                        'Licenciatura en Contaduría Pública',
+                        'Licenciatura en Mercadeo',
+                        'Licenciatura en Economía',
+                        'Licenciatura en Finanzas y Banca',
+                        'Licenciatura en Negocios Internacionales',
+                        'Licenciatura en Turismo y Hotelería',
+                        'Licenciatura en Administración Pública',
+                        'Licenciatura en Recursos Humanos',
+                        'Licenciatura en Logística y Aduanas',
+                    ]
+                },
+                {
+                    nombre: 'Jurídicas y Sociales',
+                    icono: 'bi-balance-scale',
+                    carreras: [
+                        'Licenciatura en Ciencias Jurídicas (Derecho)',
+                        'Licenciatura en Relaciones Internacionales',
+                        'Licenciatura en Ciencias Políticas',
+                        'Licenciatura en Sociología',
+                        'Licenciatura en Trabajo Social',
+                        'Licenciatura en Antropología',
+                        'Licenciatura en Historia',
+                        'Licenciatura en Criminología',
+                        'Licenciatura en Arqueología',
+                    ]
+                },
+                {
+                    nombre: 'Artes y Comunicaciones',
+                    icono: 'bi-palette',
+                    carreras: [
+                        'Licenciatura en Ciencias de la Comunicación',
+                        'Licenciatura en Diseño Gráfico',
+                        'Licenciatura en Diseño Industrial',
+                        'Licenciatura en Diseño de Modas',
+                        'Licenciatura en Artes Plásticas',
+                        'Licenciatura en Animación Digital',
+                        'Licenciatura en Música',
+                        'Licenciatura en Artes Escénicas',
+                        'Licenciatura en Cinematografía',
+                        'Licenciatura en Publicidad',
+                    ]
+                },
+                {
+                    nombre: 'Cs. Agronómicas',
+                    icono: 'bi-tree',
+                    carreras: [
+                        'Ingeniería Agronómica',
+                        'Ingeniería Agroindustrial',
+                        'Ingeniería Forestal',
+                        'Ingeniería en Acuicultura',
+                    ]
+                },
+                {
+                    nombre: 'Carreras Técnicas',
+                    icono: 'bi-tools',
+                    carreras: [
+                        'Técnico en Desarrollo de Software',
+                        'Técnico en Mantenimiento de Hardware',
+                        'Técnico en Diseño Gráfico Web',
+                        'Técnico en Enfermería',
+                        'Técnico en Gastronomía',
+                        'Técnico en Mecánica Automotriz',
+                        'Técnico en Turismo',
+                        'Técnico en Marketing Digital',
+                        'Técnico en Control de Calidad',
+                        'Técnico en Asistencia Dental',
+                    ]
+                },
+            ]
         }
     },
     methods:{
@@ -54,6 +173,10 @@ const matricula = {
             this.alumnosEncontrados = [];
             this.sinAlumnos = false;
         },
+        // Selecciona una carrera desde el panel de pestañas
+        seleccionarCarrera(carrera){
+            this.matricula.carrera = carrera;
+        },
         modificarMatricula(mat){
             this.accion = 'modificar';
             this.idMatricula = mat.idMatricula;
@@ -70,6 +193,10 @@ const matricula = {
         async guardarMatricula() {
             if(!this.alumnoSeleccionado){
                 alertify.error('Debe seleccionar un alumno registrado.');
+                return;
+            }
+            if(!this.matricula.carrera){
+                alertify.error('Debe seleccionar una carrera.');
                 return;
             }
             let datos = {
@@ -113,7 +240,7 @@ const matricula = {
                 <span v-if="accion=='modificar'" class="badge bg-warning text-dark ms-2">Editando</span>
             </div>
             <form id="frmMatricula" @submit.prevent="guardarMatricula" @reset.prevent="limpiarFormulario">
-                <div class="card border-0 shadow-sm" style="max-width: 520px;">
+                <div class="card border-0 shadow-sm" style="max-width: 680px;">
                     <div class="card-body p-4">
 
                         <div class="row mb-3">
@@ -162,10 +289,49 @@ const matricula = {
                             </div>
                         </div>
 
+                        <!-- Selector de Carrera por Pestañas -->
                         <div class="mb-3">
-                            <label class="form-label text-muted small fw-semibold text-uppercase">Carrera</label>
-                            <input placeholder="Ej. Ingeniería en Sistemas" required v-model="matricula.carrera" type="text" class="form-control form-control-sm">
+                            <label class="form-label text-muted small fw-semibold text-uppercase d-flex align-items-center gap-2">
+                                Carrera
+                                <span v-if="matricula.carrera" class="badge bg-success fw-normal text-truncate" style="max-width:260px;">
+                                    <i class="bi bi-check-circle me-1"></i>{{ matricula.carrera }}
+                                </span>
+                                <span v-else class="text-danger small fw-normal">(ninguna seleccionada)</span>
+                            </label>
+
+                            <!-- Tabs de Facultades -->
+                            <div class="border rounded overflow-hidden">
+                                <ul class="nav nav-tabs nav-fill flex-nowrap overflow-auto border-0" style="background:#f8f9fa;">
+                                    <li class="nav-item" v-for="(fac, idx) in facultades" :key="idx">
+                                        <a href="#"
+                                           class="nav-link py-2 px-2 small text-nowrap"
+                                           :class="tabActiva === idx ? 'active fw-semibold' : 'text-secondary'"
+                                           @click.prevent="tabActiva = idx">
+                                            <i :class="'bi ' + fac.icono + ' me-1'"></i>{{ fac.nombre }}
+                                        </a>
+                                    </li>
+                                </ul>
+                                <!-- Lista de carreras de la pestaña activa -->
+                                <div class="p-2" style="max-height:200px; overflow-y:auto; background:#fff;">
+                                    <div class="row g-1">
+                                        <div class="col-12" v-for="carrera in facultades[tabActiva].carreras" :key="carrera">
+                                            <button type="button"
+                                                @click="seleccionarCarrera(carrera)"
+                                                class="btn btn-sm w-100 text-start py-1 px-3"
+                                                :class="matricula.carrera === carrera
+                                                    ? 'text-white'
+                                                    : 'btn-outline-secondary'"
+                                                :style="matricula.carrera === carrera
+                                                    ? 'background-color:#1a3a5c; border-color:#1a3a5c;'
+                                                    : ''">
+                                                <i class="bi bi-mortarboard me-2 opacity-50"></i>{{ carrera }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                         <div class="row mb-1">
                             <div class="col-6">
                                 <label class="form-label text-muted small fw-semibold text-uppercase">Ciclo</label>
@@ -184,7 +350,7 @@ const matricula = {
                     </div>
                     <div class="card-footer bg-white border-top d-flex gap-2 px-4 py-3">
                         <button type="submit" class="btn btn-sm px-3" style="background-color:#1a3a5c; color:white;"
-                            :disabled="!alumnoSeleccionado">
+                            :disabled="!alumnoSeleccionado || !matricula.carrera">
                             <i class="bi bi-save me-1"></i>Guardar
                         </button>
                         <button type="reset" class="btn btn-sm btn-outline-secondary px-3">
