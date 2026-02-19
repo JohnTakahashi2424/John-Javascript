@@ -9,6 +9,22 @@ db.version(1).stores({
     matricula:    'idMatricula, codigo, nombreAlumno',
     inscripciones:'idInscripcion, idMatricula, idMateria'
 });
+db.version(2).stores({
+    alumnos:      'idAlumno, codigo, nombre',
+    materias:     'idMateria, codigo, nombre',
+    docentes:     'idDocente, codigo, nombre',
+    matricula:    'idMatricula, codigo, nombreAlumno',
+    inscripciones:'idInscripcion, idMatricula, idMateria',
+    usuarios:     '++id, username, rol'
+});
+db.version(3).stores({
+    alumnos:      'idAlumno, codigo, nombre',
+    materias:     'idMateria, codigo, nombre',
+    docentes:     'idDocente, codigo, nombre',
+    matricula:    'idMatricula, codigo, nombreAlumno',
+    inscripciones:'idInscripcion, idMatricula, idMateria',
+    usuarios:     '++id, username, codigo, email, rol'
+});
 
 // =============================================
 // APP VUE
@@ -16,6 +32,11 @@ db.version(1).stores({
 const app = Vue.createApp({
     data(){
         return {
+            sesion: {
+                autenticado: false,
+                username: '',
+                rol: ''
+            },
             forms:{
                 alumnos:               { mostrar: false },
                 busqueda_alumnos:      { mostrar: false },
@@ -47,11 +68,26 @@ const app = Vue.createApp({
             const busquedaKey = 'busqueda_' + refForm;
             if(this.forms[busquedaKey]) this.forms[busquedaKey].mostrar = false;
             this.$refs[refForm][metodo](datos);
+        },
+        loginExitoso({ username, rol }) {
+            this.sesion.autenticado = true;
+            this.sesion.username    = username;
+            this.sesion.rol         = rol;
+        },
+        cerrarSesion() {
+            this.sesion.autenticado = false;
+            this.sesion.username    = '';
+            this.sesion.rol         = '';
+            // Cierra todos los paneles abiertos
+            for (const key in this.forms) {
+                this.forms[key].mostrar = false;
+            }
         }
     }
 });
 
 // Registro de componentes
+app.component('login', login);
 app.component('alumnos',                alumnos);
 app.component('busqueda_alumnos',       busqueda_alumnos);
 app.component('materias',               materias);
