@@ -1,5 +1,4 @@
 const docentes = {
-    props:['forms'],
     data(){
         return{
             docente:{
@@ -9,17 +8,18 @@ const docentes = {
                 direccion:"",
                 email:"",
                 telefono:"",
-                escalafon:""
+                escalafon:"",
+                foto: ""
             },
             accion:'nuevo',
             idDocente:0,
             data_docentes:[]
         }
     },
+    emits: ['ir-busqueda'],
     methods:{
         buscarDocente(){
-            this.forms.busqueda_docentes.mostrar = !this.forms.busqueda_docentes.mostrar;
-            this.$emit('buscar');
+            this.$emit('ir-busqueda');
         },
         modificarDocente(docente){
             this.accion = 'modificar';
@@ -30,6 +30,20 @@ const docentes = {
             this.docente.email = docente.email;
             this.docente.telefono = docente.telefono;
             this.docente.escalafon = docente.escalafon;
+            this.docente.foto = docente.foto || "";
+        },
+        seleccionarFoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (file.size > 500 * 1024) { // 500KB limit
+                alertify.error('La imagen es muy pesada (máx 500KB).');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.docente.foto = e.target.result;
+            };
+            reader.readAsDataURL(file);
         },
         async guardarDocente() {
             let datos = {
@@ -39,7 +53,8 @@ const docentes = {
                 direccion: this.docente.direccion,
                 email: this.docente.email,
                 telefono: this.docente.telefono,
-                escalafon: this.docente.escalafon
+                escalafon: this.docente.escalafon,
+                foto: this.docente.foto
             };
             this.buscar = datos.codigo;
 
@@ -63,6 +78,7 @@ const docentes = {
             this.docente.email = '';
             this.docente.telefono = '';
             this.docente.escalafon = '';
+            this.docente.foto = '';
         },
     },
     template: `
@@ -75,6 +91,21 @@ const docentes = {
             <form id="frmDocentes" @submit.prevent="guardarDocente" @reset.prevent="limpiarFormulario">
                 <div class="card border-0 shadow-sm" style="max-width: 480px;">
                     <div class="card-body p-4">
+
+                        <!-- FOTO -->
+                        <div class="mb-4 text-center">
+                            <div class="position-relative d-inline-block">
+                                <img :src="docente.foto || 'https://via.placeholder.com/150?text=Foto'"
+                                     class="rounded-circle border"
+                                     style="width:100px; height:100px; object-fit: cover;">
+                                <label class="position-absolute bottom-0 end-0 bg-white border rounded-circle p-1 shadow-sm"
+                                       style="cursor:pointer;" title="Subir foto">
+                                    <i class="bi bi-camera-fill text-dark small"></i>
+                                    <input type="file" class="d-none" accept="image/*" @change="seleccionarFoto">
+                                </label>
+                            </div>
+                        </div>
+
                         <div class="mb-3 row align-items-center">
                             <label class="col-sm-3 col-form-label text-muted small fw-semibold text-uppercase">Código</label>
                             <div class="col-sm-4">
@@ -120,7 +151,7 @@ const docentes = {
                         </div>
                     </div>
                     <div class="card-footer bg-white border-top d-flex gap-2 px-4 py-3">
-                        <button type="submit" class="btn btn-sm px-3" style="background-color:#1a3a5c; color:white;">
+                        <button type="submit" class="btn btn-sm px-3" style="background-color:#1b4f36; color:white;">
                             <i class="bi bi-save me-1"></i>Guardar
                         </button>
                         <button type="reset" class="btn btn-sm btn-outline-secondary px-3">

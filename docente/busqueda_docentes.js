@@ -5,6 +5,7 @@ const busqueda_docentes = {
             docentes:[]
         }
     },
+    emits: ['modificar', 'ir-registro'],
     methods:{
         modificarDocente(docente){
             this.$emit('modificar', docente);
@@ -29,6 +30,10 @@ const busqueda_docentes = {
             <div class="d-flex align-items-center mb-3 border-bottom pb-2">
                 <i class="bi bi-search me-2 fs-5 text-secondary"></i>
                 <h5 class="mb-0 fw-semibold">Búsqueda de Docentes</h5>
+                <button class="btn btn-sm btn-outline-secondary ms-auto px-3"
+                        @click="$emit('ir-registro')">
+                    <i class="bi bi-arrow-left me-1"></i>Volver al registro
+                </button>
             </div>
             <div class="mb-3" style="max-width: 340px;">
                 <input autocomplete="off" type="search" @keyup="obtenerDocentes()" v-model="buscar"
@@ -51,7 +56,8 @@ const busqueda_docentes = {
                         <tr v-if="docentes.length === 0">
                             <td colspan="7" class="text-center text-muted py-3 small">Sin resultados</td>
                         </tr>
-                        <tr v-for="docente in docentes" :key="docente.idDocente" @click="modificarDocente(docente)" style="cursor:pointer;">
+                        <tr v-for="docente in docentes" :key="docente.idDocente"
+                            @click="modificarDocente(docente)" style="cursor:pointer;">
                             <td class="small">{{ docente.codigo }}</td>
                             <td class="small fw-semibold">{{ docente.nombre }}</td>
                             <td class="small text-muted">{{ docente.direccion }}</td>
@@ -61,7 +67,8 @@ const busqueda_docentes = {
                                 <span class="badge bg-secondary text-capitalize">{{ docente.escalafon }}</span>
                             </td>
                             <td>
-                                <button class="btn btn-outline-danger btn-sm py-0 px-2" @click="eliminarDocente(docente, $event)">
+                                <button class="btn btn-outline-danger btn-sm py-0 px-2"
+                                        @click="eliminarDocente(docente, $event)">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </td>

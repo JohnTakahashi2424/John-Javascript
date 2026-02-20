@@ -40,8 +40,21 @@ const docentesAdmin = {
             alertify.success(`Docente ${nuevo === 'activo' ? 'activado' : 'desactivado'}.`);
         },
         abrirEditar(docente) {
-            this.editando = { ...docente };
+            this.editando = { ...docente, foto: docente.foto || '' };
             this.abrirModal('modalEditarDocente');
+        },
+        seleccionarFoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (file.size > 500 * 1024) {
+                alertify.error('La imagen es muy pesada (máx 500KB).');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.editando.foto = e.target.result;
+            };
+            reader.readAsDataURL(file);
         },
         async guardarEdicion() {
             if (!this.editando.nombre || !this.editando.codigo) {
@@ -54,7 +67,8 @@ const docentesAdmin = {
                 nombre: this.editando.nombre,
                 especialidad: this.editando.especialidad || '',
                 email: this.editando.email || '',
-                telefono: this.editando.telefono || ''
+                telefono: this.editando.telefono || '',
+                foto: this.editando.foto
             });
             await this.cargar();
             this.cerrarModal('modalEditarDocente');
@@ -104,6 +118,7 @@ const docentesAdmin = {
                     <table class="table table-hover align-middle mb-0 small">
                         <thead class="table-light">
                             <tr>
+                                <th style="width:50px;">Foto</th>
                                 <th>Código</th>
                                 <th>Nombre</th>
                                 <th>Especialidad</th>
@@ -115,6 +130,11 @@ const docentesAdmin = {
                         <tbody>
                             <tr v-for="d in docentesFiltrados" :key="d.idDocente"
                                 :class="estado(d)==='inactivo' ? 'table-light text-muted' : ''">
+                                <td>
+                                    <img :src="d.foto || 'https://via.placeholder.com/40?text=D'"
+                                         class="rounded-circle border"
+                                         style="width:36px; height:36px; object-fit: cover;">
+                                </td>
                                 <td class="fw-semibold">{{ d.codigo }}</td>
                                 <td>{{ d.nombre }}</td>
                                 <td>{{ d.especialidad || '—' }}</td>
@@ -157,6 +177,20 @@ const docentesAdmin = {
                         </div>
                         <div class="modal-body">
                             <div class="row g-3">
+                                <!-- Foto en Modal -->
+                                <div class="col-12 text-center mb-2">
+                                    <div class="position-relative d-inline-block">
+                                        <img :src="editando.foto || 'https://via.placeholder.com/100?text=Foto'"
+                                             class="rounded-circle border"
+                                             style="width:100px; height:100px; object-fit: cover;">
+                                        <label class="position-absolute bottom-0 end-0 bg-white border rounded-circle p-1 shadow-sm"
+                                               style="cursor:pointer;" title="Cambiar foto">
+                                            <i class="bi bi-camera-fill text-dark small"></i>
+                                            <input type="file" class="d-none" accept="image/*" @change="seleccionarFoto">
+                                        </label>
+                                    </div>
+                                </div>
+
                                 <div class="col-6">
                                     <label class="form-label small fw-semibold text-muted text-uppercase">Código *</label>
                                     <input v-model="editando.codigo" class="form-control form-control-sm" required>

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/alertify.min.css"/>
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/default.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
 </head>
 <body class="bg-light">
     <div id="app">
@@ -40,8 +41,10 @@
                                 <i :class="sesion.rol === 'Docente' ? 'bi bi-person-workspace' : 'bi bi-person-badge'"></i>
                                 {{ sesion.rol }}
                             </span>
-                            <span class="text-white small fw-semibold">
-                                <i class="bi bi-person-circle me-1"></i>{{ sesion.username }}
+                            <span class="text-white small fw-semibold d-flex align-items-center">
+                                <img v-if="sesion.foto" :src="sesion.foto" class="rounded-circle me-2 border border-light" style="width:26px;height:26px;object-fit:cover;">
+                                <i v-else class="bi bi-person-circle me-1"></i>
+                                {{ sesion.username }}
                             </span>
                         </span>
                         <button @click="cerrarSesion"
@@ -78,14 +81,7 @@
                                     <i class="bi bi-book"></i> Materias
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2"
-                                   :class="forms.docentes.mostrar ? 'active text-white' : 'text-secondary'"
-                                   :style="forms.docentes.mostrar ? 'background-color:#1a3a5c;' : ''"
-                                   href="#" @click.prevent="abrirVentana('docentes')">
-                                    <i class="bi bi-person-workspace"></i> Docentes
-                                </a>
-                            </li>
+
                             <li class="nav-item">
                                 <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2"
                                    :class="forms.matricula.mostrar ? 'active text-white' : 'text-secondary'"
@@ -136,8 +132,6 @@
                         <materias @buscar='buscar("busqueda_materias","obtenerMaterias")' :forms="forms" ref="materias" v-show="forms.materias.mostrar"></materias>
                         <busqueda_materias @modificar='modificar("materias","modificarMateria", $event)' ref="busqueda_materias" v-show="forms.busqueda_materias.mostrar"></busqueda_materias>
 
-                        <docentes @buscar='buscar("busqueda_docentes","obtenerDocentes")' :forms="forms" ref="docentes" v-show="forms.docentes.mostrar"></docentes>
-                        <busqueda_docentes @modificar='modificar("docentes","modificarDocente", $event)' ref="busqueda_docentes" v-show="forms.busqueda_docentes.mostrar"></busqueda_docentes>
 
                         <matricula @buscar='buscar("busqueda_matricula","obtenerMatriculas")' :forms="forms" ref="matricula" v-show="forms.matricula.mostrar"></matricula>
                         <busqueda_matricula @modificar='modificar("matricula","modificarMatricula", $event)' ref="busqueda_matricula" v-show="forms.busqueda_matricula.mostrar"></busqueda_matricula>
@@ -146,7 +140,8 @@
                         <busqueda_inscripciones @modificar='modificar("inscripciones","modificarInscripcion", $event)' ref="busqueda_inscripciones" v-show="forms.busqueda_inscripciones.mostrar"></busqueda_inscripciones>
 
                         <mis_notas ref="mis_notas" v-show="forms.mis_notas.mostrar"></mis_notas>
-                        <mi_perfil ref="mi_perfil" v-show="forms.mi_perfil.mostrar"></mi_perfil>
+                        <mis_notas ref="mis_notas" v-show="forms.mis_notas.mostrar"></mis_notas>
+                        <mi_perfil ref="mi_perfil" v-if="forms.mi_perfil.mostrar" @foto-cambiada="actualizarFotoSesion"></mi_perfil>
 
                     </main>
                 </div>
@@ -157,6 +152,7 @@
 
     <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/alertify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dexie/4.2.0/dexie.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
@@ -168,8 +164,6 @@
     <script src="registro-alumnos/materia.js"></script>
     <script src="registro-alumnos/busqueda_materias.js"></script>
 
-    <script src="registro-alumnos/docentes.js"></script>
-    <script src="registro-alumnos/busqueda_docentes.js"></script>
 
     <script src="registro-alumnos/matricula.js"></script>
     <script src="registro-alumnos/busqueda_matrcula.js"></script>

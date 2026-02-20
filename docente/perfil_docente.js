@@ -6,7 +6,9 @@ const perfilDocente = {
         return {
             cargando: true,
             guardando: false,
-            perfil: { nombre: '', email: '', telefono: '', especialidad: '', codigo: '' },
+            perfil: { nombre: '', email: '', telefono: '', especialidad: '', codigo: '', foto: '' },
+            imagenRecortar: '',
+            cropper: null,
             pwd: { actual: '', nueva: '', confirmar: '', mostrarActual: false, mostrarNueva: false },
             cambiandoPwd: false,
             _userId: null,
@@ -45,9 +47,79 @@ const perfilDocente = {
                     this.perfil.telefono    = docente.telefono    || '';
                     this.perfil.especialidad= docente.especialidad|| '';
                     this.perfil.codigo      = docente.codigo      || '';
+                    this.perfil.foto        = docente.foto        || '';
                     if (!this.perfil.email) this.perfil.email = docente.email || '';
                 }
             } finally { this.cargando = false; }
+        },
+        seleccionarFoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                alertify.error('La imagen es muy pesada (máx 2MB).');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.imagenRecortar = e.target.result;
+                this.abrirModalRecorte();
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        },
+        abrirModalRecorte() {
+            const modalEl = document.getElementById('modalRecorteDocente');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+            
+            const image = document.getElementById('img-recortar-docente');
+            if (this.cropper) { this.cropper.destroy(); }
+            
+            modalEl.addEventListener('shown.bs.modal', () => {
+                this.cropper = new Cropper(image, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    autoCropArea: 1,
+                });
+            }, { once: true });
+        },
+        async guardarFotoRecortada() {
+            if (!this.cropper) return;
+            
+            const canvas = this.cropper.getCroppedCanvas({
+                width: 300,
+                height: 300,
+                fillColor: '#fff'
+            });
+            
+            const fotoBase64 = canvas.toDataURL('image/jpeg', 0.85);
+            this.perfil.foto = fotoBase64;
+            
+            try {
+                if (this._docenteId) {
+                    await db.docentes.update(this._docenteId, { foto: fotoBase64 });
+                    
+                    // Actualizar SessionStorage (sin la foto)
+                    // No es necesario guardar datos extra aquí si main.js lee de DB
+                    const stored = sessionStorage.getItem('sesionUniversidad');
+                    if (stored) {
+                         const s = JSON.parse(stored);
+                         sessionStorage.setItem('sesionUniversidad', JSON.stringify(s));
+                    }
+                    
+                    // Emitir evento
+                    this.$emit('foto-cambiada', fotoBase64);
+                    
+                    alertify.success('Foto actualizada correctamente.');
+                    bootstrap.Modal.getInstance(document.getElementById('modalRecorteDocente')).hide();
+                } else {
+                    console.error('No se encontró ID de docente para actualizar foto.');
+                    alertify.error('Error: No se encuentra el registro del docente. Recarga la página.');
+                }
+            } catch (e) {
+                console.error(e);
+                alertify.error('Error al guardar la foto en BD: ' + e.message);
+            }
         },
         async guardar() {
             if (!this.perfil.nombre.trim()) { alertify.error('El nombre es obligatorio.'); return; }
@@ -59,6 +131,7 @@ const perfilDocente = {
                         email:        this.perfil.email.trim(),
                         telefono:     this.perfil.telefono.trim(),
                         especialidad: this.perfil.especialidad.trim(),
+                        foto:         this.perfil.foto
                     });
                 }
                 if (this._userId) await db.usuarios.update(this._userId, { email: this.perfil.email.trim() });
@@ -98,6 +171,20 @@ const perfilDocente = {
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
+                            <!-- FOTO DE PERFIL -->
+                            <div class="col-12 text-center mb-3">
+                                <div class="position-relative d-inline-block">
+                                    <img :src="perfil.foto || 'https://via.placeholder.com/150?text=Foto'"
+                                         class="rounded-circle border"
+                                         style="width:120px; height:120px; object-fit: cover;">
+                                    <label class="position-absolute bottom-0 end-0 bg-white border rounded-circle p-2 shadow-sm"
+                                           style="cursor:pointer;" title="Cambiar foto">
+                                        <i class="bi bi-camera-fill text-dark"></i>
+                                        <input type="file" class="d-none" accept="image/*" @change="seleccionarFoto">
+                                    </label>
+                                </div>
+                            </div>
+
                             <div class="col-sm-6">
                                 <label class="form-label small fw-semibold text-muted text-uppercase">Código de Docente</label>
                                 <input :value="perfil.codigo" class="form-control form-control-sm bg-light" readonly>
@@ -172,6 +259,26 @@ const perfilDocente = {
                 </div>
             </div>
         </div>
+        </div>
+            
+            <!-- Modal Recorte Docente -->
+            <div class="modal fade" id="modalRecorteDocente" tabindex="-1" data-bs-backdrop="static">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Ajustar Foto</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-0 bg-dark text-center" style="max-height:500px; overflow:hidden;">
+                            <img id="img-recortar-docente" :src="imagenRecortar" style="max-width:100%; max-height: 500px; display:block;">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-primary" @click="guardarFotoRecortada">Aplicar y Guardar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
     </div>
     `
 };

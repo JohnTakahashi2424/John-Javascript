@@ -9,6 +9,7 @@ db.version(2).stores({ alumnos:'idAlumno,codigo,nombre', materias:'idMateria,cod
 db.version(3).stores({ alumnos:'idAlumno,codigo,nombre', materias:'idMateria,codigo,nombre', docentes:'idDocente,codigo,nombre', matricula:'idMatricula,codigo,nombreAlumno', inscripciones:'idInscripcion,idMatricula,idMateria', usuarios:'++id,username,codigo,email,rol' });
 db.version(4).stores({ alumnos:'idAlumno,codigo,nombre,carrera,estado', materias:'idMateria,codigo,nombre,docenteId,estado', docentes:'idDocente,codigo,nombre,especialidad,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', usuarios:'++id,username,codigo,email,rol,estado' });
 db.version(5).stores({ alumnos:'idAlumno,codigo,nombre,carrera,carreraId,estado', materias:'idMateria,codigo,nombre,docenteId,carreraId,carrera,estado', docentes:'idDocente,codigo,nombre,especialidad,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', carreras:'++idCarrera,codigo,nombre,estado', evaluaciones:'++id,idInscripcion,idMateria,computo,estado', usuarios:'++id,username,codigo,email,rol,estado' });
+db.version(6).stores({ alumnos:'idAlumno,codigo,nombre,carrera,carreraId,foto,estado', materias:'idMateria,codigo,nombre,docenteId,carreraId,carrera,estado', docentes:'idDocente,codigo,nombre,especialidad,foto,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', carreras:'++idCarrera,codigo,nombre,estado', evaluaciones:'++id,idInscripcion,idMateria,computo,estado', usuarios:'++id,username,codigo,email,rol,estado' });
 
 const adminApp = Vue.createApp({
     data() {
@@ -43,11 +44,43 @@ const adminApp = Vue.createApp({
             window.location.href = '../index.html';
         }
         window.addEventListener('resize', () => { this.windowWidth = window.innerWidth; });
+        // Sincronizar cuentas de usuarios con sus perfiles (alumno/docente)
+        this.$nextTick(() => this.sincronizarPerfiles());
     },
     methods: {
         cerrarSesion() {
             sessionStorage.removeItem('sesionUniversidad');
             window.location.href = '../index.html';
+        },
+        async sincronizarPerfiles() {
+            try {
+                const usuarios = await db.usuarios.toArray();
+                for (const u of usuarios) {
+                    if (u.rol === 'Alumno') {
+                        const existePerfil = u.codigo
+                            ? await db.alumnos.where('codigo').equalsIgnoreCase(u.codigo).first()
+                            : await db.alumnos.filter(a => (a.nombre||'').toLowerCase() === (u.username||'').toLowerCase()).first();
+                        if (!existePerfil) {
+                            await db.alumnos.add({
+                                codigo: u.codigo || '', nombre: u.username,
+                                email: u.email || '', carrera: '', carreraId: '',
+                                telefono: '', direccion: '', estado: 'activo'
+                            });
+                        }
+                    } else if (u.rol === 'Docente') {
+                        const existePerfil = u.codigo
+                            ? await db.docentes.where('codigo').equalsIgnoreCase(u.codigo).first()
+                            : await db.docentes.filter(d => (d.nombre||'').toLowerCase() === (u.username||'').toLowerCase()).first();
+                        if (!existePerfil) {
+                            await db.docentes.add({
+                                codigo: u.codigo || '', nombre: u.username,
+                                email: u.email || '', especialidad: '',
+                                telefono: '', estado: 'activo'
+                            });
+                        }
+                    }
+                }
+            } catch(e) { console.warn('sincronizarPerfiles:', e); }
         }
     }
 });

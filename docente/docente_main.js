@@ -9,6 +9,7 @@ db.version(2).stores({ alumnos:'idAlumno,codigo,nombre', materias:'idMateria,cod
 db.version(3).stores({ alumnos:'idAlumno,codigo,nombre', materias:'idMateria,codigo,nombre', docentes:'idDocente,codigo,nombre', matricula:'idMatricula,codigo,nombreAlumno', inscripciones:'idInscripcion,idMatricula,idMateria', usuarios:'++id,username,codigo,email,rol' });
 db.version(4).stores({ alumnos:'idAlumno,codigo,nombre,carrera,estado', materias:'idMateria,codigo,nombre,docenteId,estado', docentes:'idDocente,codigo,nombre,especialidad,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', usuarios:'++id,username,codigo,email,rol,estado' });
 db.version(5).stores({ alumnos:'idAlumno,codigo,nombre,carrera,carreraId,estado', materias:'idMateria,codigo,nombre,docenteId,carreraId,carrera,estado', docentes:'idDocente,codigo,nombre,especialidad,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', carreras:'++idCarrera,codigo,nombre,estado', evaluaciones:'++id,idInscripcion,idMateria,computo,estado', usuarios:'++id,username,codigo,email,rol,estado' });
+db.version(6).stores({ alumnos:'idAlumno,codigo,nombre,carrera,carreraId,foto,estado', materias:'idMateria,codigo,nombre,docenteId,carreraId,carrera,estado', docentes:'idDocente,codigo,nombre,especialidad,foto,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', carreras:'++idCarrera,codigo,nombre,estado', evaluaciones:'++id,idInscripcion,idMateria,computo,estado', usuarios:'++id,username,codigo,email,rol,estado' });
 
 // Perfil del docente actual (disponible globalmente para todos los componentes)
 window.docenteData = null;
@@ -24,6 +25,7 @@ const docenteApp = Vue.createApp({
             windowWidth: window.innerWidth,
             menuItems: [
                 { id: 'dashboard',    label: 'Dashboard',       icon: 'bi bi-speedometer2' },
+                { id: 'docentes',     label: 'Docentes',        icon: 'bi bi-person-workspace' },
                 { id: 'materias',     label: 'Mis Materias',    icon: 'bi bi-book' },
                 { id: 'notas',        label: 'Notas',           icon: 'bi bi-journal-text' },
                 { id: 'estadisticas', label: 'Estadísticas',    icon: 'bi bi-bar-chart-line' },
@@ -45,13 +47,13 @@ const docenteApp = Vue.createApp({
             return;
         }
 
-        // Buscar perfil de docente por código
+        // Buscar perfil de docente por código (SIEMPRE DESDE DB)
         await this.buscarPerfil();
         window.addEventListener('resize', () => { this.windowWidth = window.innerWidth; });
     },
     methods: {
         async buscarPerfil() {
-            const codigo = this.docenteSesion.codigo;
+            const codigo   = this.docenteSesion.codigo;
             const username = this.docenteSesion.username;
             let docente = null;
 
@@ -70,20 +72,27 @@ const docenteApp = Vue.createApp({
             }
 
             this.docentePerfil = docente;
-            window.docenteData = docente;
-            this.perfilBuscado = true;
+            window.docenteData  = docente;
+            this.perfilBuscado  = true;
         },
         cerrarSesion() {
             sessionStorage.removeItem('sesionUniversidad');
             window.location.href = '../index.html';
+        },
+        actualizarFotoSesion(foto) {
+            if (this.docentePerfil) {
+                this.docentePerfil.foto = foto;
+            }
         }
     }
 });
 
-docenteApp.component('docente-dashboard',    docenteDashboard);
-docenteApp.component('mis-materias-doc',     misMaterias);
-docenteApp.component('notas-docente',        notasDocente);
-docenteApp.component('estadisticas-docente', estadisticasDocente);
-docenteApp.component('perfil-docente',       perfilDocente);
+docenteApp.component('docente-dashboard',        docenteDashboard);
+docenteApp.component('mis-materias-doc',         misMaterias);
+docenteApp.component('notas-docente',            notasDocente);
+docenteApp.component('estadisticas-docente',     estadisticasDocente);
+docenteApp.component('perfil-docente',           perfilDocente);
+docenteApp.component('docentes-form',            docentes);
+docenteApp.component('busqueda-docentes-view',   busqueda_docentes);
 
 docenteApp.mount('#docenteApp');

@@ -131,6 +131,39 @@ const login = {
                     hashPwd, rol, estado: 'activo'
                 });
 
+                // Crear perfil en la tabla correspondiente si no existe
+                if (rol === 'Alumno') {
+                    const existePerfil = codigo
+                        ? await db.alumnos.where('codigo').equalsIgnoreCase(codigo).first()
+                        : null;
+                    if (!existePerfil) {
+                        await db.alumnos.add({
+                            codigo:    codigo || '',
+                            nombre:    username,
+                            email:     email  || '',
+                            carrera:   '',
+                            carreraId: '',
+                            telefono:  '',
+                            direccion: '',
+                            estado:    'activo'
+                        });
+                    }
+                } else if (rol === 'Docente') {
+                    const existePerfil = codigo
+                        ? await db.docentes.where('codigo').equalsIgnoreCase(codigo).first()
+                        : null;
+                    if (!existePerfil) {
+                        await db.docentes.add({
+                            codigo:       codigo || '',
+                            nombre:       username,
+                            email:        email  || '',
+                            especialidad: '',
+                            telefono:     '',
+                            estado:       'activo'
+                        });
+                    }
+                }
+
                 alertify.success('¡Cuenta creada! Ahora puedes iniciar sesión.');
                 this.regForm = { username: '', codigo: '', email: '', password: '', confirmar: '', rol: 'Alumno', codigoAdmin: '' };
                 this.vista = 'login';

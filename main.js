@@ -45,6 +45,17 @@ db.version(5).stores({
     evaluaciones: '++id, idInscripcion, idMateria, computo, estado',
     usuarios:     '++id, username, codigo, email, rol, estado'
 });
+db.version(6).stores({
+    alumnos:      'idAlumno, codigo, nombre, carrera, carreraId, foto, estado',
+    materias:     'idMateria, codigo, nombre, docenteId, carreraId, carrera, estado',
+    docentes:     'idDocente, codigo, nombre, especialidad, foto, estado',
+    matricula:    'idMatricula, codigo, nombreAlumno, idAlumno, periodoId, estado',
+    inscripciones:'idInscripcion, idMatricula, idMateria, idAlumno',
+    periodos:     '++idPeriodo, año, ciclo, estado',
+    carreras:     '++idCarrera, codigo, nombre, estado',
+    evaluaciones: '++id, idInscripcion, idMateria, computo, estado',
+    usuarios:     '++id, username, codigo, email, rol, estado'
+});
 
 // =============================================
 // APP VUE
@@ -55,15 +66,14 @@ const app = Vue.createApp({
             sesion: {
                 autenticado: false,
                 username: '',
-                rol: ''
+                rol: '',
+                foto: ''
             },
             forms:{
                 alumnos:               { mostrar: false },
                 busqueda_alumnos:      { mostrar: false },
                 materias:              { mostrar: false },
                 busqueda_materias:     { mostrar: false },
-                docentes:              { mostrar: false },
-                busqueda_docentes:     { mostrar: false },
                 matricula:             { mostrar: false },
                 busqueda_matricula:    { mostrar: false },
                 inscripciones:         { mostrar: false },
@@ -73,7 +83,7 @@ const app = Vue.createApp({
             }
         };
     },
-    created(){
+    async created(){
         // Restaurar sesión desde sessionStorage al recargar la página
         try {
             const stored = sessionStorage.getItem('sesionUniversidad');
@@ -83,17 +93,26 @@ const app = Vue.createApp({
                     this.sesion.autenticado = true;
                     this.sesion.username    = s.username;
                     this.sesion.rol         = s.rol;
+                    
+                    // SIEMPRE cargar la foto desde la BD, no del sessionStorage (por límites de espacio)
+                    if(s.rol === 'Alumno' && s.codigo){
+                         const alumno = await db.alumnos.where('codigo').equals(s.codigo).first();
+                         if(alumno && alumno.foto) this.sesion.foto = alumno.foto;
+                    }
                 }
             }
         } catch(e) { /* sesión corrupta, ignorar */ }
     },
     methods:{
         abrirVentana(nombre){
-            // Cierra todos los paneles y abre solo el seleccionado
-            for(const key in this.forms){
+            // Cierra todos los paneles
+            Object.keys(this.forms).forEach(key => {
                 this.forms[key].mostrar = false;
+            });
+            // Abre solo el seleccionado
+            if(this.forms[nombre]) {
+                this.forms[nombre].mostrar = true;
             }
-            this.forms[nombre].mostrar = true;
         },
         buscar(refBusqueda, metodo){
             this.$refs[refBusqueda][metodo]();
@@ -103,12 +122,24 @@ const app = Vue.createApp({
             // Oculta el panel de búsqueda correspondiente
             const busquedaKey = 'busqueda_' + refForm;
             if(this.forms[busquedaKey]) this.forms[busquedaKey].mostrar = false;
+            
+            // Asegurar que mi_perfil está cerrado si abrimos otro form (aunque el loop arriba ya lo hace, es bueno asegurar)
+            this.forms.mi_perfil.mostrar = false; 
+
             this.$refs[refForm][metodo](datos);
         },
-        loginExitoso({ username, rol, codigo }) {
+        async loginExitoso({ username, rol, codigo }) {
             this.sesion.autenticado = true;
             this.sesion.username    = username;
             this.sesion.rol         = rol;
+            this.sesion.foto        = '';
+
+            if(rol === 'Alumno' && codigo){
+                const alumno = await db.alumnos.where('codigo').equals(codigo).first();
+                if(alumno && alumno.foto) this.sesion.foto = alumno.foto;
+            }
+
+            // NO guardar la foto en sessionStorage
             sessionStorage.setItem('sesionUniversidad', JSON.stringify({ autenticado: true, username, rol, codigo: codigo || '' }));
         },
         cerrarSesion() {
@@ -116,10 +147,14 @@ const app = Vue.createApp({
             this.sesion.autenticado = false;
             this.sesion.username    = '';
             this.sesion.rol         = '';
+            this.sesion.foto        = '';
             // Cierra todos los paneles abiertos
             for (const key in this.forms) {
                 this.forms[key].mostrar = false;
             }
+        },
+        actualizarFotoSesion(foto) {
+            this.sesion.foto = foto;
         }
     }
 });
@@ -130,8 +165,6 @@ app.component('alumnos',                alumnos);
 app.component('busqueda_alumnos',       busqueda_alumnos);
 app.component('materias',               materias);
 app.component('busqueda_materias',      busqueda_materias);
-app.component('docentes',               docentes);
-app.component('busqueda_docentes',      busqueda_docentes);
 app.component('matricula',              matricula);
 app.component('busqueda_matricula',     busqueda_matricula);
 app.component('inscripciones',          inscripciones);
