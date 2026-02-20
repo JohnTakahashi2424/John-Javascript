@@ -11,8 +11,9 @@ const adminDashboard = {
                 materiasHabilitadas: 0, materiasTotal: 0,
                 inscripcionesTotal: 0
             },
-            periodoActual: null,
-            cargando: true
+            cargando: true,
+            mostrarSolicitudes: false,
+            solicitudesPendientes: []
         };
     },
     async mounted() { await this.cargar(); },
@@ -20,12 +21,13 @@ const adminDashboard = {
         async cargar() {
             this.cargando = true;
             try {
-                const [alumnos, docentes, materias, inscripciones, periodos] = await Promise.all([
+                const [alumnos, docentes, materias, inscripciones, periodos, solicitudes] = await Promise.all([
                     db.alumnos.toArray(),
                     db.docentes.toArray(),
                     db.materias.toArray(),
                     db.inscripciones.toArray(),
-                    db.periodos.toArray()
+                    db.periodos.toArray(),
+                    db.solicitudes.where('estado').equals('pendiente').toArray()
                 ]);
 
                 this.stats.alumnosTotal     = alumnos.length;
@@ -35,9 +37,120 @@ const adminDashboard = {
                 this.stats.materiasHabilitadas = materias.filter(m => (m.estado || 'habilitada') === 'habilitada').length;
                 this.stats.inscripcionesTotal  = inscripciones.length;
                 this.periodoActual = periodos.find(p => p.estado === 'abierto') || null;
+                
+                this.solicitudesPendientes = solicitudes;
             } finally {
                 this.cargando = false;
             }
+        },
+        async depurarUsuarios() {
+            // ... (código existente) ...
+            alertify.confirm('Depurar Usuarios Fantasmas', 'Esta acción buscará y eliminará usuarios que quedaron huérfanos (sin perfil de Alumno o Docente asociado) debido a pruebas anteriores. ¿Deseas continuar?', async () => {
+                let eliminados = 0;
+                const usuarios = await db.usuarios.toArray();
+                
+                for (const u of usuarios) {
+                    if (u.rol === 'Admin') continue;
+
+                    let existe = false;
+                    if (u.rol === 'Alumno') {
+                        const porCodigo = u.codigo ? await db.alumnos.where('codigo').equalsIgnoreCase(u.codigo).count() : 0;
+                        const porNombre = await db.alumnos.where('nombre').equalsIgnoreCase(u.username).count();
+                        existe = (porCodigo > 0 || porNombre > 0);
+                    } else if (u.rol === 'Docente') {
+                        const porCodigo = u.codigo ? await db.docentes.where('codigo').equalsIgnoreCase(u.codigo).count() : 0;
+                        const porNombre = await db.docentes.where('nombre').equalsIgnoreCase(u.username).count();
+                        existe = (porCodigo > 0 || porNombre > 0);
+                    }
+
+                    if (!existe) {
+                        await db.usuarios.delete(u.id);
+                        eliminados++;
+                    }
+                }
+                
+                if (eliminados > 0) {
+                    alertify.success(`Se eliminaron ${eliminados} usuarios fantasmas.`);
+                } else {
+                    alertify.message('No se encontraron usuarios fantasmas. Todo limpio.');
+                }
+            }, () => {}).set('labels', {ok:'Sí, Depurar', cancel:'Cancelar'});
+        },
+        verSolicitudes() {
+            this.mostrarSolicitudes = !this.mostrarSolicitudes;
+            if (this.mostrarSolicitudes) {
+                // Recargar solicitudes para asegurar datos frescos
+                db.solicitudes.where('estado').equals('pendiente').toArray().then(s => this.solicitudesPendientes = s);
+            }
+        },
+        async aprobarSolicitud(solicitud) {
+            // 1. Buscar si ya existe el perfil
+            let perfil = null;
+            let collection = null;
+
+            if (solicitud.tipo === 'Alumno') {
+                collection = db.alumnos;
+                perfil = await collection.where('codigo').equalsIgnoreCase(solicitud.codigo).first();
+            } else {
+                collection = db.docentes;
+                perfil = await collection.where('codigo').equalsIgnoreCase(solicitud.codigo).first();
+            }
+
+            // 2. Generar Token
+            const prefix = solicitud.tipo === 'Alumno' ? 'ALU-' : 'DOC-';
+            const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+            const token = `${prefix}${randomPart}`;
+
+            // 3. Lógica: Vincular o Crear
+            if (perfil) {
+                // Caso A: Existe -> Actualizar (Vincular)
+                if (!confirm(`El perfil para ${solicitud.nombre} (${solicitud.codigo}) YA EXISTE. \n\n¿Deseas actualizar su token de acceso?`)) return;
+                
+                if (solicitud.tipo === 'Alumno') {
+                    await db.alumnos.update(perfil.idAlumno, { tokenAcceso: token });
+                } else {
+                    await db.docentes.update(perfil.idDocente, { tokenAcceso: token });
+                }
+
+            } else {
+                // Caso B: No Existe -> Crear Nuevo
+                if (!confirm(`El perfil con código ${solicitud.codigo} NO EXISTE en la base de datos. \n\n¿Deseas CREAR un nuevo perfil para ${solicitud.nombre} y generarle el token?`)) return;
+
+                if (solicitud.tipo === 'Alumno') {
+                    await db.alumnos.add({
+                        codigo: solicitud.codigo,
+                        nombre: solicitud.nombre,
+                        carrera: '', carreraId: '', // Se llenarán después
+                        estado: 'activo',
+                        tokenAcceso: token,
+                        email: '', telefono: '', direccion: '', foto: ''
+                    });
+                } else {
+                    await db.docentes.add({
+                        codigo: solicitud.codigo,
+                        nombre: solicitud.nombre,
+                        especialidad: '', // Se llenará después
+                        estado: 'activo',
+                        tokenAcceso: token,
+                        email: '', telefono: '', foto: ''
+                    });
+                }
+            }
+
+            // 4. Borrar solicitud y notificar
+            await db.solicitudes.delete(solicitud.id);
+            this.solicitudesPendientes = this.solicitudesPendientes.filter(s => s.id !== solicitud.id);
+
+            alertify.alert('Solicitud Procesada', `
+                <div class="text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <p class="mb-2">El token para <b>${solicitud.nombre}</b> es:</p>
+                    <h2 class="text-primary fw-bold my-3 user-select-all">${token}</h2>
+                    <p class="mb-0 text-muted small">Cópialo y envíalo al usuario para que pueda registrarse.</p>
+                </div>
+            `);
         }
     },
     template: `
@@ -137,6 +250,64 @@ const adminDashboard = {
                                     <div>
                                         <div class="fw-bold fs-4 lh-1">{{ stats.inscripcionesTotal }}</div>
                                         <div class="text-muted small">Inscripciones totales</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accesos Rápidos y Mantenimiento -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h5 class="card-title fw-bold text-secondary mb-1">Mantenimiento Global</h5>
+                                    <p class="text-muted small mb-0">Herramientas & Solicitudes pendientes.</p>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-primary" @click="verSolicitudes">
+                                        <i class="bi bi-envelope-paper me-2"></i>Ver Solicitudes
+                                    </button>
+                                    <button class="btn btn-outline-danger" @click="depurarUsuarios">
+                                        <i class="bi bi-tools me-2"></i>Depurar Usuarios
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección de Solicitudes Pendientes (Toggle) -->
+                <div v-if="mostrarSolicitudes" class="row mb-4 animate__animated animate__fadeIn">
+                    <div class="col-12">
+                        <div class="card border-primary shadow-sm bg-primary bg-opacity-10">
+                            <div class="card-header bg-transparent border-primary border-opacity-25 fw-bold text-primary d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-envelope-paper me-2"></i>Solicitudes de Token Pendientes</span>
+                                <button class="btn btn-sm btn-close" @click="mostrarSolicitudes = false"></button>
+                            </div>
+                            <div class="card-body p-0">
+                                <div v-if="solicitudesPendientes.length === 0" class="p-4 text-center text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    No hay solicitudes pendientes en este momento.
+                                </div>
+                                <div v-else class="list-group list-group-flush">
+                                    <div v-for="s in solicitudesPendientes" :key="s.id" class="list-group-item bg-transparent d-flex justify-content-between align-items-center p-3">
+                                        <div>
+                                            <div class="fw-bold fs-5 text-dark">
+                                                {{ s.nombre }}
+                                                <span class="badge rounded-pill ms-2" :class="s.tipo === 'Docente' ? 'bg-success' : 'bg-primary'">{{ s.tipo }}</span>
+                                            </div>
+                                            <div class="small text-muted">
+                                                <i class="bi bi-card-text me-1"></i>Código: <strong>{{ s.codigo }}</strong>
+                                                <span class="mx-2">|</span>
+                                                <i class="bi bi-clock me-1"></i>{{ s.fecha }}
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-success shadow-sm" @click="aprobarSolicitud(s)">
+                                            <i class="bi bi-check-lg me-1"></i>Generar Token
+                                        </button>
                                     </div>
                                 </div>
                             </div>

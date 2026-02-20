@@ -4,12 +4,25 @@
 // =============================================
 
 const db = new Dexie('universidad');
+// Mantiene versiones para compatibilidad
 db.version(1).stores({ alumnos:'idAlumno,codigo,nombre', materias:'idMateria,codigo,nombre', docentes:'idDocente,codigo,nombre', matricula:'idMatricula,codigo,nombreAlumno', inscripciones:'idInscripcion,idMatricula,idMateria' });
 db.version(2).stores({ alumnos:'idAlumno,codigo,nombre', materias:'idMateria,codigo,nombre', docentes:'idDocente,codigo,nombre', matricula:'idMatricula,codigo,nombreAlumno', inscripciones:'idInscripcion,idMatricula,idMateria', usuarios:'++id,username,rol' });
 db.version(3).stores({ alumnos:'idAlumno,codigo,nombre', materias:'idMateria,codigo,nombre', docentes:'idDocente,codigo,nombre', matricula:'idMatricula,codigo,nombreAlumno', inscripciones:'idInscripcion,idMatricula,idMateria', usuarios:'++id,username,codigo,email,rol' });
 db.version(4).stores({ alumnos:'idAlumno,codigo,nombre,carrera,estado', materias:'idMateria,codigo,nombre,docenteId,estado', docentes:'idDocente,codigo,nombre,especialidad,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', usuarios:'++id,username,codigo,email,rol,estado' });
 db.version(5).stores({ alumnos:'idAlumno,codigo,nombre,carrera,carreraId,estado', materias:'idMateria,codigo,nombre,docenteId,carreraId,carrera,estado', docentes:'idDocente,codigo,nombre,especialidad,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', carreras:'++idCarrera,codigo,nombre,estado', evaluaciones:'++id,idInscripcion,idMateria,computo,estado', usuarios:'++id,username,codigo,email,rol,estado' });
 db.version(6).stores({ alumnos:'idAlumno,codigo,nombre,carrera,carreraId,foto,estado', materias:'idMateria,codigo,nombre,docenteId,carreraId,carrera,estado', docentes:'idDocente,codigo,nombre,especialidad,foto,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', carreras:'++idCarrera,codigo,nombre,estado', evaluaciones:'++id,idInscripcion,idMateria,computo,estado', usuarios:'++id,username,codigo,email,rol,estado' });
+db.version(7).stores({
+    alumnos: '++idAlumno, codigo, nombre, carrera, carreraId, foto, estado, tokenAcceso',
+    materias: '++idMateria, codigo, nombre, docenteId, carreraId, carrera, estado',
+    docentes: '++idDocente, codigo, nombre, especialidad, foto, estado, tokenAcceso',
+    matricula: '++idMatricula, codigo, nombreAlumno, idAlumno, periodoId, estado',
+    inscripciones: '++idInscripcion, idMatricula, idMateria, idAlumno',
+    periodos: '++idPeriodo, año, ciclo, estado',
+    carreras: '++idCarrera, codigo, nombre, estado',
+    evaluaciones: '++id, idInscripcion, idMateria, computo, estado',
+    usuarios: '++id, username, codigo, email, rol, estado',
+    solicitudes: '++id, tipo, nombre, codigo, fecha, estado'
+});
 
 const adminApp = Vue.createApp({
     data() {
@@ -17,6 +30,7 @@ const adminApp = Vue.createApp({
             modulo: 'dashboard',
             adminSesion: { username: '', rol: '' },
             sidebarVisible: true,
+            darkMode: false,
             windowWidth: window.innerWidth,
             menuItems: [
                 { id: 'dashboard',      label: 'Dashboard',      icon: 'bi bi-speedometer2' },
@@ -44,10 +58,26 @@ const adminApp = Vue.createApp({
             window.location.href = '../index.html';
         }
         window.addEventListener('resize', () => { this.windowWidth = window.innerWidth; });
+        
+        // Cargar preferencia de Dark Mode
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            this.darkMode = true;
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+        } else {
+            document.documentElement.setAttribute('data-bs-theme', 'light');
+        }
+
         // Sincronizar cuentas de usuarios con sus perfiles (alumno/docente)
         this.$nextTick(() => this.sincronizarPerfiles());
     },
     methods: {
+        toggleDarkMode() {
+            this.darkMode = !this.darkMode;
+            const theme = this.darkMode ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('theme', theme);
+        },
         cerrarSesion() {
             sessionStorage.removeItem('sesionUniversidad');
             window.location.href = '../index.html';

@@ -62,9 +62,19 @@ const alumnosAdmin = {
                         }
 
                         // 3. Eliminar usuario asociado (si existe)
+                        // A. Buscar por código
+                        let user = null;
                         if (alumno.codigo) {
-                            const user = await db.usuarios.where('codigo').equals(alumno.codigo).first();
-                            if (user) await db.usuarios.delete(user.id);
+                            user = await db.usuarios.where('codigo').equalsIgnoreCase(alumno.codigo).first();
+                        }
+                        // B. Si no, buscar por username
+                        if (!user && alumno.nombre) {
+                             user = await db.usuarios.where('username').equalsIgnoreCase(alumno.nombre).first();
+                        }
+                        
+                        // C. Si encontramos usuario, verificar que sea Alumno
+                        if (user && user.rol === 'Alumno') {
+                            await db.usuarios.delete(user.id);
                         }
 
                         // 4. Eliminar Alumno
@@ -84,6 +94,13 @@ const alumnosAdmin = {
             await db.alumnos.update(alumno.idAlumno, { estado: nuevo });
             alumno.estado = nuevo;
             alertify.success(`Alumno ${nuevo === 'activo' ? 'activado' : 'desactivado'}.`);
+        },
+        async generarToken(alumno) {
+            const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+            const token = `ALU-${randomPart}`;
+            await db.alumnos.update(alumno.idAlumno, { tokenAcceso: token });
+            alumno.tokenAcceso = token;
+            alertify.alert('Token Generado', `El token para <b>${alumno.nombre}</b> es:<br><h3 class="text-center text-primary mt-2">${token}</h3><p class="small text-muted text-center">Comparte este código con el alumno para que pueda registrarse.</p>`);
         },
         abrirEditar(alumno) {
             this.editando = { ...alumno, foto: alumno.foto || '' };
@@ -177,6 +194,7 @@ const alumnosAdmin = {
                                 <th>Carrera</th>
                                 <th>Correo</th>
                                 <th>Estado</th>
+                                <th>Token</th>
                                 <th class="text-end">Acciones</th>
                             </tr>
                         </thead>
@@ -197,6 +215,10 @@ const alumnosAdmin = {
                                         {{ estado(a) === 'activo' ? 'Activo' : 'Inactivo' }}
                                     </span>
                                 </td>
+                                <td>
+                                    <span v-if="a.tokenAcceso" class="badge bg-info text-dark font-monospace user-select-all" title="Click para seleccionar">{{ a.tokenAcceso }}</span>
+                                    <span v-else class="text-muted small">—</span>
+                                </td>
                                 <td class="text-end">
                                     <div class="d-flex gap-1 justify-content-end">
                                         <button class="btn btn-sm btn-outline-primary" @click="abrirEditar(a)" title="Editar">
@@ -211,6 +233,9 @@ const alumnosAdmin = {
                                         </button>
                                         <button class="btn btn-sm btn-outline-info" @click="verHistorial(a)" title="Ver historial">
                                             <i class="bi bi-clock-history"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-dark" @click="generarToken(a)" title="Generar Token de Acceso">
+                                            <i class="bi bi-key"></i>
                                         </button>
                                     </div>
                                 </td>

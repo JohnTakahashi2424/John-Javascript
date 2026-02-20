@@ -56,6 +56,18 @@ db.version(6).stores({
     evaluaciones: '++id, idInscripcion, idMateria, computo, estado',
     usuarios:     '++id, username, codigo, email, rol, estado'
 });
+db.version(7).stores({
+    alumnos:      'idAlumno, codigo, nombre, carrera, carreraId, foto, estado',
+    materias:     'idMateria, codigo, nombre, docenteId, carreraId, carrera, estado',
+    docentes:     'idDocente, codigo, nombre, especialidad, foto, estado',
+    matricula:    'idMatricula, codigo, nombreAlumno, idAlumno, periodoId, estado',
+    inscripciones:'idInscripcion, idMatricula, idMateria, idAlumno',
+    periodos:     '++idPeriodo, año, ciclo, estado',
+    carreras:     '++idCarrera, codigo, nombre, estado',
+    evaluaciones: '++id, idInscripcion, idMateria, computo, estado',
+    usuarios:     '++id, username, codigo, email, rol, estado',
+    solicitudes:  '++id, tipo, nombre, codigo, fecha, estado' 
+});
 
 // =============================================
 // APP VUE

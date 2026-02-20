@@ -33,6 +33,13 @@ const docentesAdmin = {
             this.cargando = false;
         },
         estado(d) { return d.estado || 'activo'; },
+        async generarToken(docente) {
+            const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+            const token = `DOC-${randomPart}`;
+            await db.docentes.update(docente.idDocente, { tokenAcceso: token });
+            docente.tokenAcceso = token;
+            alertify.alert('Token Generado', `El token para <b>${docente.nombre}</b> es:<br><h3 class="text-center text-primary mt-2">${token}</h3><p class="small text-muted text-center">Comparte este código con el docente para que pueda registrarse.</p>`);
+        },
         async eliminar(docente) {
             alertify.confirm(
                 'Eliminar Docente Definitivamente',
@@ -46,9 +53,19 @@ const docentesAdmin = {
                         }
                         
                         // 2. Eliminar usuario asociado (si existe)
+                        // A. Buscar por código
+                        let user = null;
                         if (docente.codigo) {
-                            const user = await db.usuarios.where('codigo').equals(docente.codigo).first();
-                            if (user) await db.usuarios.delete(user.id);
+                            user = await db.usuarios.where('codigo').equalsIgnoreCase(docente.codigo).first();
+                        }
+                        // B. Si no, buscar por username (asumiendo que coinciden o es similar)
+                        if (!user && docente.nombre) {
+                             user = await db.usuarios.where('username').equalsIgnoreCase(docente.nombre).first();
+                        }
+                        
+                        // C. Si encontramos usuario, verificar que sea Docente antes de borrar
+                        if (user && user.rol === 'Docente') {
+                            await db.usuarios.delete(user.id);
                         }
 
                         // 3. Eliminar docente
@@ -156,6 +173,7 @@ const docentesAdmin = {
                                 <th>Escalafón</th>
                                 <th>Email</th>
                                 <th>Estado</th>
+                                <th>Token</th>
                                 <th class="text-end">Acciones</th>
                             </tr>
                         </thead>
@@ -177,6 +195,10 @@ const docentesAdmin = {
                                         {{ estado(d)==='activo' ? 'Activo' : 'Inactivo' }}
                                     </span>
                                 </td>
+                                <td>
+                                    <span v-if="d.tokenAcceso" class="badge bg-info text-dark font-monospace user-select-all" title="Click para seleccionar">{{ d.tokenAcceso }}</span>
+                                    <span v-else class="text-muted small">—</span>
+                                </td>
                                 <td class="text-end">
                                     <div class="d-flex gap-1 justify-content-end">
                                         <button class="btn btn-sm btn-outline-primary" @click="abrirEditar(d)" title="Editar">
@@ -191,6 +213,9 @@ const docentesAdmin = {
                                         </button>
                                         <button class="btn btn-sm btn-outline-info" @click="verMaterias(d)" title="Ver materias">
                                             <i class="bi bi-book"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-dark" @click="generarToken(d)" title="Generar Token de Acceso">
+                                            <i class="bi bi-key"></i>
                                         </button>
                                     </div>
                                 </td>
