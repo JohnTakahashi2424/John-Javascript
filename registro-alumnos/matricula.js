@@ -67,7 +67,7 @@ const matricula = {
             this.matricula._periodoCiclo = periodo.ciclo + ' - ' + periodo.año;
         },
         async cargarPeriodos(){
-            this.periodosDisponibles = await db.periodos.where('estado').equals('activo').toArray();
+            this.periodosDisponibles = await db.periodos.where('estado').equals('abierto').toArray();
         },
         async cargarCarreras(){
             this.carrerasDisponibles = await db.carreras.toArray();
@@ -147,10 +147,10 @@ const matricula = {
             this.alumnosEncontrados = [];
             this.sinAlumnos = false;
         },
-        async mounted(){
-            await this.cargarPeriodos();
-            await this.cargarCarreras();
-        },
+    },
+    async mounted(){
+        await this.cargarPeriodos();
+        await this.cargarCarreras();
     },
     template: `
         <div>

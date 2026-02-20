@@ -126,7 +126,7 @@ const adminDashboard = {
                         // 3. Período activo (FK para matrículas)
                         let periodo = await db.periodos.filter(p => p.ciclo === '01' && String(p.año) === '2026').first();
                         if (!periodo) {
-                            const id = await db.periodos.add({ año:'2026', ciclo:'01', estado:'activo' });
+                            const id = await db.periodos.add({ año:'2026', ciclo:'01', estado:'abierto' });
                             periodo = await db.periodos.get(id);
                             log.push('✅ Período 01-2026 creado');
                         } else { log.push('⏭ Período ya existe'); }
