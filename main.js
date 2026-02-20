@@ -68,6 +68,59 @@ db.version(7).stores({
     usuarios:     '++id, username, codigo, email, rol, estado',
     solicitudes:  '++id, tipo, nombre, codigo, fecha, estado' 
 });
+// v8: Corrige idAlumno/idDocente/etc. a auto-increment (++), necesario para add() sin clave manual
+db.version(8).stores({
+    alumnos:      '++idAlumno, codigo, nombre, carrera, carreraId, foto, estado, tokenAcceso',
+    materias:     '++idMateria, codigo, nombre, docenteId, carreraId, carrera, estado',
+    docentes:     '++idDocente, codigo, nombre, especialidad, foto, estado, tokenAcceso',
+    matricula:    '++idMatricula, codigo, nombreAlumno, idAlumno, periodoId, estado',
+    inscripciones:'++idInscripcion, idMatricula, idMateria, idAlumno',
+    periodos:     '++idPeriodo, año, ciclo, estado',
+    carreras:     '++idCarrera, codigo, nombre, estado',
+    evaluaciones: '++id, idInscripcion, idMateria, computo, estado',
+    usuarios:     '++id, username, codigo, email, rol, estado',
+    solicitudes:  '++id, tipo, nombre, codigo, fecha, estado'
+});
+// v9: Schema relacional — todos los registros vinculados por FK numérico
+db.version(9).stores({
+    usuarios:     '++id, username, codigo, email, rol, estado',
+    alumnos:      '++idAlumno, codigo, nombre, usuarioId, carreraId, foto, estado, tokenAcceso',
+    docentes:     '++idDocente, codigo, nombre, usuarioId, especialidad, foto, estado, tokenAcceso',
+    carreras:     '++idCarrera, codigo, nombre, facultad, estado',
+    materias:     '++idMateria, codigo, nombre, docenteId, carreraId, estado',
+    periodos:     '++idPeriodo, año, ciclo, estado',
+    matricula:    '++idMatricula, codigo, alumnoId, periodoId, carreraId, estado',
+    inscripciones:'++idInscripcion, matriculaId, materiaId, estado',
+    evaluaciones: '++id, inscripcionId, estado',
+    solicitudes:  '++id, tipo, nombre, codigo, fecha, estado'
+});
+
+// =============================================
+// APERTURA SEGURA DE BD (auto-recover on schema error)
+// =============================================
+db.open().catch(err => {
+    const msg = err.message || '';
+    if (
+        msg.includes('primary key') ||
+        msg.includes('VersionError') ||
+        msg.includes('upgrade') ||
+        err.name === 'VersionError'
+    ) {
+        console.warn('[DB] Error de migración — borrando BD antigua y recargando...', err);
+        // Notificar al usuario antes de borrar
+        if (confirm(
+            '⚠️ La base de datos del sistema necesita actualizarse a una nueva versión.\n\n' +
+            'Los datos existentes no pueden migrarse automáticamente.\n' +
+            '¿Deseas limpiar la base de datos y continuar?\n\n' +
+            '(Después podrás restaurar datos de prueba desde el panel Admin)'
+        )) {
+            indexedDB.deleteDatabase('universidad');
+            location.reload();
+        }
+    } else {
+        console.error('[DB] Error inesperado al abrir la BD:', err);
+    }
+});
 
 // =============================================
 // APP VUE

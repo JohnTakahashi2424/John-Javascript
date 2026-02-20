@@ -64,10 +64,12 @@ const login = {
                 // Verificar estado del perfil específico (Alumno/Docente)
                 // Esto es necesario porque el Admin desactiva desde el panel de Alumnos/Docentes
                 if (usuario.rol === 'Alumno') {
-                    // Si tiene el rol Alumno, DEBE existir en la tabla alumnos
-                    const perfil = usuario.codigo 
-                        ? await db.alumnos.where('codigo').equalsIgnoreCase(usuario.codigo).first()
-                        : await db.alumnos.where('nombre').equalsIgnoreCase(usuario.username).first();
+                    // Buscar perfil primero por usuarioId (FK v9), fallback a codigo
+                    let perfil = usuario.id
+                        ? await db.alumnos.where('usuarioId').equals(usuario.id).first()
+                        : null;
+                    if (!perfil && usuario.codigo)
+                        perfil = await db.alumnos.where('codigo').equalsIgnoreCase(usuario.codigo).first();
 
                     if (!perfil) {
                         alertify.alert('Error de Cuenta', 'Tu usuario existe pero no se encontró tu expediente de Alumno. Posiblemente fue eliminado. Contacta al administrador.');
@@ -78,14 +80,16 @@ const login = {
                         return;
                     }
                 } else if (usuario.rol === 'Docente') {
-                    // Si tiene el rol Docente, DEBE existir en la tabla docentes
-                    const perfil = usuario.codigo
-                        ? await db.docentes.where('codigo').equalsIgnoreCase(usuario.codigo).first()
-                        : await db.docentes.where('nombre').equalsIgnoreCase(usuario.username).first();
+                    // Buscar perfil primero por usuarioId (FK v9), fallback a codigo
+                    let perfil = usuario.id
+                        ? await db.docentes.where('usuarioId').equals(usuario.id).first()
+                        : null;
+                    if (!perfil && usuario.codigo)
+                        perfil = await db.docentes.where('codigo').equalsIgnoreCase(usuario.codigo).first();
 
                     if (!perfil) {
-                         alertify.alert('Error de Cuenta', 'Tu usuario existe pero no se encontró tu perfil Docente. Posiblemente fue eliminado. Contacta al administrador.');
-                         return;
+                        alertify.alert('Error de Cuenta', 'Tu usuario existe pero no se encontró tu perfil Docente. Posiblemente fue eliminado. Contacta al administrador.');
+                        return;
                     }
                     if (perfil.estado === 'inactivo') {
                         alertify.error('Tu perfil docente ha sido desactivado. Contacta a recursos humanos.');
@@ -159,52 +163,58 @@ const login = {
                 }
 
                 const hashPwd = await this.hashPassword(password);
-                await db.usuarios.add({
+                // Añadir usuario y capturar su ID auto-generado (FK para alumnos/docentes)
+                const nuevoUsuarioId = await db.usuarios.add({
                     username, codigo: codigo || '', email: email || '',
                     hashPwd, rol, estado: 'activo'
                 });
 
-                // Crear perfil en la tabla correspondiente si no existe
+                // Crear o vincular perfil en la tabla correspondiente con usuarioId (FK)
                 if (rol === 'Alumno') {
                     // Validar formato de Token de Alumno
                     if (this.regForm.token && !this.regForm.token.startsWith('ALU-')) {
-                         alertify.error('El token ingresado no parece ser de Alumno (debe empezar con ALU-). Verifica tu rol.');
-                         this.cargando = false;
-                         return;
+                        await db.usuarios.delete(nuevoUsuarioId); // Revertir usuario
+                        alertify.error('El token ingresado no es de Alumno (debe empezar con ALU-). Verifica tu rol.');
+                        this.cargando = false;
+                        return;
                     }
 
                     let perfil = codigo
                         ? await db.alumnos.where('codigo').equalsIgnoreCase(codigo).first()
                         : null;
-                    
+
                     if (perfil) {
-                        // VINCULACIÓN: Si el perfil existe, EXIGIR Token
+                        // VINCULACIÓN: perfil ya existe — exigir Token correcto
                         if (!this.regForm.token || this.regForm.token !== perfil.tokenAcceso) {
+                            await db.usuarios.delete(nuevoUsuarioId); // Revertir usuario
                             alertify.error('Para vincularte a este Carnet/Código existente, necesitas el Token de Vinculación correcto provisto por el administrador.');
                             this.cargando = false;
                             return;
                         }
-                        // Si token correcto, limpiarlo para seguridad futura (opcional, o dejarlo)
-                        await db.alumnos.update(perfil.idAlumno, { tokenAcceso: null }); // Consumir token
+                        // Token correcto: vincular usuarioId y consumir token
+                        await db.alumnos.update(perfil.idAlumno, { usuarioId: nuevoUsuarioId, tokenAcceso: null });
                     } else {
-                        // CREACIÓN NUEVA (Auto-registro)
+                        // CREACIÓN NUEVA: crear perfil con usuarioId
                         await db.alumnos.add({
                             codigo:    codigo || '',
                             nombre:    username,
                             email:     email  || '',
-                            carrera:   '',
+                            usuarioId: nuevoUsuarioId,
                             carreraId: '',
+                            foto:      '',
                             telefono:  '',
                             direccion: '',
-                            estado:    'activo'
+                            estado:    'activo',
+                            tokenAcceso: ''
                         });
                     }
                 } else if (rol === 'Docente') {
                     // Validar formato de Token de Docente
                     if (this.regForm.token && !this.regForm.token.startsWith('DOC-')) {
-                         alertify.error('El token ingresado no parece ser de Docente (debe empezar con DOC-). Verifica tu rol.');
-                         this.cargando = false;
-                         return;
+                        await db.usuarios.delete(nuevoUsuarioId); // Revertir usuario
+                        alertify.error('El token ingresado no es de Docente (debe empezar con DOC-). Verifica tu rol.');
+                        this.cargando = false;
+                        return;
                     }
 
                     let perfil = codigo
@@ -214,20 +224,25 @@ const login = {
                     if (perfil) {
                         // VINCULACIÓN
                         if (!this.regForm.token || this.regForm.token !== perfil.tokenAcceso) {
+                            await db.usuarios.delete(nuevoUsuarioId); // Revertir usuario
                             alertify.error('Para vincularte a este Código Docente existente, necesitas el Token de Vinculación correcto provisto por el administrador.');
                             this.cargando = false;
                             return;
                         }
-                        await db.docentes.update(perfil.idDocente, { tokenAcceso: null });
+                        // Token correcto: vincular usuarioId y consumir token
+                        await db.docentes.update(perfil.idDocente, { usuarioId: nuevoUsuarioId, tokenAcceso: null });
                     } else {
-                        // CREACIÓN NUEVA
+                        // CREACIÓN NUEVA: crear perfil con usuarioId
                         await db.docentes.add({
                             codigo:       codigo || '',
                             nombre:       username,
                             email:        email  || '',
+                            usuarioId:    nuevoUsuarioId,
                             especialidad: '',
+                            foto:         '',
                             telefono:     '',
-                            estado:       'activo'
+                            estado:       'activo',
+                            tokenAcceso:  ''
                         });
                     }
                 }
@@ -249,10 +264,20 @@ const login = {
                 alertify.error('Ingresa tu Nombre de Usuario y Código para solicitar el token.');
                 return;
             }
+
+            // Validar que el código corresponde al rol seleccionado
+            if (rol === 'Alumno' && !codigo.toUpperCase().startsWith('A-')) {
+                alertify.error('Los códigos de Alumno deben empezar con A- (ej. A-001). Verifica tu rol o tu código.');
+                return;
+            }
+            if (rol === 'Docente' && !codigo.toUpperCase().startsWith('D-')) {
+                alertify.error('Los códigos de Docente deben empezar con D- (ej. D-001). Verifica tu rol o tu código.');
+                return;
+            }
+
             try {
                 // Verificar si ya existe solicitud pendiente
                 const existe = await db.solicitudes
-                    .where({ codigo: codigo, nombre: username, estado: 'pendiente' }) // Dexie no soporta compound index query easily like this without defining it, so better filter
                     .filter(s => s.codigo === codigo && s.nombre === username && s.estado === 'pendiente')
                     .first();
                 
@@ -417,7 +442,7 @@ const login = {
                             </div>
 
                             <div class="row g-2 mb-3">
-                                <div class="col-6">
+                                <div class="col-6" v-if="regForm.rol !== 'Admin'">
                                     <label class="form-label fw-semibold small text-uppercase text-muted">
                                         Código <span class="text-muted fw-normal">(opcional)</span>
                                     </label>
@@ -426,7 +451,7 @@ const login = {
                                         <input v-model="regForm.codigo" type="text" class="form-control border-start-0" placeholder="Ej. A-001">
                                     </div>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-6" v-if="regForm.rol !== 'Admin'">
                                     <label class="form-label fw-semibold small text-uppercase text-muted">
                                         Token de Vinculación
                                     </label>

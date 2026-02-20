@@ -23,6 +23,42 @@ db.version(7).stores({
     usuarios: '++id, username, codigo, email, rol, estado',
     solicitudes: '++id, tipo, nombre, codigo, fecha, estado'
 });
+// v8: Versión definitiva — garantiza ++ auto-increment en todos los archivos del proyecto
+db.version(8).stores({
+    alumnos: '++idAlumno, codigo, nombre, carrera, carreraId, foto, estado, tokenAcceso',
+    materias: '++idMateria, codigo, nombre, docenteId, carreraId, carrera, estado',
+    docentes: '++idDocente, codigo, nombre, especialidad, foto, estado, tokenAcceso',
+    matricula: '++idMatricula, codigo, nombreAlumno, idAlumno, periodoId, estado',
+    inscripciones: '++idInscripcion, idMatricula, idMateria, idAlumno',
+    periodos: '++idPeriodo, año, ciclo, estado',
+    carreras: '++idCarrera, codigo, nombre, estado',
+    evaluaciones: '++id, idInscripcion, idMateria, computo, estado',
+    usuarios: '++id, username, codigo, email, rol, estado',
+    solicitudes: '++id, tipo, nombre, codigo, fecha, estado'
+});
+// v9: Schema relacional — todos los registros vinculados por FK numérico
+db.version(9).stores({
+    usuarios:     '++id, username, codigo, email, rol, estado',
+    alumnos:      '++idAlumno, codigo, nombre, usuarioId, carreraId, foto, estado, tokenAcceso',
+    docentes:     '++idDocente, codigo, nombre, usuarioId, especialidad, foto, estado, tokenAcceso',
+    carreras:     '++idCarrera, codigo, nombre, facultad, estado',
+    materias:     '++idMateria, codigo, nombre, docenteId, carreraId, estado',
+    periodos:     '++idPeriodo, año, ciclo, estado',
+    matricula:    '++idMatricula, codigo, alumnoId, periodoId, carreraId, estado',
+    inscripciones:'++idInscripcion, matriculaId, materiaId, estado',
+    evaluaciones: '++id, inscripcionId, estado',
+    solicitudes:  '++id, tipo, nombre, codigo, fecha, estado'
+});
+
+// Auto-recovery: si la BD no puede migrar (cambio de PK), borrar y recargar
+db.open().catch(err => {
+    if ((err.message || '').includes('primary key') || err.name === 'VersionError') {
+        if (confirm('⚠️ La base de datos necesita actualizarse.\n¿Borrar datos antiguos y continuar?')) {
+            indexedDB.deleteDatabase('universidad');
+            location.reload();
+        }
+    } else { console.error('[DB Admin] Error:', err); }
+});
 
 const adminApp = Vue.createApp({
     data() {
@@ -87,26 +123,41 @@ const adminApp = Vue.createApp({
                 const usuarios = await db.usuarios.toArray();
                 for (const u of usuarios) {
                     if (u.rol === 'Alumno') {
-                        const existePerfil = u.codigo
-                            ? await db.alumnos.where('codigo').equalsIgnoreCase(u.codigo).first()
-                            : await db.alumnos.filter(a => (a.nombre||'').toLowerCase() === (u.username||'').toLowerCase()).first();
-                        if (!existePerfil) {
+                        // Buscar por usuarioId (FK v9) primero, fallback a codigo
+                        let perfil = u.id
+                            ? await db.alumnos.where('usuarioId').equals(u.id).first()
+                            : null;
+                        if (!perfil && u.codigo)
+                            perfil = await db.alumnos.where('codigo').equalsIgnoreCase(u.codigo).first();
+
+                        if (!perfil) {
+                            // Crear perfil faltante y vincularlo
                             await db.alumnos.add({
                                 codigo: u.codigo || '', nombre: u.username,
-                                email: u.email || '', carrera: '', carreraId: '',
-                                telefono: '', direccion: '', estado: 'activo'
+                                email: u.email || '', carreraId: '', _carreraNombre: '',
+                                foto: '', telefono: '', direccion: '',
+                                usuarioId: u.id, estado: 'activo', tokenAcceso: ''
                             });
+                        } else if (!perfil.usuarioId) {
+                            // Perfil existe pero sin FK — sellar el vínculo
+                            await db.alumnos.update(perfil.idAlumno, { usuarioId: u.id });
                         }
                     } else if (u.rol === 'Docente') {
-                        const existePerfil = u.codigo
-                            ? await db.docentes.where('codigo').equalsIgnoreCase(u.codigo).first()
-                            : await db.docentes.filter(d => (d.nombre||'').toLowerCase() === (u.username||'').toLowerCase()).first();
-                        if (!existePerfil) {
+                        let perfil = u.id
+                            ? await db.docentes.where('usuarioId').equals(u.id).first()
+                            : null;
+                        if (!perfil && u.codigo)
+                            perfil = await db.docentes.where('codigo').equalsIgnoreCase(u.codigo).first();
+
+                        if (!perfil) {
                             await db.docentes.add({
                                 codigo: u.codigo || '', nombre: u.username,
                                 email: u.email || '', especialidad: '',
-                                telefono: '', estado: 'activo'
+                                foto: '', telefono: '',
+                                usuarioId: u.id, estado: 'activo', tokenAcceso: ''
                             });
+                        } else if (!perfil.usuarioId) {
+                            await db.docentes.update(perfil.idDocente, { usuarioId: u.id });
                         }
                     }
                 }

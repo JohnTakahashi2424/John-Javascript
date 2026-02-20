@@ -10,6 +10,21 @@ db.version(3).stores({ alumnos:'idAlumno,codigo,nombre', materias:'idMateria,cod
 db.version(4).stores({ alumnos:'idAlumno,codigo,nombre,carrera,estado', materias:'idMateria,codigo,nombre,docenteId,estado', docentes:'idDocente,codigo,nombre,especialidad,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', usuarios:'++id,username,codigo,email,rol,estado' });
 db.version(5).stores({ alumnos:'idAlumno,codigo,nombre,carrera,carreraId,estado', materias:'idMateria,codigo,nombre,docenteId,carreraId,carrera,estado', docentes:'idDocente,codigo,nombre,especialidad,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', carreras:'++idCarrera,codigo,nombre,estado', evaluaciones:'++id,idInscripcion,idMateria,computo,estado', usuarios:'++id,username,codigo,email,rol,estado' });
 db.version(6).stores({ alumnos:'idAlumno,codigo,nombre,carrera,carreraId,foto,estado', materias:'idMateria,codigo,nombre,docenteId,carreraId,carrera,estado', docentes:'idDocente,codigo,nombre,especialidad,foto,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', carreras:'++idCarrera,codigo,nombre,estado', evaluaciones:'++id,idInscripcion,idMateria,computo,estado', usuarios:'++id,username,codigo,email,rol,estado' });
+db.version(7).stores({ alumnos:'idAlumno,codigo,nombre,carrera,carreraId,foto,estado', materias:'idMateria,codigo,nombre,docenteId,carreraId,carrera,estado', docentes:'idDocente,codigo,nombre,especialidad,foto,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', carreras:'++idCarrera,codigo,nombre,estado', evaluaciones:'++id,idInscripcion,idMateria,computo,estado', usuarios:'++id,username,codigo,email,rol,estado', solicitudes:'++id,tipo,nombre,codigo,fecha,estado' });
+// v8: Corrige idAlumno/idDocente/etc. a auto-increment (++), necesario para add() sin clave manual
+db.version(8).stores({ alumnos:'++idAlumno,codigo,nombre,carrera,carreraId,foto,estado,tokenAcceso', materias:'++idMateria,codigo,nombre,docenteId,carreraId,carrera,estado', docentes:'++idDocente,codigo,nombre,especialidad,foto,estado,tokenAcceso', matricula:'++idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'++idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', carreras:'++idCarrera,codigo,nombre,estado', evaluaciones:'++id,idInscripcion,idMateria,computo,estado', usuarios:'++id,username,codigo,email,rol,estado', solicitudes:'++id,tipo,nombre,codigo,fecha,estado' });
+// v9: Schema relacional — todos los registros vinculados por FK numérico
+db.version(9).stores({ usuarios:'++id,username,codigo,email,rol,estado', alumnos:'++idAlumno,codigo,nombre,usuarioId,carreraId,foto,estado,tokenAcceso', docentes:'++idDocente,codigo,nombre,usuarioId,especialidad,foto,estado,tokenAcceso', carreras:'++idCarrera,codigo,nombre,facultad,estado', materias:'++idMateria,codigo,nombre,docenteId,carreraId,estado', periodos:'++idPeriodo,año,ciclo,estado', matricula:'++idMatricula,codigo,alumnoId,periodoId,carreraId,estado', inscripciones:'++idInscripcion,matriculaId,materiaId,estado', evaluaciones:'++id,inscripcionId,estado', solicitudes:'++id,tipo,nombre,codigo,fecha,estado' });
+
+// Auto-recovery: si la BD no puede migrar (cambio de PK), borrar y recargar
+db.open().catch(err => {
+    if ((err.message || '').includes('primary key') || err.name === 'VersionError') {
+        if (confirm('⚠️ La base de datos necesita actualizarse.\n¿Borrar datos antiguos y continuar?')) {
+            indexedDB.deleteDatabase('universidad');
+            location.reload();
+        }
+    } else { console.error('[DB Docente] Error:', err); }
+});
 
 // Perfil del docente actual (disponible globalmente para todos los componentes)
 window.docenteData = null;
