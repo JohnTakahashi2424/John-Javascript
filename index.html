@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
 </head>
-<body class="bg-light">
+<body>
     <div id="app">
 
         <!-- ═══ PANTALLA LOGIN (sin sesión) ═══ -->
@@ -20,37 +20,40 @@
         <template v-else>
 
             <!-- NAVBAR SUPERIOR -->
-            <nav class="navbar navbar-dark px-3" style="background-color: #1a3a5c; height: 56px;">
+            <nav class="navbar border-bottom bg-body-tertiary px-3 shadow-sm" style="height: 56px;">
                 <div class="container-fluid px-0">
                     <div class="navbar-brand d-flex align-items-center gap-2 mb-0" style="padding: 0;">
-                        <i class="bi bi-mortarboard-fill fs-4 text-white"></i>
+                        <i class="bi bi-mortarboard-fill fs-4 text-primary"></i>
                         <span>
-                            <span class="fw-bold" style="font-size: 1.1rem; line-height: 1.2;">SISTEMA ACADÉMICO</span>
-                            <small class="d-block text-white-50" style="font-size: 0.7rem; letter-spacing: 1px; line-height: 1;">GESTIÓN UNIVERSITARIA</small>
+                            <span class="fw-bold text-body" style="font-size: 1.1rem; line-height: 1.2;">SISTEMA ACADÉMICO</span>
+                            <small class="d-block text-body-secondary" style="font-size: 0.7rem; letter-spacing: 1px; line-height: 1;">GESTIÓN UNIVERSITARIA</small>
                         </span>
                     </div>
 
                     <!-- Usuario logueado -->
                     <div class="d-flex align-items-center gap-3">
-                        <span class="text-white-50 small d-none d-md-flex align-items-center gap-1">
+                        <button class="btn btn-sm btn-outline-secondary border-0" @click="toggleDarkMode" title="Alternar Modo Oscuro">
+                            <i :class="darkMode ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill'"></i>
+                        </button>
+                        <span class="text-body-secondary small d-none d-md-flex align-items-center gap-1">
                             <i class="bi bi-calendar3 me-1"></i>Ciclo 2026
                         </span>
                         <span class="d-flex align-items-center gap-2">
-                            <span :class="sesion.rol === 'Docente' ? 'badge bg-success' : 'badge bg-primary'"
-                                  class="d-flex align-items-center gap-1">
+                            <span :class="sesion.rol === 'Docente' ? 'badge bg-success bg-opacity-10 text-success border border-success' : 'badge bg-primary bg-opacity-10 text-primary border border-primary'"
+                                  class="d-flex align-items-center gap-1 px-2 py-1">
                                 <i :class="sesion.rol === 'Docente' ? 'bi bi-person-workspace' : 'bi bi-person-badge'"></i>
                                 {{ sesion.rol }}
                             </span>
-                            <span class="text-white small fw-semibold d-flex align-items-center">
-                                <img v-if="sesion.foto" :src="sesion.foto" class="rounded-circle me-2 border border-light" style="width:26px;height:26px;object-fit:cover;">
-                                <i v-else class="bi bi-person-circle me-1"></i>
+                            <span class="text-body small fw-semibold d-flex align-items-center">
+                                <img v-if="sesion.foto" :src="sesion.foto" class="rounded-circle me-2 border border-secondary-subtle" style="width:26px;height:26px;object-fit:cover;">
+                                <i v-else class="bi bi-person-circle me-1 text-primary"></i>
                                 {{ sesion.username }}
                             </span>
                         </span>
                         <button @click="cerrarSesion"
-                                class="btn btn-sm btn-outline-light d-flex align-items-center gap-1">
+                                class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 px-3">
                             <i class="bi bi-box-arrow-right"></i>
-                            <span class="d-none d-md-inline">Cerrar sesión</span>
+                            <span class="d-none d-md-inline">Salir</span>
                         </button>
                     </div>
                 </div>
@@ -60,56 +63,50 @@
                 <div class="row">
 
                     <!-- SIDEBAR -->
-                    <nav class="col-md-2 col-lg-2 d-md-block bg-white border-end shadow-sm min-vh-100 pt-3">
+                    <nav class="col-md-2 col-lg-2 d-md-block bg-body-tertiary border-end min-vh-100 pt-3">
                         <div class="px-2 mb-3">
-                            <p class="text-uppercase text-muted fw-semibold" style="font-size: 0.7rem; letter-spacing: 1px;">Módulos</p>
+                            <p class="text-uppercase text-body-secondary fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">Módulos</p>
                         </div>
                         <ul class="nav flex-column gap-1 px-2">
                             <li class="nav-item">
-                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2"
-                                   :class="forms.alumnos.mostrar ? 'active text-white' : 'text-secondary'"
-                                   :style="forms.alumnos.mostrar ? 'background-color:#1a3a5c;' : ''"
+                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2 transition-all"
+                                   :class="forms.alumnos.mostrar ? 'active bg-primary bg-opacity-10 text-primary fw-bold border border-primary border-opacity-25' : 'text-body-secondary'"
                                    href="#" @click.prevent="abrirVentana('alumnos')">
                                     <i class="bi bi-person-badge"></i> Alumnos
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2"
-                                   :class="forms.materias.mostrar ? 'active text-white' : 'text-secondary'"
-                                   :style="forms.materias.mostrar ? 'background-color:#1a3a5c;' : ''"
+                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2 transition-all"
+                                   :class="forms.materias.mostrar ? 'active bg-primary bg-opacity-10 text-primary fw-bold border border-primary border-opacity-25' : 'text-body-secondary'"
                                    href="#" @click.prevent="abrirVentana('materias')">
                                     <i class="bi bi-book"></i> Materias
                                 </a>
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2"
-                                   :class="forms.matricula.mostrar ? 'active text-white' : 'text-secondary'"
-                                   :style="forms.matricula.mostrar ? 'background-color:#1a3a5c;' : ''"
+                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2 transition-all"
+                                   :class="forms.matricula.mostrar ? 'active bg-primary bg-opacity-10 text-primary fw-bold border border-primary border-opacity-25' : 'text-body-secondary'"
                                    href="#" @click.prevent="abrirVentana('matricula')">
                                     <i class="bi bi-card-checklist"></i> Matrícula
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2"
-                                   :class="forms.inscripciones.mostrar ? 'active text-white' : 'text-secondary'"
-                                   :style="forms.inscripciones.mostrar ? 'background-color:#1a3a5c;' : ''"
+                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2 transition-all"
+                                   :class="forms.inscripciones.mostrar ? 'active bg-primary bg-opacity-10 text-primary fw-bold border border-primary border-opacity-25' : 'text-body-secondary'"
                                    href="#" @click.prevent="abrirVentana('inscripciones')">
                                     <i class="bi bi-pencil-square"></i> Inscripciones
                                 </a>
                             </li>
                             <li class="nav-item" v-if="sesion.rol === 'Alumno'">
-                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2"
-                                   :class="forms.mis_notas.mostrar ? 'active text-white' : 'text-secondary'"
-                                   :style="forms.mis_notas.mostrar ? 'background-color:#1a3a5c;' : ''"
+                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2 transition-all"
+                                   :class="forms.mis_notas.mostrar ? 'active bg-primary bg-opacity-10 text-primary fw-bold border border-primary border-opacity-25' : 'text-body-secondary'"
                                    href="#" @click.prevent="abrirVentana('mis_notas')">
                                     <i class="bi bi-journal-check"></i> Mis Notas
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2"
-                                   :class="forms.mi_perfil.mostrar ? 'active text-white' : 'text-secondary'"
-                                   :style="forms.mi_perfil.mostrar ? 'background-color:#1a3a5c;' : ''"
+                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2 transition-all"
+                                   :class="forms.mi_perfil.mostrar ? 'active bg-primary bg-opacity-10 text-primary fw-bold border border-primary border-opacity-25' : 'text-body-secondary'"
                                    href="#" @click.prevent="abrirVentana('mi_perfil')">
                                     <i class="bi bi-person-circle"></i> Mi Perfil
                                 </a>
@@ -122,8 +119,8 @@
 
                         <!-- Pantalla de bienvenida -->
                         <div v-if="!Object.values(forms).some(f => f.mostrar)" class="text-center mt-5 pt-4">
-                            <i class="bi bi-mortarboard text-secondary" style="font-size: 4rem; opacity: 0.3;"></i>
-                            <h5 class="text-muted mt-3 fw-normal">Bienvenido, <strong>{{ sesion.username }}</strong>. Seleccione un módulo del menú lateral para comenzar.</h5>
+                            <i class="bi bi-mortarboard text-body-secondary" style="font-size: 4rem; opacity: 0.3;"></i>
+                            <h5 class="text-body-secondary mt-3 fw-normal">Bienvenido, <strong class="text-body">{{ sesion.username }}</strong>. Seleccione un módulo del menú lateral para comenzar.</h5>
                         </div>
 
                         <alumnos @buscar='buscar("busqueda_alumnos","obtenerAlumnos")' :forms="forms" ref="alumnos" v-show="forms.alumnos.mostrar"></alumnos>
@@ -139,7 +136,6 @@
                         <inscripciones @buscar='buscar("busqueda_inscripciones","obtenerInscripciones")' :forms="forms" ref="inscripciones" v-show="forms.inscripciones.mostrar"></inscripciones>
                         <busqueda_inscripciones @modificar='modificar("inscripciones","modificarInscripcion", $event)' ref="busqueda_inscripciones" v-show="forms.busqueda_inscripciones.mostrar"></busqueda_inscripciones>
 
-                        <mis_notas ref="mis_notas" v-show="forms.mis_notas.mostrar"></mis_notas>
                         <mis_notas ref="mis_notas" v-show="forms.mis_notas.mostrar"></mis_notas>
                         <mi_perfil ref="mi_perfil" v-if="forms.mi_perfil.mostrar" @foto-cambiada="actualizarFotoSesion"></mi_perfil>
 

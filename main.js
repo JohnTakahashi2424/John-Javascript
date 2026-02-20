@@ -128,6 +128,7 @@ db.open().catch(err => {
 const app = Vue.createApp({
     data(){
         return {
+            darkMode: false,
             sesion: {
                 autenticado: false,
                 username: '',
@@ -149,6 +150,15 @@ const app = Vue.createApp({
         };
     },
     async created(){
+        // Cargar preferencia de Dark Mode
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            this.darkMode = true;
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+        } else {
+            document.documentElement.setAttribute('data-bs-theme', 'light');
+        }
+
         // Restaurar sesión desde sessionStorage al recargar la página
         try {
             const stored = sessionStorage.getItem('sesionUniversidad');
@@ -227,6 +237,12 @@ const app = Vue.createApp({
         },
         actualizarFotoSesion(foto) {
             this.sesion.foto = foto;
+        },
+        toggleDarkMode() {
+            this.darkMode = !this.darkMode;
+            const theme = this.darkMode ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('theme', theme);
         }
     }
 });

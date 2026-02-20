@@ -155,8 +155,8 @@ const notasDocente = {
     template: `
         <div>
             <div class="d-flex align-items-center mb-3 border-bottom pb-2">
-                <i class="bi bi-journal-text me-2 fs-5 text-secondary"></i>
-                <h5 class="mb-0 fw-semibold">Ingreso de Notas</h5>
+                <i class="bi bi-journal-text me-2 fs-5 text-body-secondary"></i>
+                <h5 class="mb-0 fw-semibold text-body">Ingreso de Notas</h5>
             </div>
 
             <div v-if="!window?.docenteData" class="alert alert-warning">
@@ -166,8 +166,8 @@ const notasDocente = {
                 <!-- Selección de materia y cómputo -->
                 <div class="row g-3 mb-4">
                     <div class="col-md-5">
-                        <label class="form-label small fw-semibold text-muted text-uppercase">Materia</label>
-                        <select v-model="materiaSelId" class="form-select" @change="cargarFilas">
+                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Materia</label>
+                        <select v-model="materiaSelId" class="form-select bg-transparent" @change="cargarFilas">
                             <option value="">— Selecciona una materia —</option>
                             <option v-for="m in misMateriasOpts" :key="m.idMateria" :value="String(m.idMateria)">
                                 {{ m.nombre }} ({{ m.codigo }})
@@ -175,11 +175,11 @@ const notasDocente = {
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label small fw-semibold text-muted text-uppercase">Cómputo</label>
+                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Cómputo</label>
                         <div class="d-flex gap-2">
                             <button v-for="c in [1,2,3]" :key="c"
-                                    class="btn flex-fill"
-                                    :class="computoSel===c ? 'btn-dark' : 'btn-outline-secondary'"
+                                    class="btn flex-fill fw-bold"
+                                    :class="computoSel===c ? 'btn-primary' : 'btn-outline-secondary'"
                                     @click="computoSel=c; cargarFilas()">
                                 Cómputo {{ c }}
                             </button>
@@ -199,82 +199,82 @@ const notasDocente = {
                 </div>
 
                 <!-- Info de ponderación -->
-                <div class="alert alert-light border d-flex gap-3 align-items-center mb-3 py-2 small">
-                    <i class="bi bi-calculator text-secondary fs-5"></i>
-                    <span>
-                        <strong>Fórmula:</strong> Nota Cómputo = Lab.1 × 30% + Lab.2 × 30% + Parcial × 40%
+                <div class="alert bg-body-tertiary border d-flex gap-3 align-items-center mb-3 py-2 small">
+                    <i class="bi bi-calculator text-body-secondary fs-5"></i>
+                    <span class="text-body-secondary">
+                        <strong class="text-body">Fórmula:</strong> Nota Cómputo = Lab.1 × 30% + Lab.2 × 30% + Parcial × 40%
                         &nbsp;|&nbsp; Nota Final = Prom. de 3 cómputos
-                        &nbsp;|&nbsp; Aprobado ≥ <strong>6.0</strong>
+                        &nbsp;|&nbsp; Aprobado ≥ <strong class="text-body">6.0</strong>
                     </span>
                 </div>
 
                 <!-- Stats del grupo -->
                 <div v-if="filas.length>0" class="row g-2 mb-3">
                     <div class="col-4">
-                        <div class="card border-0 shadow-sm text-center py-2">
-                            <div class="fw-bold" :class="promedioGrupo >= 6 ? 'text-success' : 'text-warning'">
+                        <div class="card border-0 shadow-sm bg-body-tertiary text-center py-2">
+                            <div class="fw-bold fs-5" :class="promedioGrupo >= 6 ? 'text-success' : 'text-warning'">
                                 {{ promedioGrupo || '—' }}
                             </div>
-                            <div class="text-muted" style="font-size:.7rem;">Promedio grupo</div>
+                            <div class="text-body-secondary" style="font-size:.7rem;">Promedio grupo</div>
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="card border-0 shadow-sm text-center py-2">
-                            <div class="fw-bold text-success">{{ totalAprobados }}</div>
-                            <div class="text-muted" style="font-size:.7rem;">Aprobados</div>
+                        <div class="card border-0 shadow-sm bg-body-tertiary text-center py-2">
+                            <div class="fw-bold fs-5 text-success">{{ totalAprobados }}</div>
+                            <div class="text-body-secondary" style="font-size:.7rem;">Aprobados</div>
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="card border-0 shadow-sm text-center py-2">
-                            <div class="fw-bold text-danger">{{ totalReprobados }}</div>
-                            <div class="text-muted" style="font-size:.7rem;">Reprobados</div>
+                        <div class="card border-0 shadow-sm bg-body-tertiary text-center py-2">
+                            <div class="fw-bold fs-5 text-danger">{{ totalReprobados }}</div>
+                            <div class="text-body-secondary" style="font-size:.7rem;">Reprobados</div>
                         </div>
                     </div>
                 </div>
 
-                <div v-if="!materiaSelId" class="text-center text-muted py-5">
+                <div v-if="!materiaSelId" class="text-center text-body-secondary py-5">
                     <i class="bi bi-arrow-up-circle fs-1 opacity-25"></i>
                     <p class="mt-2">Selecciona una materia y un cómputo para comenzar.</p>
                 </div>
                 <div v-else-if="cargando" class="text-center py-4"><div class="spinner-border text-secondary"></div></div>
-                <div v-else-if="filas.length===0" class="text-center py-5 text-muted">
+                <div v-else-if="filas.length===0" class="text-center py-5 text-body-secondary">
                     <i class="bi bi-person-x fs-1 opacity-25"></i>
                     <p class="mt-2">No hay alumnos inscritos en esta materia.</p>
                 </div>
-
-                <div v-else class="card border-0 shadow-sm">
+ 
+                <div v-else class="card border-0 shadow-sm bg-body-tertiary">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0 small">
-                            <thead class="table-light">
+                            <thead class="bg-body-secondary">
                                 <tr>
-                                    <th>Alumno</th>
-                                    <th>Carrera</th>
-                                    <th style="width:100px;">
+                                    <th class="text-body-secondary">Alumno</th>
+                                    <th class="text-body-secondary">Carrera</th>
+                                    <th style="width:100px;" class="text-body-secondary">
                                         Lab. 1
-                                        <small class="d-block text-muted fw-normal">30%</small>
+                                        <small class="d-block text-body-secondary fw-normal">30%</small>
                                     </th>
-                                    <th style="width:100px;">
+                                    <th style="width:100px;" class="text-body-secondary">
                                         Lab. 2
-                                        <small class="d-block text-muted fw-normal">30%</small>
+                                        <small class="d-block text-body-secondary fw-normal">30%</small>
                                     </th>
-                                    <th style="width:100px;">
+                                    <th style="width:100px;" class="text-body-secondary">
                                         Parcial
-                                        <small class="d-block text-muted fw-normal">40%</small>
+                                        <small class="d-block text-body-secondary fw-normal">40%</small>
                                     </th>
-                                    <th class="text-center">Nota Cómputo</th>
-                                    <th>Observaciones</th>
+                                    <th class="text-center text-body-secondary">Nota Cómputo</th>
+                                    <th class="text-body-secondary">Observaciones</th>
                                     <th></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr v-for="fila in filas" :key="fila.inscripcion.idInscripcion"
-                                    :class="fila.ev.estado==='cerrado'?'table-light':''">
-                                    <td class="fw-semibold">{{ fila.nombre }}</td>
-                                    <td class="text-muted">{{ fila.carrera }}</td>
+                                    :class="fila.ev.estado==='cerrado'?'bg-body-secondary bg-opacity-50 text-body-secondary':''">
+                                    <td class="fw-bold text-body">{{ fila.nombre }}</td>
+                                    <td class="text-body-secondary small">{{ fila.carrera }}</td>
                                     <td>
                                         <input v-if="estadoComputo==='abierto'"
                                                v-model="fila.ev.lab1" type="number" min="0" max="10" step="0.1"
-                                               class="form-control form-control-sm" style="width:80px;"
+                                               class="form-control form-control-sm bg-transparent" style="width:80px;"
                                                @input="onNotaChange(fila)"
                                                @blur="guardarNota(fila)">
                                         <span v-else>{{ fila.ev.lab1 ?? '—' }}</span>
@@ -282,7 +282,7 @@ const notasDocente = {
                                     <td>
                                         <input v-if="estadoComputo==='abierto'"
                                                v-model="fila.ev.lab2" type="number" min="0" max="10" step="0.1"
-                                               class="form-control form-control-sm" style="width:80px;"
+                                               class="form-control form-control-sm bg-transparent" style="width:80px;"
                                                @input="onNotaChange(fila)"
                                                @blur="guardarNota(fila)">
                                         <span v-else>{{ fila.ev.lab2 ?? '—' }}</span>
@@ -290,25 +290,25 @@ const notasDocente = {
                                     <td>
                                         <input v-if="estadoComputo==='abierto'"
                                                v-model="fila.ev.examen" type="number" min="0" max="10" step="0.1"
-                                               class="form-control form-control-sm" style="width:80px;"
+                                               class="form-control form-control-sm bg-transparent" style="width:80px;"
                                                @input="onNotaChange(fila)"
                                                @blur="guardarNota(fila)">
                                         <span v-else>{{ fila.ev.examen ?? '—' }}</span>
                                     </td>
                                     <td class="text-center">
-                                        <span v-if="fila.ev.notaComputo!=null" class="badge fs-6"
+                                        <span v-if="fila.ev.notaComputo!=null" class="badge fs-6 shadow-sm"
                                               :class="parseFloat(fila.ev.notaComputo)>=6?'bg-success':'bg-danger'">
                                             {{ fila.ev.notaComputo }}
                                         </span>
-                                        <span v-else class="text-muted">—</span>
+                                        <span v-else class="text-body-secondary opacity-50">—</span>
                                     </td>
                                     <td>
                                         <input v-if="estadoComputo==='abierto'"
                                                v-model="fila.ev.observaciones" type="text"
-                                               class="form-control form-control-sm"
-                                               placeholder="Observaciones..."
+                                               class="form-control form-control-sm bg-transparent"
+                                               placeholder="Opcional..."
                                                @blur="guardarNota(fila)">
-                                        <span v-else class="text-muted">{{ fila.ev.observaciones || '—' }}</span>
+                                        <span v-else class="text-body-secondary small">{{ fila.ev.observaciones || '—' }}</span>
                                     </td>
                                     <td>
                                         <i v-if="fila.ev.estado==='cerrado'" class="bi bi-lock-fill text-warning" title="Cómputo cerrado"></i>
@@ -320,10 +320,10 @@ const notasDocente = {
                             </tbody>
                         </table>
                     </div>
-                    <div class="card-footer bg-white small text-muted">
-                        {{ filas.length }} alumnos
-                        <span v-if="estadoComputo==='abierto'"> — Auto-guardado al salir del campo. </span>
-                        <span v-else class="text-danger fw-semibold"> — Cómputo {{ computoSel }} CERRADO. No se pueden editar las notas.</span>
+                    <div class="card-footer bg-transparent border-top-0 small text-body-secondary">
+                        <i class="bi bi-info-circle me-1"></i>{{ filas.length }} alumnos inscritos
+                        <span v-if="estadoComputo==='abierto'"> — Auto-guardado inteligente activado. </span>
+                        <span v-else class="badge bg-danger ms-2"> <i class="bi bi-lock-fill"></i> CÓMPUTO CERRADO </span>
                     </div>
                 </div>
             </div>

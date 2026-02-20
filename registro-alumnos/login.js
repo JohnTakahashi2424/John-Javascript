@@ -310,34 +310,32 @@ const login = {
         }
     },
     template: `
-        <div class="min-vh-100 d-flex align-items-center justify-content-center" style="background-color:#f0f4f8;">
+        <div class="min-vh-100 d-flex align-items-center justify-content-center bg-body">
             <div class="w-100" style="max-width: 440px;">
-
                 <!-- Marca -->
                 <div class="text-center mb-4">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm"
                          style="width:72px;height:72px;background-color:#1a3a5c;">
                         <i class="bi bi-mortarboard-fill text-white" style="font-size:2rem;"></i>
                     </div>
-                    <h4 class="fw-bold mb-0" style="color:#1a3a5c;">Sistema Académico</h4>
-                    <small class="text-muted text-uppercase" style="letter-spacing:1px;font-size:.7rem;">Gestión Universitaria</small>
+                    <h4 class="fw-bold mb-0 text-body">Sistema Académico</h4>
+                    <small class="text-body-secondary text-uppercase" style="letter-spacing:1px;font-size:.7rem;">Gestión Universitaria</small>
                 </div>
 
-                <div class="card border-0 shadow">
-
+                <div class="card border-0 shadow-sm bg-body-tertiary">
                     <!-- Tabs -->
-                    <div class="card-header bg-white border-bottom p-0">
-                        <ul class="nav nav-tabs border-0">
+                    <div class="card-header bg-transparent border-bottom-0 p-0">
+                        <ul class="nav nav-tabs border-0 flex-nowrap">
                             <li class="nav-item w-50 text-center">
-                                <a class="nav-link rounded-0 py-3 fw-semibold"
-                                   :class="vista==='login' ? 'active border-bottom border-2 text-primary' : 'text-muted'"
+                                <a class="nav-link rounded-0 py-3 fw-semibold border-0 border-bottom border-2"
+                                   :class="vista==='login' ? 'active text-primary border-primary' : 'text-body-secondary'"
                                    href="#" @click.prevent="cambiarVista('login')">
                                     <i class="bi bi-box-arrow-in-right me-1"></i>Iniciar sesión
                                 </a>
                             </li>
                             <li class="nav-item w-50 text-center">
-                                <a class="nav-link rounded-0 py-3 fw-semibold"
-                                   :class="vista==='registro' ? 'active border-bottom border-2 text-primary' : 'text-muted'"
+                                <a class="nav-link rounded-0 py-3 fw-semibold border-0 border-bottom border-2"
+                                   :class="vista==='registro' ? 'active text-primary border-primary' : 'text-body-secondary'"
                                    href="#" @click.prevent="cambiarVista('registro')">
                                     <i class="bi bi-person-plus me-1"></i>Crear cuenta
                                 </a>
@@ -349,41 +347,38 @@ const login = {
                     <div v-if="vista==='login'" class="card-body p-4">
                         <form @submit.prevent="iniciarSesion">
                             <div class="mb-3">
-                                <label class="form-label fw-semibold small text-uppercase text-muted">
+                                <label class="form-label fw-semibold small text-uppercase text-body-secondary">
                                     Usuario / Código / Correo
                                 </label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0">
-                                        <i class="bi bi-person-circle text-muted"></i>
+                                    <span class="input-group-text bg-body-secondary border-end-0">
+                                        <i class="bi bi-person-circle text-body-secondary"></i>
                                     </span>
                                     <input v-model="loginForm.identificador" type="text"
-                                           class="form-control border-start-0"
-                                           placeholder="Usuario, código de estudiante o correo"
+                                           class="form-control border-start-0 bg-transparent"
+                                           placeholder="Usuario, código o correo"
                                            autocomplete="username" required>
-                                </div>
-                                <div class="text-muted mt-1" style="font-size:.72rem;">
-                                    <i class="bi bi-info-circle me-1"></i>Puedes usar tu nombre de usuario, código o correo electrónico.
                                 </div>
                             </div>
 
                             <div class="mb-4">
-                                <label class="form-label fw-semibold small text-uppercase text-muted">Contraseña</label>
+                                <label class="form-label fw-semibold small text-uppercase text-body-secondary">Contraseña</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0">
-                                        <i class="bi bi-lock text-muted"></i>
+                                    <span class="input-group-text bg-body-secondary border-end-0">
+                                        <i class="bi bi-lock text-body-secondary"></i>
                                     </span>
                                     <input v-model="loginForm.password"
                                            :type="mostrarPass ? 'text' : 'password'"
-                                           class="form-control border-start-0 border-end-0"
+                                           class="form-control border-start-0 border-end-0 bg-transparent"
                                            placeholder="••••••••" autocomplete="current-password" required>
-                                    <button type="button" class="input-group-text bg-light"
+                                    <button type="button" class="input-group-text bg-body-secondary"
                                             @click="mostrarPass = !mostrarPass">
-                                        <i :class="mostrarPass ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-muted"></i>
+                                        <i :class="mostrarPass ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-body-secondary"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <div class="d-grid">
+                            <div class="d-grid shadow-sm">
                                 <button type="submit" class="btn fw-semibold"
                                         style="background-color:#1a3a5c; color:white;" :disabled="cargando">
                                     <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
@@ -392,8 +387,8 @@ const login = {
                                 </button>
                             </div>
                         </form>
-                        <hr class="my-4">
-                        <p class="text-center text-muted small mb-0">
+                        <hr class="my-4 border-secondary-subtle">
+                        <p class="text-center text-body-secondary small mb-0">
                             ¿No tienes cuenta?
                             <a href="#" class="fw-semibold text-decoration-none" @click.prevent="cambiarVista('registro')">Regístrate aquí</a>
                         </p>
@@ -405,11 +400,11 @@ const login = {
 
                             <!-- Tipo de cuenta -->
                             <div class="mb-3">
-                                <label class="form-label fw-semibold small text-uppercase text-muted">Tipo de cuenta</label>
+                                <label class="form-label fw-semibold small text-uppercase text-body-secondary">Tipo de cuenta</label>
                                 <div class="d-flex gap-2">
                                     <div v-for="r in ['Alumno','Docente','Admin']" :key="r"
-                                         class="form-check flex-fill border rounded p-2 m-0"
-                                         :class="regForm.rol===r ? 'border-primary bg-primary bg-opacity-10' : ''">
+                                         class="form-check flex-fill border rounded p-2 m-0 shadow-sm"
+                                         :class="regForm.rol===r ? 'border-primary bg-primary bg-opacity-10' : 'border-secondary-subtle'">
                                         <input class="form-check-input" type="radio" :id="'rol'+r" :value="r" v-model="regForm.rol">
                                         <label class="form-check-label d-flex align-items-center gap-1 small fw-semibold" :for="'rol'+r">
                                             <i :class="r==='Alumno' ? 'bi bi-person-badge text-primary' : r==='Docente' ? 'bi bi-person-workspace text-success' : 'bi bi-shield-lock text-danger'"></i>
@@ -421,98 +416,90 @@ const login = {
 
                             <!-- Código secreto Admin -->
                             <div v-if="regForm.rol==='Admin'" class="mb-3">
-                                <label class="form-label fw-semibold small text-uppercase text-muted">Código de administrador</label>
+                                <label class="form-label fw-semibold small text-uppercase text-body-secondary">Código de administrador</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0">
+                                    <span class="input-group-text bg-body-tertiary border-end-0">
                                         <i class="bi bi-shield-lock text-danger"></i>
                                     </span>
                                     <input v-model="regForm.codigoAdmin" type="password"
-                                           class="form-control border-start-0"
+                                           class="form-control border-start-0 bg-transparent"
                                            placeholder="Código institucional secreto" required>
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label fw-semibold small text-uppercase text-muted">Nombre de usuario <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold small text-uppercase text-body-secondary">Nombre de usuario <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
-                                    <input v-model="regForm.username" type="text" class="form-control border-start-0"
+                                    <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-person text-body-secondary"></i></span>
+                                    <input v-model="regForm.username" type="text" class="form-control border-start-0 bg-transparent"
                                            placeholder="Mínimo 4 caracteres" minlength="4" required autocomplete="username">
                                 </div>
                             </div>
 
                             <div class="row g-2 mb-3">
                                 <div class="col-6" v-if="regForm.rol !== 'Admin'">
-                                    <label class="form-label fw-semibold small text-uppercase text-muted">
-                                        Código <span class="text-muted fw-normal">(opcional)</span>
+                                    <label class="form-label fw-semibold small text-uppercase text-body-secondary">
+                                        Código <span class="text-body-secondary fw-normal">(opcional)</span>
                                     </label>
                                     <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-card-text text-muted"></i></span>
-                                        <input v-model="regForm.codigo" type="text" class="form-control border-start-0" placeholder="Ej. A-001">
+                                        <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-card-text text-body-secondary"></i></span>
+                                        <input v-model="regForm.codigo" type="text" class="form-control border-start-0 bg-transparent" placeholder="Ej. A-001">
                                     </div>
                                 </div>
                                 <div class="col-6" v-if="regForm.rol !== 'Admin'">
-                                    <label class="form-label fw-semibold small text-uppercase text-muted">
+                                    <label class="form-label fw-semibold small text-uppercase text-body-secondary">
                                         Token de Vinculación
                                     </label>
                                     <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-key text-muted"></i></span>
-                                        <input v-model="regForm.token" type="text" class="form-control border-start-0" placeholder="Si tienes perfil Pre-creado">
+                                        <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-key text-body-secondary"></i></span>
+                                        <input v-model="regForm.token" type="text" class="form-control border-start-0 bg-transparent" placeholder="Token provisto">
                                     </div>
                                     <div class="text-end mt-1">
                                         <a href="#" @click.prevent="solicitarToken" class="small text-decoration-none" style="font-size:0.75rem;">
-                                            ¿No tienes token? Solicítalo aquí
+                                            Solicitar token
                                         </a>
                                     </div>
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label fw-semibold small text-uppercase text-muted">
-                                        Correo <span class="text-muted fw-normal">(opcional)</span>
+                                    <label class="form-label fw-semibold small text-uppercase text-body-secondary">
+                                        Correo <span class="text-body-secondary fw-normal">(opcional)</span>
                                     </label>
                                     <div class="input-group">
-                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
-                                        <input v-model="regForm.email" type="email" class="form-control border-start-0" placeholder="correo@uni.edu" autocomplete="email">
+                                        <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-envelope text-body-secondary"></i></span>
+                                        <input v-model="regForm.email" type="email" class="form-control border-start-0 bg-transparent" placeholder="correo@uni.edu" autocomplete="email">
                                     </div>
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label fw-semibold small text-uppercase text-muted">Contraseña <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold small text-uppercase text-body-secondary">Contraseña <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+                                    <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-lock text-body-secondary"></i></span>
                                     <input v-model="regForm.password" :type="mostrarPassReg ? 'text' : 'password'"
-                                           class="form-control border-start-0 border-end-0"
+                                           class="form-control border-start-0 border-end-0 bg-transparent"
                                            placeholder="Mínimo 6 caracteres" minlength="6" required>
-                                    <button type="button" class="input-group-text bg-light" @click="mostrarPassReg=!mostrarPassReg">
-                                        <i :class="mostrarPassReg ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-muted"></i>
+                                    <button type="button" class="input-group-text bg-body-tertiary" @click="mostrarPassReg=!mostrarPassReg">
+                                        <i :class="mostrarPassReg ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-body-secondary"></i>
                                     </button>
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label fw-semibold small text-uppercase text-muted">Confirmar contraseña <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold small text-uppercase text-body-secondary">Confirmar contraseña</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-shield-lock text-muted"></i></span>
+                                    <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-shield-lock text-body-secondary"></i></span>
                                     <input v-model="regForm.confirmar" :type="mostrarPassConf ? 'text' : 'password'"
-                                           class="form-control border-end-0"
+                                           class="form-control border-end-0 bg-transparent"
                                            :class="regForm.confirmar && regForm.confirmar !== regForm.password ? 'is-invalid border-start-0' : 'border-start-0'"
                                            placeholder="Repite tu contraseña" required>
-                                    <button type="button" class="input-group-text bg-light" @click="mostrarPassConf=!mostrarPassConf">
-                                        <i :class="mostrarPassConf ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-muted"></i>
+                                    <button type="button" class="input-group-text bg-body-tertiary" @click="mostrarPassConf=!mostrarPassConf">
+                                        <i :class="mostrarPassConf ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-body-secondary"></i>
                                     </button>
                                 </div>
-                                <div v-if="regForm.confirmar && regForm.confirmar !== regForm.password" class="text-danger small mt-1">
-                                    <i class="bi bi-x-circle me-1"></i>Las contraseñas no coinciden
-                                </div>
                             </div>
 
-                            <div class="alert alert-light border d-flex align-items-start gap-2 py-2 px-3 mb-3">
-                                <i class="bi bi-shield-check text-success mt-1 flex-shrink-0"></i>
-                                <small class="text-muted">Contraseña encriptada con <strong>SHA-256</strong>. Nunca se almacena en texto plano.</small>
-                            </div>
-
-                            <div class="d-grid">
-                                <button type="submit" class="btn fw-semibold"
+                            <div class="d-grid shadow-sm">
+                                <button type="submit" class="btn fw-semibold text-white"
                                         :class="regForm.rol==='Admin' ? 'btn-danger' : regForm.rol==='Docente' ? 'btn-success' : 'btn-primary'"
                                         :disabled="cargando">
                                     <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
@@ -521,8 +508,8 @@ const login = {
                                 </button>
                             </div>
                         </form>
-                        <hr class="my-4">
-                        <p class="text-center text-muted small mb-0">
+                        <hr class="my-4 border-secondary-subtle">
+                        <p class="text-center text-body-secondary small mb-0">
                             ¿Ya tienes cuenta?
                             <a href="#" class="fw-semibold text-decoration-none" @click.prevent="cambiarVista('login')">Inicia sesión</a>
                         </p>
@@ -530,7 +517,7 @@ const login = {
 
                 </div>
 
-                <p class="text-center text-muted mt-4" style="font-size:.72rem;">
+                <p class="text-center text-body-secondary mt-4" style="font-size:.72rem;">
                     <i class="bi bi-lock-fill me-1"></i>Acceso restringido — Sistema Académico © 2026
                 </p>
             </div>

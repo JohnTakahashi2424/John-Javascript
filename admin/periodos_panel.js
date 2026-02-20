@@ -105,20 +105,20 @@ const periodosAdmin = {
             </div>
 
             <!-- Formulario nuevo período -->
-            <div class="card border-0 shadow-sm mb-4" style="max-width:420px;">
-                <div class="card-header bg-white border-bottom fw-semibold small text-uppercase text-muted">
+            <div class="card border-0 shadow-sm mb-4 bg-body-tertiary" style="max-width:420px;">
+                <div class="card-header bg-transparent border-bottom fw-bold small text-uppercase text-body-secondary py-3">
                     <i class="bi bi-plus-circle me-1"></i>Abrir nuevo período
                 </div>
                 <div class="card-body">
                     <div class="row g-2">
                         <div class="col-5">
-                            <label class="form-label small fw-semibold text-muted text-uppercase">Año</label>
+                            <label class="form-label small fw-semibold text-body-secondary text-uppercase">Año</label>
                             <input v-model.number="form.año" type="number" min="2020" max="2030"
-                                   class="form-control form-control-sm">
+                                   class="form-control form-control-sm bg-transparent">
                         </div>
                         <div class="col-4">
-                            <label class="form-label small fw-semibold text-muted text-uppercase">Ciclo</label>
-                            <select v-model="form.ciclo" class="form-select form-select-sm">
+                            <label class="form-label small fw-semibold text-body-secondary text-uppercase">Ciclo</label>
+                            <select v-model="form.ciclo" class="form-select form-select-sm bg-transparent">
                                 <option>I</option>
                                 <option>II</option>
                                 <option>III</option>
@@ -133,7 +133,7 @@ const periodosAdmin = {
                             </button>
                         </div>
                     </div>
-                    <div class="text-muted mt-2" style="font-size:.72rem;">
+                    <div class="text-body-secondary mt-2" style="font-size:.72rem;">
                         <i class="bi bi-info-circle me-1"></i>Al abrir un nuevo período, el anterior se cerrará automáticamente.
                     </div>
                 </div>
@@ -145,19 +145,19 @@ const periodosAdmin = {
                 <i class="bi bi-calendar fs-1 opacity-25"></i>
                 <p class="mt-2 small">No hay períodos registrados aún.</p>
             </div>
-            <div v-else class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom small fw-semibold text-muted text-uppercase">
+            <div v-else class="card border-0 shadow-sm bg-body-tertiary">
+                <div class="card-header bg-transparent border-bottom small fw-bold text-body-secondary text-uppercase py-3">
                     <i class="bi bi-list-ul me-1"></i>Historial de períodos
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0 small">
-                        <thead class="table-light">
+                        <thead class="bg-body-secondary">
                             <tr>
-                                <th>Ciclo</th>
-                                <th>Año</th>
-                                <th>Estado</th>
-                                <th>Creado</th>
-                                <th class="text-end">Acción</th>
+                                <th class="text-body-secondary">Ciclo</th>
+                                <th class="text-body-secondary">Año</th>
+                                <th class="text-body-secondary">Estado</th>
+                                <th class="text-body-secondary">Creado</th>
+                                <th class="text-end text-body-secondary">Acción</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -170,7 +170,7 @@ const periodosAdmin = {
                                         {{ p.estado==='abierto' ? 'Abierto' : 'Cerrado' }}
                                     </span>
                                 </td>
-                                <td class="text-muted">{{ p.fechaCreacion ? new Date(p.fechaCreacion).toLocaleDateString('es') : '—' }}</td>
+                                <td class="text-body-secondary">{{ p.fechaCreacion ? new Date(p.fechaCreacion).toLocaleDateString('es') : '—' }}</td>
                                 <td class="text-end">
                                     <button v-if="p.estado==='abierto'" class="btn btn-sm btn-outline-danger"
                                             @click="cerrarPeriodo(p)">

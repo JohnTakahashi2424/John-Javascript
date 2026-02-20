@@ -105,7 +105,7 @@ const misMaterias = {
     template: `
         <div>
             <div class="d-flex align-items-center mb-3 border-bottom pb-2">
-                <i class="bi bi-book me-2 fs-5 text-secondary"></i>
+                <i class="bi bi-book me-2 fs-5 text-body-secondary"></i>
                 <h5 class="mb-0 fw-semibold">Mis Materias</h5>
                 <button class="btn btn-sm btn-outline-secondary ms-auto" @click="cargar"><i class="bi bi-arrow-clockwise"></i></button>
             </div>
@@ -122,9 +122,9 @@ const misMaterias = {
             <div v-else>
                 <!-- Filtro por carrera -->
                 <div v-if="carrerasUnicas.length>0" class="mb-3 d-flex gap-2 flex-wrap">
-                    <button class="btn btn-sm" :class="!filtroCarrera?'btn-dark':'btn-outline-secondary'" @click="filtroCarrera=''">Todas</button>
+                    <button class="btn btn-sm" :class="!filtroCarrera?'btn-primary':'btn-outline-secondary'" @click="filtroCarrera=''">Todas</button>
                     <button v-for="c in carrerasUnicas" :key="c" class="btn btn-sm"
-                            :class="filtroCarrera===c?'btn-dark':'btn-outline-secondary'" @click="filtroCarrera=c">
+                            :class="filtroCarrera===c?'btn-primary':'btn-outline-secondary'" @click="filtroCarrera=c">
                         {{ c }}
                     </button>
                 </div>
@@ -134,7 +134,7 @@ const misMaterias = {
                     <div :class="materiaDetalle ? 'col-md-5' : 'col-12'">
                         <div class="row g-3" :class="materiaDetalle ? 'row-cols-1' : 'row-cols-1 row-cols-md-2 row-cols-xl-3'">
                             <div v-for="mat in materiasFiltradas" :key="mat.idMateria" class="col">
-                                <div class="card border-0 shadow-sm h-100"
+                                <div class="card border-0 shadow-sm h-100 bg-body-tertiary"
                                      :class="materiaDetalle?.idMateria===mat.idMateria?'border-success border':''"
                                      style="cursor:pointer;" @click="verDetalle(mat)">
                                     <div class="card-body">
@@ -142,15 +142,15 @@ const misMaterias = {
                                             <span class="badge" :class="mat.estado==='habilitada'?'bg-success':'bg-secondary'">
                                                 {{ mat.estado==='habilitada'?'Habilitada':'Deshabilitada' }}
                                             </span>
-                                            <small class="text-muted">{{ mat.codigo }}</small>
+                                            <small class="text-body-secondary">{{ mat.codigo }}</small>
                                         </div>
-                                        <h6 class="card-title mb-1">{{ mat.nombre }}</h6>
-                                        <div class="text-muted small mb-2">{{ mat.carrera || 'Sin carrera asignada' }}</div>
+                                        <h6 class="card-title mb-1 text-body">{{ mat.nombre }}</h6>
+                                        <div class="text-body-secondary small mb-2">{{ mat.carrera || 'Sin carrera asignada' }}</div>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="text-primary fw-bold">
                                                 <i class="bi bi-people me-1"></i>{{ mat.totalInscritos }} alumnos
                                             </span>
-                                            <span class="text-muted small">
+                                            <span class="text-body-secondary small">
                                                 Cupo: {{ mat.cupoOcupado }}/{{ mat.cupo || '∞' }}
                                             </span>
                                         </div>
@@ -158,8 +158,8 @@ const misMaterias = {
                                         <div v-if="Object.keys(mat.distribCarrera).length>0" class="mt-2">
                                             <div v-for="(cnt, car) in mat.distribCarrera" :key="car"
                                                  class="d-flex justify-content-between small border-top pt-1">
-                                                <span class="text-muted">{{ car }}</span>
-                                                <span class="badge bg-light text-dark">{{ cnt }}</span>
+                                                <span class="text-body-secondary">{{ car }}</span>
+                                                <span class="badge bg-body-secondary text-body-secondary">{{ cnt }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -170,27 +170,29 @@ const misMaterias = {
 
                     <!-- Panel detalle alumnos -->
                     <div v-if="materiaDetalle" class="col-md-7">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <div class="card border-0 shadow-sm bg-body-tertiary">
+                            <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
                                 <div>
-                                    <span class="fw-semibold">{{ materiaDetalle.nombre }}</span>
-                                    <small class="text-muted ms-2">Lista de alumnos</small>
+                                    <span class="fw-bold text-primary">{{ materiaDetalle.nombre }}</span>
+                                    <small class="text-body-secondary ms-2">Lista de alumnos</small>
                                 </div>
-                                <button class="btn btn-sm btn-outline-secondary" @click="cerrarDetalle"><i class="bi bi-x"></i></button>
+                                <button class="btn btn-sm btn-outline-secondary rounded-circle" @click="cerrarDetalle" style="width:32px;height:32px;padding:0;">
+                                    <i class="bi bi-x fs-5"></i>
+                                </button>
                             </div>
                             <div v-if="cargandoDetalle" class="text-center py-4"><div class="spinner-border text-secondary"></div></div>
                             <div v-else-if="alumnosDetalle.length===0" class="text-center py-4 text-muted small p-3">
                                 <i class="bi bi-person-x fs-2 opacity-25"></i><p class="mt-2">Sin alumnos inscritos.</p>
                             </div>
                             <div v-else class="table-responsive">
-                                <table class="table table-sm align-middle mb-0 small">
-                                    <thead class="table-light">
-                                        <tr><th>Alumno</th><th>Carrera</th><th class="text-center">C1</th><th class="text-center">C2</th><th class="text-center">C3</th><th class="text-center">Final</th></tr>
+                                <table class="table table-hover align-middle mb-0 small">
+                                    <thead class="bg-body-secondary">
+                                        <tr><th class="text-body-secondary">Alumno</th><th class="text-body-secondary">Carrera</th><th class="text-center text-body-secondary">C1</th><th class="text-center text-body-secondary">C2</th><th class="text-center text-body-secondary">C3</th><th class="text-center text-body-secondary">Final</th></tr>
                                     </thead>
                                     <tbody>
                                         <tr v-for="al in alumnosDetalle" :key="al.matricula">
-                                            <td class="fw-semibold">{{ al.nombre }}</td>
-                                            <td class="text-muted">{{ al.carrera }}</td>
+                                            <td class="fw-semibold text-body">{{ al.nombre }}</td>
+                                            <td class="text-body-secondary">{{ al.carrera }}</td>
                                             <td class="text-center">{{ al.comp1 }}</td>
                                             <td class="text-center">{{ al.comp2 }}</td>
                                             <td class="text-center">{{ al.comp3 }}</td>
@@ -199,12 +201,12 @@ const misMaterias = {
                                                       :class="al.aprobado?'bg-success':'bg-danger'">
                                                     {{ al.notaFinal }}
                                                 </span>
-                                                <span v-else class="text-muted">—</span>
+                                                <span v-else class="text-body-secondary">—</span>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
-                                <div class="card-footer bg-white text-muted small">
+                                <div class="card-footer bg-transparent border-top-0 text-body-secondary small">
                                     {{ alumnosDetalle.length }} alumnos — ordenados por rendimiento
                                 </div>
                             </div>

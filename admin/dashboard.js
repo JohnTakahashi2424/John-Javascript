@@ -377,54 +377,54 @@ const adminDashboard = {
                 <!-- Cards de estadísticas -->
                 <div class="row g-3 mb-4">
                     <div class="col-sm-6 col-xl-3">
-                        <div class="card border-0 shadow-sm h-100">
+                        <div class="card border-0 shadow-sm h-100 bg-body-tertiary">
                             <div class="card-body">
                                 <div class="d-flex align-items-center gap-3">
-                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
-                                         style="width:48px;height:48px;background:#e8f0fe;">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10"
+                                         style="width:48px;height:48px;">
                                         <i class="bi bi-person-badge text-primary fs-5"></i>
                                     </div>
                                     <div>
-                                        <div class="fw-bold fs-4 lh-1">{{ stats.alumnosActivos }}</div>
-                                        <div class="text-muted small">Alumnos activos</div>
+                                        <div class="fw-bold fs-4 lh-1 text-body">{{ stats.alumnosActivos }}</div>
+                                        <div class="text-body-secondary small">Alumnos activos</div>
                                     </div>
                                 </div>
-                                <div class="mt-2 text-muted" style="font-size:.75rem;">
+                                <div class="mt-2 text-body-secondary" style="font-size:.75rem;">
                                     {{ stats.alumnosTotal - stats.alumnosActivos }} inactivos · {{ stats.alumnosTotal }} total
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <div class="card border-0 shadow-sm h-100">
+                        <div class="card border-0 shadow-sm h-100 bg-body-tertiary">
                             <div class="card-body">
                                 <div class="d-flex align-items-center gap-3">
-                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
-                                         style="width:48px;height:48px;background:#e6f4ea;">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-success bg-opacity-10"
+                                         style="width:48px;height:48px;">
                                         <i class="bi bi-person-workspace text-success fs-5"></i>
                                     </div>
                                     <div>
-                                        <div class="fw-bold fs-4 lh-1">{{ stats.docentesActivos }}</div>
-                                        <div class="text-muted small">Docentes activos</div>
+                                        <div class="fw-bold fs-4 lh-1 text-body">{{ stats.docentesActivos }}</div>
+                                        <div class="text-body-secondary small">Docentes activos</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <div class="card border-0 shadow-sm h-100">
+                        <div class="card border-0 shadow-sm h-100 bg-body-tertiary">
                             <div class="card-body">
                                 <div class="d-flex align-items-center gap-3">
-                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
-                                         style="width:48px;height:48px;background:#fff3cd;">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-warning bg-opacity-10"
+                                         style="width:48px;height:48px;">
                                         <i class="bi bi-book text-warning fs-5"></i>
                                     </div>
                                     <div>
-                                        <div class="fw-bold fs-4 lh-1">{{ stats.materiasHabilitadas }}</div>
-                                        <div class="text-muted small">Materias habilitadas</div>
+                                        <div class="fw-bold fs-4 lh-1 text-body">{{ stats.materiasHabilitadas }}</div>
+                                        <div class="text-body-secondary small">Materias habilitadas</div>
                                     </div>
                                 </div>
-                                <div class="mt-2 text-muted" style="font-size:.75rem;">
+                                <div class="mt-2 text-body-secondary" style="font-size:.75rem;">
                                     {{ stats.materiasTotal }} registradas en total
                                 </div>
                             </div>
@@ -521,23 +521,23 @@ const adminDashboard = {
 
                             <!-- FASE 1: Confirmación -->
                             <template v-if="tokenModal.fase === 'confirmar'">
-                                <div class="modal-header" style="background:#1a3a5c;">
+                                <div class="modal-header bg-primary bg-opacity-75">
                                     <h5 class="modal-title text-white" id="modalGenerarTokenLabel">
                                         <i class="bi bi-key me-2"></i>Generar Token de Acceso
                                     </h5>
                                     <button type="button" class="btn-close btn-close-white" @click="cerrarModalToken"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <div class="d-flex align-items-center gap-3 mb-3 p-3 rounded" style="background:#f8f9fa;">
-                                        <span class="badge fs-6 px-3 py-2" :class="tokenModal.solicitud.tipo==='Docente' ? 'bg-success' : 'bg-primary'">
+                                    <div class="d-flex align-items-center gap-3 mb-3 p-3 rounded bg-body-secondary">
+                                        <span class="badge fs-6 px-3 py-2 shadow-sm" :class="tokenModal.solicitud.tipo==='Docente' ? 'bg-success' : 'bg-primary'">
                                             {{ tokenModal.solicitud.tipo }}
                                         </span>
                                         <div>
-                                            <div class="fw-bold">{{ tokenModal.solicitud.nombre }}</div>
-                                            <div class="text-muted small">Código: {{ tokenModal.solicitud.codigo }}</div>
+                                            <div class="fw-bold text-body">{{ tokenModal.solicitud.nombre }}</div>
+                                            <div class="text-body-secondary small">Código: {{ tokenModal.solicitud.codigo }}</div>
                                         </div>
                                     </div>
-                                    <p class="mb-0 text-muted small">
+                                    <p class="mb-0 text-body-secondary small">
                                         <i class="bi bi-info-circle me-1"></i>
                                         Se generará un token único para este usuario. Si ya existe un perfil con este código, se actualizará su token. Si no existe, se creará un nuevo perfil.
                                     </p>
@@ -625,23 +625,23 @@ const adminDashboard = {
                 <!-- ============================= -->
 
                 <!-- Jerarquía institucional -->
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-bottom fw-semibold small text-uppercase text-muted">
+                <div class="card border-0 shadow-sm bg-body-tertiary">
+                    <div class="card-header bg-transparent border-bottom fw-semibold small text-uppercase text-body-secondary">
                         <i class="bi bi-diagram-3 me-1"></i>Flujo institucional
                     </div>
                     <div class="card-body">
                         <div class="d-flex flex-wrap align-items-center gap-2 justify-content-center">
-                            <span class="badge bg-danger fs-6 px-3 py-2">Admin</span>
-                            <i class="bi bi-arrow-right text-muted"></i>
-                            <span class="badge bg-success px-3 py-2">Gestiona Docentes</span>
-                            <i class="bi bi-arrow-right text-muted"></i>
-                            <span class="badge bg-warning text-dark px-3 py-2">Crea Materias</span>
-                            <i class="bi bi-arrow-right text-muted"></i>
-                            <span class="badge bg-info text-dark px-3 py-2">Abre Período</span>
-                            <i class="bi bi-arrow-right text-muted"></i>
-                            <span class="badge bg-primary px-3 py-2">Alumno se matricula</span>
-                            <i class="bi bi-arrow-right text-muted"></i>
-                            <span class="badge bg-secondary px-3 py-2">Se inscribe en materias</span>
+                            <span class="badge bg-danger fs-6 px-3 py-2 shadow-sm">Admin</span>
+                            <i class="bi bi-arrow-right text-body-secondary"></i>
+                            <span class="badge bg-success px-3 py-2 shadow-sm">Gestiona Docentes</span>
+                            <i class="bi bi-arrow-right text-body-secondary"></i>
+                            <span class="badge bg-warning text-dark px-3 py-2 shadow-sm">Crea Materias</span>
+                            <i class="bi bi-arrow-right text-body-secondary"></i>
+                            <span class="badge bg-info text-dark px-3 py-2 shadow-sm">Abre Período</span>
+                            <i class="bi bi-arrow-right text-body-secondary"></i>
+                            <span class="badge bg-primary px-3 py-2 shadow-sm">Alumno se matricula</span>
+                            <i class="bi bi-arrow-right text-body-secondary"></i>
+                            <span class="badge bg-secondary px-3 py-2 shadow-sm">Se inscribe en materias</span>
                         </div>
                     </div>
                 </div>

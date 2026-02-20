@@ -98,9 +98,9 @@ const inscripcionesAdmin = {
             </div>
 
             <div class="mb-3" style="max-width:400px;">
-                <div class="input-group">
-                    <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
-                    <input v-model="filtro" type="text" class="form-control border-start-0"
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-search text-body-secondary"></i></span>
+                    <input v-model="filtro" type="text" class="form-control border-start-0 bg-transparent"
                            placeholder="Filtrar por materia...">
                     <button v-if="filtro" class="btn btn-outline-secondary" @click="filtro=''">
                         <i class="bi bi-x"></i>
@@ -126,7 +126,7 @@ const inscripcionesAdmin = {
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div class="fw-semibold small">{{ m.nombre }}</div>
                                     <span class="badge ms-2 flex-shrink-0"
-                                          :class="m.cupoOcupado>0 ? 'bg-primary' : 'bg-light text-dark'">
+                                          :class="m.cupoOcupado>0 ? (materiaSeleccionada?.idMateria===m.idMateria ? 'bg-white text-primary' : 'bg-primary') : 'bg-body-secondary text-body-secondary'">
                                         {{ m.cupoOcupado }} inscritos
                                     </span>
                                 </div>
@@ -150,7 +150,7 @@ const inscripcionesAdmin = {
                                 </div>
                             </button>
                         </div>
-                        <div class="card-footer bg-white text-muted small">
+                        <div class="card-footer bg-transparent border-top-0 text-body-secondary small">
                             {{ materiasFiltradas.length }} materias
                         </div>
                     </div>
@@ -158,14 +158,14 @@ const inscripcionesAdmin = {
 
                 <!-- Columna derecha: detalle de inscritos -->
                 <div v-if="materiaSeleccionada" class="col-md-7">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between">
+                    <div class="card border-0 shadow-sm h-100 bg-body-tertiary">
+                        <div class="card-header bg-transparent border-bottom d-flex align-items-center justify-content-between py-3">
                             <div>
-                                <div class="fw-semibold">{{ materiaSeleccionada.nombre }}</div>
-                                <small class="text-muted">{{ materiaSeleccionada.codigo }}</small>
+                                <div class="fw-bold text-primary">{{ materiaSeleccionada.nombre }}</div>
+                                <small class="text-body-secondary fw-semibold">{{ materiaSeleccionada.codigo }}</small>
                             </div>
-                            <button class="btn btn-sm btn-outline-secondary" @click="materiaSeleccionada=null">
-                                <i class="bi bi-x"></i>
+                            <button class="btn btn-sm btn-outline-secondary rounded-circle" @click="materiaSeleccionada=null" style="width:32px;height:32px;padding:0;">
+                                <i class="bi bi-x fs-5"></i>
                             </button>
                         </div>
 
@@ -199,20 +199,20 @@ const inscripcionesAdmin = {
                                 <p class="small mt-2">Ningún alumno inscrito en esta materia.</p>
                             </div>
                             <div v-else class="table-responsive">
-                                <table class="table table-sm align-middle mb-0 small">
-                                    <thead class="table-light">
+                                <table class="table table-hover align-middle mb-0 small">
+                                    <thead class="bg-body-secondary">
                                         <tr>
-                                            <th>Alumno</th>
-                                            <th>Matrícula</th>
-                                            <th>Ciclo</th>
-                                            <th></th>
+                                            <th class="text-body-secondary">Alumno</th>
+                                            <th class="text-body-secondary">Matrícula</th>
+                                            <th class="text-body-secondary">Ciclo</th>
+                                            <th class="text-end text-body-secondary">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr v-for="i in materiaSeleccionada.inscritos" :key="i.idInscripcion">
-                                            <td class="fw-semibold">{{ i.nombreAlumno }}</td>
-                                            <td class="text-muted">{{ i.codigoMatricula }}</td>
-                                            <td class="text-muted">{{ i.cicloMatricula }}</td>
+                                            <td class="fw-semibold text-body">{{ i.nombreAlumno }}</td>
+                                            <td class="text-body-secondary">{{ i.codigoMatricula }}</td>
+                                            <td class="text-body-secondary">{{ i.cicloMatricula }}</td>
                                             <td class="text-end">
                                                 <button class="btn btn-sm btn-outline-danger" @click="eliminarInscripcion(i)" title="Eliminar inscripción">
                                                     <i class="bi bi-trash"></i>

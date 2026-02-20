@@ -155,24 +155,24 @@ const matricula = {
     template: `
         <div>
             <div class="d-flex align-items-center mb-3 border-bottom pb-2">
-                <i class="bi bi-card-checklist me-2 fs-5 text-secondary"></i>
-                <h5 class="mb-0 fw-semibold">Gestión de Matrículas</h5>
+                <i class="bi bi-card-checklist me-2 fs-5 text-body-secondary"></i>
+                <h5 class="mb-0 fw-semibold text-body">Gestión de Matrículas</h5>
                 <span v-if="accion=='modificar'" class="badge bg-warning text-dark ms-2">Editando</span>
             </div>
             <form id="frmMatricula" @submit.prevent="guardarMatricula" @reset.prevent="limpiarFormulario">
-                <div class="card border-0 shadow-sm" style="max-width: 680px;">
+                <div class="card border-0 shadow-sm bg-body-tertiary" style="max-width: 680px;">
                     <div class="card-body p-4">
 
                         <div class="row mb-3">
                             <div class="col-12">
-                                <label class="form-label text-muted small fw-semibold text-uppercase">Código</label>
-                                <input placeholder="MATR-001" required v-model="matricula.codigo" type="text" class="form-control form-control-sm" @input="matricula.codigo = matricula.codigo.toUpperCase()">
+                                <label class="form-label text-body-secondary small fw-bold text-uppercase">Código</label>
+                                <input placeholder="MATR-001" required v-model="matricula.codigo" type="text" class="form-control form-control-sm bg-transparent" @input="matricula.codigo = matricula.codigo.toUpperCase()">
                             </div>
                         </div>
 
                         <!-- Búsqueda de alumno en tiempo real -->
                         <div class="mb-3 position-relative">
-                            <label class="form-label text-muted small fw-semibold text-uppercase">
+                            <label class="form-label text-body-secondary small fw-bold text-uppercase">
                                 Alumno
                                 <span v-if="alumnoSeleccionado" class="badge bg-success ms-1">
                                     <i class="bi bi-check-circle me-1"></i>Seleccionado
@@ -183,19 +183,19 @@ const matricula = {
                                 v-model="buscarAlumno"
                                 @input="buscarAlumnos"
                                 placeholder="Escribe el nombre o código del alumno..."
-                                class="form-control form-control-sm"
+                                class="form-control form-control-sm bg-transparent"
                                 :class="sinAlumnos ? 'is-invalid' : alumnoSeleccionado ? 'is-valid' : ''"
                                 autocomplete="off">
                             <!-- Lista de sugerencias -->
                             <ul v-if="alumnosEncontrados.length > 0"
-                                class="list-group position-absolute w-100 shadow-sm"
+                                class="list-group position-absolute w-100 shadow-sm bg-body-tertiary"
                                 style="z-index:100; top:100%; max-height:160px; overflow-y:auto;">
                                 <li v-for="a in alumnosEncontrados" :key="a.idAlumno"
-                                    class="list-group-item list-group-item-action py-1 px-3 small"
+                                    class="list-group-item list-group-item-action bg-transparent py-1 px-3 small border-0"
                                     style="cursor:pointer;"
                                     @mousedown.prevent="seleccionarAlumno(a)">
-                                    <span class="fw-semibold">{{ a.nombre }}</span>
-                                    <span class="text-muted ms-2">{{ a.codigo }}</span>
+                                    <span class="fw-semibold text-body">{{ a.nombre }}</span>
+                                    <span class="text-body-secondary ms-2 small">{{ a.codigo }}</span>
                                 </li>
                             </ul>
                             <!-- Mensaje de error -->
@@ -207,16 +207,16 @@ const matricula = {
 
                         <!-- Selector de Carrera desde BD -->
                         <div class="mb-3">
-                            <label class="form-label text-muted small fw-semibold text-uppercase d-flex align-items-center gap-2">
+                            <label class="form-label text-body-secondary small fw-bold text-uppercase d-flex align-items-center gap-2">
                                 Carrera
                                 <span v-if="matricula._carreraNombre" class="badge bg-success fw-normal text-truncate" style="max-width:260px;">
                                     <i class="bi bi-check-circle me-1"></i>{{ matricula._carreraNombre }}
                                 </span>
                                 <span v-else class="text-danger small fw-normal">(ninguna seleccionada)</span>
                             </label>
-                            <div class="border rounded p-2" style="max-height:160px; overflow-y:auto;">
-                                <div v-if="!carrerasDisponibles || carrerasDisponibles.length === 0" class="text-muted small">
-                                    <i class="bi bi-info-circle me-1"></i>No hay carreras registradas. Aódelas en el módulo Carreras.
+                            <div class="border rounded p-2 bg-body-secondary bg-opacity-10" style="max-height:160px; overflow-y:auto;">
+                                <div v-if="!carrerasDisponibles || carrerasDisponibles.length === 0" class="text-body-secondary small">
+                                    <i class="bi bi-info-circle me-1"></i>No hay carreras registradas. Añadelas en el módulo Carreras.
                                 </div>
                                 <button v-for="c in carrerasDisponibles" :key="c.idCarrera" type="button"
                                     @click="seleccionarCarrera(c)"
@@ -230,8 +230,8 @@ const matricula = {
 
                         <!-- Selector de Período Académico -->
                         <div class="mb-3">
-                            <label class="form-label text-muted small fw-semibold text-uppercase">Período Académico</label>
-                            <select v-model="matricula.periodoId" class="form-select form-select-sm"
+                            <label class="form-label text-body-secondary small fw-bold text-uppercase">Período Académico</label>
+                            <select v-model="matricula.periodoId" class="form-select form-select-sm bg-transparent"
                                 @change="seleccionarPeriodo(periodosDisponibles.find(p => p.idPeriodo === matricula.periodoId) || {})">
                                 <option :value="null" disabled>-- Selecciona un período --</option>
                                 <option v-for="p in periodosDisponibles" :key="p.idPeriodo" :value="p.idPeriodo">
@@ -246,8 +246,8 @@ const matricula = {
 
                         <div class="row mb-1">
                             <div class="col-12">
-                                <label class="form-label text-muted small fw-semibold text-uppercase">Estado</label>
-                                <select v-model="matricula.estado" class="form-select form-select-sm">
+                                <label class="form-label text-body-secondary small fw-bold text-uppercase">Estado</label>
+                                <select v-model="matricula.estado" class="form-select form-select-sm bg-transparent">
                                     <option value="Activo">Activo</option>
                                     <option value="Inactivo">Inactivo</option>
                                     <option value="Pendiente">Pendiente</option>
@@ -256,7 +256,7 @@ const matricula = {
                         </div>
 
                     </div>
-                    <div class="card-footer bg-white border-top d-flex gap-2 px-4 py-3">
+                    <div class="card-footer bg-transparent border-top d-flex gap-2 px-4 py-3">
                         <button type="submit" class="btn btn-sm px-3" style="background-color:#1a3a5c; color:white;"
                             :disabled="!alumnoSeleccionado || !matricula.carreraId || !matricula.periodoId">
                             <i class="bi bi-save me-1"></i>Guardar

@@ -54,7 +54,7 @@ const docenteDashboard = {
     template: `
         <div>
             <div class="d-flex align-items-center mb-3 border-bottom pb-2">
-                <i class="bi bi-speedometer2 me-2 fs-5 text-secondary"></i>
+                <i class="bi bi-speedometer2 me-2 fs-5 text-body-secondary"></i>
                 <h5 class="mb-0 fw-semibold">Dashboard Docente</h5>
                 <button class="btn btn-sm btn-outline-secondary ms-auto" @click="cargar"><i class="bi bi-arrow-clockwise"></i></button>
             </div>
@@ -72,51 +72,51 @@ const docenteDashboard = {
                     <div class="fw-semibold">
                         {{ periodoActual ? 'Período activo: Ciclo ' + periodoActual.ciclo + ' — ' + periodoActual.año : 'Sin período activo' }}
                     </div>
-                    <small class="text-muted">{{ periodoActual ? 'Las inscripciones están habilitadas.' : 'El administrador debe abrir un período.' }}</small>
+                    <small class="text-body-secondary">{{ periodoActual ? 'Las inscripciones están habilitadas.' : 'El administrador debe abrir un período.' }}</small>
                 </div>
             </div>
 
             <!-- KPIs -->
             <div class="row g-3 mb-4">
                 <div class="col-sm-6 col-lg-3">
-                    <div class="card border-0 shadow-sm h-100">
+                    <div class="card border-0 shadow-sm h-100 bg-body-tertiary">
                         <div class="card-body text-center py-4">
                             <div class="fs-2 fw-bold text-success">{{ stats.totalMaterias }}</div>
-                            <div class="text-muted small">Materias asignadas</div>
+                            <div class="text-body-secondary small">Materias asignadas</div>
                         </div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-lg-3">
-                    <div class="card border-0 shadow-sm h-100">
+                    <div class="card border-0 shadow-sm h-100 bg-body-tertiary">
                         <div class="card-body text-center py-4">
                             <div class="fs-2 fw-bold text-primary">{{ stats.totalAlumnos }}</div>
-                            <div class="text-muted small">Alumnos totales</div>
+                            <div class="text-body-secondary small">Alumnos totales</div>
                         </div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-lg-3">
-                    <div class="card border-0 shadow-sm h-100">
+                    <div class="card border-0 shadow-sm h-100 bg-body-tertiary">
                         <div class="card-body text-center py-4">
                             <div class="fs-2 fw-bold" :class="stats.promedioGeneral >= 6 ? 'text-success' : 'text-warning'">
                                 {{ stats.promedioGeneral || '—' }}
                             </div>
-                            <div class="text-muted small">Promedio general</div>
+                            <div class="text-body-secondary small">Promedio general</div>
                         </div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-lg-3">
-                    <div class="card border-0 shadow-sm h-100">
+                    <div class="card border-0 shadow-sm h-100 bg-body-tertiary">
                         <div class="card-body text-center py-4">
                             <div class="fs-2 fw-bold text-info">3</div>
-                            <div class="text-muted small">Cómputos por ciclo</div>
+                            <div class="text-body-secondary small">Cómputos por ciclo</div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Flujo académico -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom small fw-semibold text-muted text-uppercase">
+            <div class="card border-0 shadow-sm bg-body-tertiary">
+                <div class="card-header bg-transparent border-bottom small fw-bold text-body-secondary text-uppercase py-3">
                     <i class="bi bi-diagram-3 me-1"></i>Flujo de evaluación
                 </div>
                 <div class="card-body">
@@ -133,20 +133,20 @@ const docenteDashboard = {
                                      :class="step.color" style="width:42px;height:42px;">
                                     <i :class="step.icon"></i>
                                 </div>
-                                <small style="font-size:.68rem;" class="text-muted text-center" style="max-width:70px;">{{ step.label }}</small>
+                                <small style="font-size:.68rem;" class="text-body-secondary text-center" style="max-width:70px;">{{ step.label }}</small>
                             </div>
-                            <i v-if="i<4" class="bi bi-chevron-right text-muted"></i>
+                            <i v-if="i<4" class="bi bi-chevron-right text-body-secondary"></i>
                         </div>
                     </div>
                     <div class="row g-2 mt-2">
                         <div class="col-md-4 text-center">
-                            <small class="text-muted">Cómputo = Lab1 × 30% + Lab2 × 30% + Parcial × 40%</small>
+                            <small class="text-body-secondary">Cómputo = Lab1 × 30% + Lab2 × 30% + Parcial × 40%</small>
                         </div>
                         <div class="col-md-4 text-center">
-                            <small class="text-muted">Nota Final = Prom. de 3 cómputos</small>
+                            <small class="text-body-secondary">Nota Final = Prom. de 3 cómputos</small>
                         </div>
                         <div class="col-md-4 text-center">
-                            <small class="text-muted">Aprobado ≥ 6.0</small>
+                            <small class="text-body-secondary">Aprobado ≥ 6.0</small>
                         </div>
                     </div>
                 </div>

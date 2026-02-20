@@ -167,9 +167,9 @@ const alumnosAdmin = {
 
             <!-- Búsqueda -->
             <div class="mb-3" style="max-width:400px;">
-                <div class="input-group">
-                    <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
-                    <input v-model="filtro" type="text" class="form-control border-start-0"
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-search text-body-secondary"></i></span>
+                    <input v-model="filtro" type="text" class="form-control border-start-0 bg-transparent"
                            placeholder="Buscar por nombre, carnet o carrera...">
                     <button v-if="filtro" class="btn btn-outline-secondary" @click="filtro=''">
                         <i class="bi bi-x"></i>
@@ -183,19 +183,19 @@ const alumnosAdmin = {
                 <i class="bi bi-person-badge fs-1 opacity-25"></i>
                 <p class="mt-2">No hay alumnos registrados.</p>
             </div>
-            <div v-else class="card border-0 shadow-sm">
+            <div v-else class="card border-0 shadow-sm bg-body-tertiary">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0 small">
-                        <thead class="table-light">
+                        <thead class="bg-body-secondary">
                             <tr>
-                                <th style="width:50px;">Foto</th>
-                                <th>Código</th>
-                                <th>Nombre</th>
-                                <th>Carrera</th>
-                                <th>Correo</th>
-                                <th>Estado</th>
-                                <th>Token</th>
-                                <th class="text-end">Acciones</th>
+                                <th style="width:50px;" class="text-body-secondary">Foto</th>
+                                <th class="text-body-secondary">Código</th>
+                                <th class="text-body-secondary">Nombre</th>
+                                <th class="text-body-secondary">Carrera</th>
+                                <th class="text-body-secondary">Correo</th>
+                                <th class="text-body-secondary">Estado</th>
+                                <th class="text-body-secondary">Token</th>
+                                <th class="text-end text-body-secondary">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -243,7 +243,7 @@ const alumnosAdmin = {
                         </tbody>
                     </table>
                 </div>
-                <div class="card-footer bg-white text-muted small">
+                <div class="card-footer bg-transparent border-top-0 text-body-secondary small">
                     {{ alumnosFiltrados.length }} de {{ alumnos.length }} alumnos
                 </div>
             </div>
@@ -251,8 +251,8 @@ const alumnosAdmin = {
             <!-- Modal Editar -->
             <div class="modal fade" id="modalEditarAlumno" tabindex="-1">
                 <div class="modal-dialog">
-                    <div class="modal-content" v-if="editando">
-                        <div class="modal-header" style="background-color:#1a3a5c;">
+                    <div class="modal-content border-0 shadow bg-body-tertiary" v-if="editando">
+                        <div class="modal-header bg-primary bg-opacity-75">
                             <h5 class="modal-title text-white"><i class="bi bi-pencil me-2"></i>Editar Alumno</h5>
                             <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
@@ -264,44 +264,44 @@ const alumnosAdmin = {
                                         <img :src="editando.foto || 'https://via.placeholder.com/100?text=Foto'"
                                              class="rounded-circle border"
                                              style="width:100px; height:100px; object-fit: cover;">
-                                        <label class="position-absolute bottom-0 end-0 bg-white border rounded-circle p-1 shadow-sm"
+                                        <label class="position-absolute bottom-0 end-0 bg-body border rounded-circle p-1 shadow-sm"
                                                style="cursor:pointer;" title="Cambiar foto">
-                                            <i class="bi bi-camera-fill text-dark small"></i>
+                                            <i class="bi bi-camera-fill text-body small"></i>
                                             <input type="file" class="d-none" accept="image/*" @change="seleccionarFoto">
                                         </label>
                                     </div>
                                 </div>
 
                                 <div class="col-6">
-                                    <label class="form-label small fw-semibold text-muted text-uppercase">Código *</label>
-                                    <input v-model="editando.codigo" class="form-control form-control-sm" required>
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Código *</label>
+                                    <input v-model="editando.codigo" class="form-control form-control-sm bg-transparent" required>
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-label small fw-semibold text-muted text-uppercase">Carrera</label>
-                                    <select v-model="editando.carrera" class="form-select form-select-sm">
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Carrera</label>
+                                    <select v-model="editando.carrera" class="form-select form-select-sm bg-transparent">
                                         <option value="">— Sin carrera asignada —</option>
                                         <option v-for="c in carreras" :key="c.idCarrera" :value="c.nombre">{{ c.nombre }}</option>
                                     </select>
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label small fw-semibold text-muted text-uppercase">Nombre completo *</label>
-                                    <input v-model="editando.nombre" class="form-control form-control-sm" required>
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Nombre completo *</label>
+                                    <input v-model="editando.nombre" class="form-control form-control-sm bg-transparent" required>
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label small fw-semibold text-muted text-uppercase">Dirección</label>
-                                    <input v-model="editando.direccion" class="form-control form-control-sm">
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Dirección</label>
+                                    <input v-model="editando.direccion" class="form-control form-control-sm bg-transparent">
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-label small fw-semibold text-muted text-uppercase">Email</label>
-                                    <input v-model="editando.email" type="email" class="form-control form-control-sm">
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Email</label>
+                                    <input v-model="editando.email" type="email" class="form-control form-control-sm bg-transparent">
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-label small fw-semibold text-muted text-uppercase">Teléfono</label>
-                                    <input v-model="editando.telefono" class="form-control form-control-sm">
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Teléfono</label>
+                                    <input v-model="editando.telefono" class="form-control form-control-sm bg-transparent">
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer">
+                        <div class="modal-footer border-top-0">
                             <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
                             <button class="btn btn-sm text-white fw-semibold" style="background-color:#1a3a5c;"
                                     @click="guardarEdicion" :disabled="guardandoEdit">
@@ -316,18 +316,18 @@ const alumnosAdmin = {
             <!-- Modal Historial -->
             <div class="modal fade" id="modalHistorialAlumno" tabindex="-1">
                 <div class="modal-dialog modal-lg">
-                    <div class="modal-content" v-if="alumnoDetalle">
-                        <div class="modal-header" style="background-color:#1a3a5c;">
+                    <div class="modal-content border-0 shadow bg-body-tertiary" v-if="alumnoDetalle">
+                        <div class="modal-header bg-primary bg-opacity-75">
                             <h5 class="modal-title text-white">
                                 <i class="bi bi-clock-history me-2"></i>Historial — {{ alumnoDetalle.nombre }}
                             </h5>
                             <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <h6 class="fw-semibold text-muted text-uppercase small mb-2">Matrículas</h6>
-                            <div v-if="histMatriculas.length===0" class="text-muted small mb-3">Sin matrículas registradas.</div>
+                            <h6 class="fw-semibold text-body-secondary text-uppercase small mb-2">Matrículas</h6>
+                            <div v-if="histMatriculas.length===0" class="text-body-secondary small mb-3">Sin matrículas registradas.</div>
                             <table v-else class="table table-sm small mb-3">
-                                <thead class="table-light"><tr><th>Código</th><th>Ciclo</th><th>Estado</th></tr></thead>
+                                <thead class="bg-body-secondary text-body-secondary"><tr><th>Código</th><th>Ciclo</th><th>Estado</th></tr></thead>
                                 <tbody>
                                     <tr v-for="m in histMatriculas" :key="m.idMatricula">
                                         <td>{{ m.codigo }}</td>
@@ -341,11 +341,11 @@ const alumnosAdmin = {
                                 </tbody>
                             </table>
 
-                            <h6 class="fw-semibold text-muted text-uppercase small mb-2">Materias inscritas</h6>
-                            <div v-if="histInscripciones.length===0" class="text-muted small">Sin inscripciones registradas.</div>
+                            <h6 class="fw-semibold text-body-secondary text-uppercase small mb-2">Materias inscritas</h6>
+                            <div v-if="histInscripciones.length===0" class="text-body-secondary small">Sin inscripciones registradas.</div>
                             <div v-else class="d-flex flex-wrap gap-2">
                                 <span v-for="i in histInscripciones" :key="i.idInscripcion"
-                                      class="badge bg-primary fw-normal px-3 py-2">
+                                      class="badge bg-primary fw-normal px-3 py-2 shadow-sm">
                                     <i class="bi bi-book me-1"></i>{{ i.materia }}
                                 </span>
                             </div>

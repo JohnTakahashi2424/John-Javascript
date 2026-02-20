@@ -217,8 +217,8 @@ const inscripciones = {
     template: `
         <div>
             <div class="d-flex align-items-center mb-3 border-bottom pb-2">
-                <i class="bi bi-pencil-square me-2 fs-5 text-secondary"></i>
-                <h5 class="mb-0 fw-semibold">Registro de Inscripciones</h5>
+                <i class="bi bi-pencil-square me-2 fs-5 text-body-secondary"></i>
+                <h5 class="mb-0 fw-semibold text-body">Registro de Inscripciones</h5>
                 <span v-if="accion=='modificar'" class="badge bg-warning text-dark ms-2">Editando</span>
             </div>
 
@@ -239,12 +239,12 @@ const inscripciones = {
             </div>
 
             <form id="frmInscripcion" @submit.prevent="guardarInscripcion" @reset.prevent="limpiarFormulario">
-                <div class="card border-0 shadow-sm" style="max-width: 560px;">
+                <div class="card border-0 shadow-sm bg-body-tertiary" style="max-width: 560px;">
                     <div class="card-body p-4">
 
                         <!-- Cantidad de materias a inscribir -->
-                        <div class="mb-3 p-3 rounded" style="background:#f0f4f8; border:1px solid #d0dce8;">
-                            <label class="form-label text-muted small fw-semibold text-uppercase mb-2">
+                        <div class="mb-3 p-3 rounded bg-body-secondary bg-opacity-25 border border-secondary-subtle">
+                            <label class="form-label text-body-secondary small fw-bold text-uppercase mb-2">
                                 <i class="bi bi-list-ol me-1"></i>¿Cuántas materias quieres inscribir este ciclo?
                             </label>
                             <div class="d-flex gap-2 flex-wrap">
@@ -259,9 +259,9 @@ const inscripciones = {
                             </div>
                             <!-- Barra de progreso -->
                             <div v-if="inscripcion.idMatricula" class="mt-2">
-                                <div class="d-flex justify-content-between small text-muted mb-1">
+                                <div class="d-flex justify-content-between small text-body-secondary mb-1">
                                     <span>Materias inscritas</span>
-                                    <span class="fw-semibold"
+                                    <span class="fw-bold"
                                         :class="materiasInscritas.length >= cantidadMaterias ? 'text-danger' : 'text-success'">
                                         {{ materiasInscritas.length }} / {{ cantidadMaterias }}
                                     </span>
@@ -285,12 +285,12 @@ const inscripciones = {
 
                         <!-- Selector de Matrícula -->
                         <div class="mb-3">
-                            <label class="form-label text-muted small fw-semibold text-uppercase">
+                            <label class="form-label text-body-secondary small fw-bold text-uppercase">
                                 Matrícula
                                 <span v-if="sinMatriculas" class="text-danger ms-1 small fw-normal">(ninguna activa)</span>
                             </label>
                             <select v-model="inscripcion.idMatricula" @change="onMatriculaChange"
-                                class="form-select form-select-sm"
+                                class="form-select form-select-sm bg-transparent"
                                 :class="sinMatriculas ? 'is-invalid' : ''"
                                 required :disabled="sinMatriculas">
                                 <option value="" disabled>Seleccione una matrícula activa...</option>
@@ -302,19 +302,19 @@ const inscripciones = {
 
                         <!-- Alumno (solo lectura) -->
                         <div class="mb-3">
-                            <label class="form-label text-muted small fw-semibold text-uppercase">Alumno</label>
-                            <input :value="inscripcion.alumno" type="text" class="form-control form-control-sm bg-light"
+                            <label class="form-label text-body-secondary small fw-bold text-uppercase">Alumno</label>
+                            <input :value="inscripcion.alumno" type="text" class="form-control form-control-sm bg-body-secondary border-secondary-subtle"
                                 placeholder="Se rellena al seleccionar la matrícula" readonly>
                         </div>
 
                         <!-- Selector de Materia -->
                         <div class="mb-3">
-                            <label class="form-label text-muted small fw-semibold text-uppercase">
+                            <label class="form-label text-body-secondary small fw-bold text-uppercase">
                                 Materia
                                 <span v-if="sinMaterias" class="text-danger ms-1 small fw-normal">(ninguna registrada)</span>
                             </label>
                             <select v-model="inscripcion.idMateria" @change="onMateriaChange"
-                                class="form-select form-select-sm"
+                                class="form-select form-select-sm bg-transparent"
                                 :class="sinMaterias ? 'is-invalid' : ''"
                                 required :disabled="sinMaterias || materiasInscritas.length >= cantidadMaterias">
                                 <option value="" disabled>Seleccione una materia...</option>
@@ -332,18 +332,18 @@ const inscripciones = {
 
                         <div class="row mb-1">
                             <div class="col-6">
-                                <label class="form-label text-muted small fw-semibold text-uppercase">Fecha</label>
-                                <input required v-model="inscripcion.fecha" type="date" class="form-control form-control-sm">
+                                <label class="form-label text-body-secondary small fw-bold text-uppercase">Fecha</label>
+                                <input required v-model="inscripcion.fecha" type="date" class="form-control form-control-sm bg-transparent">
                             </div>
                             <div class="col-6">
-                                <label class="form-label text-muted small fw-semibold text-uppercase">Ciclo</label>
-                                <input :value="inscripcion.ciclo" type="text" class="form-control form-control-sm bg-light"
+                                <label class="form-label text-body-secondary small fw-bold text-uppercase">Ciclo</label>
+                                <input :value="inscripcion.ciclo" type="text" class="form-control form-control-sm bg-body-secondary border-secondary-subtle"
                                     placeholder="Se toma de la matrícula" readonly>
                             </div>
                         </div>
 
                     </div>
-                    <div class="card-footer bg-white border-top d-flex gap-2 px-4 py-3">
+                    <div class="card-footer bg-transparent border-top d-flex gap-2 px-4 py-3">
                         <button type="submit" class="btn btn-sm px-3" style="background-color:#1a3a5c; color:white;"
                             :disabled="sinMatriculas || sinMaterias || materiasInscritas.length >= cantidadMaterias">
                             <i class="bi bi-save me-1"></i>Inscribir

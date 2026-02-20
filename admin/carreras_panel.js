@@ -134,9 +134,9 @@ const carrerasAdmin = {
             </div>
 
             <div class="mb-3" style="max-width:360px;">
-                <div class="input-group">
-                    <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
-                    <input v-model="filtro" type="text" class="form-control border-start-0" placeholder="Buscar carrera...">
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-search text-body-secondary"></i></span>
+                    <input v-model="filtro" type="text" class="form-control border-start-0 bg-transparent" placeholder="Buscar carrera...">
                     <button v-if="filtro" class="btn btn-outline-secondary" @click="filtro=''"><i class="bi bi-x"></i></button>
                 </div>
             </div>
@@ -146,17 +146,17 @@ const carrerasAdmin = {
                 <i class="bi bi-building fs-1 opacity-25"></i>
                 <p class="mt-2">No hay carreras registradas. <a href="#" @click.prevent="abrirCrear">Crear una</a>.</p>
             </div>
-            <div v-else class="card border-0 shadow-sm">
+            <div v-else class="card border-0 shadow-sm bg-body-tertiary">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0 small">
-                        <thead class="table-light">
+                        <thead class="bg-body-secondary">
                             <tr>
-                                <th>Código</th>
-                                <th>Nombre</th>
-                                <th class="text-center">Alumnos</th>
-                                <th class="text-center">Materias</th>
-                                <th>Estado</th>
-                                <th class="text-end">Acciones</th>
+                                <th class="text-body-secondary">Código</th>
+                                <th class="text-body-secondary">Nombre</th>
+                                <th class="text-center text-body-secondary">Alumnos</th>
+                                <th class="text-center text-body-secondary">Materias</th>
+                                <th class="text-body-secondary">Estado</th>
+                                <th class="text-end text-body-secondary">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -167,7 +167,7 @@ const carrerasAdmin = {
                                     <span class="badge bg-primary rounded-pill">{{ stats[c.idCarrera]?.alumnos || 0 }}</span>
                                 </td>
                                 <td class="text-center">
-                                    <span class="badge bg-info text-dark rounded-pill">{{ stats[c.idCarrera]?.materias || 0 }}</span>
+                                    <span class="badge bg-info bg-opacity-75 text-white rounded-pill">{{ stats[c.idCarrera]?.materias || 0 }}</span>
                                 </td>
                                 <td>
                                     <span class="badge" :class="(c.estado||'activa')==='activa'?'bg-success':'bg-secondary'">
@@ -187,14 +187,14 @@ const carrerasAdmin = {
                         </tbody>
                     </table>
                 </div>
-                <div class="card-footer bg-white text-muted small">{{ carrerasFiltradas.length }} carreras</div>
+                <div class="card-footer bg-transparent border-top-0 text-body-secondary small">{{ carrerasFiltradas.length }} carreras</div>
             </div>
 
             <!-- Modal Crear/Editar -->
             <div class="modal fade" id="modalCarrera" tabindex="-1">
                 <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header" style="background-color:#1a3a5c;">
+                    <div class="modal-content border-0 shadow bg-body-tertiary">
+                        <div class="modal-header bg-primary bg-opacity-75">
                             <h5 class="modal-title text-white">
                                 <i :class="modalAccion==='crear'?'bi bi-plus-circle':'bi bi-pencil'" class="me-2"></i>
                                 {{ modalAccion==='crear' ? 'Nueva Carrera' : 'Editar Carrera' }}
@@ -204,23 +204,23 @@ const carrerasAdmin = {
                         <div class="modal-body">
                             <div class="row g-3">
                                 <div class="col-4">
-                                    <label class="form-label small fw-semibold text-muted text-uppercase">Código *</label>
-                                    <input v-model="form.codigo" class="form-control form-control-sm text-uppercase" placeholder="Ej. ING" maxlength="10" required>
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Código *</label>
+                                    <input v-model="form.codigo" class="form-control form-control-sm text-uppercase bg-transparent" placeholder="Ej. ING" maxlength="10" required>
                                 </div>
                                 <div class="col-5">
-                                    <label class="form-label small fw-semibold text-muted text-uppercase">Estado</label>
-                                    <select v-model="form.estado" class="form-select form-select-sm">
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Estado</label>
+                                    <select v-model="form.estado" class="form-select form-select-sm bg-transparent">
                                         <option value="activa">Activa</option>
                                         <option value="inactiva">Inactiva</option>
                                     </select>
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label small fw-semibold text-muted text-uppercase">Nombre completo *</label>
-                                    <input v-model="form.nombre" class="form-control form-control-sm" placeholder="Ej. Ingeniería en Sistemas" required>
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Nombre completo *</label>
+                                    <input v-model="form.nombre" class="form-control form-control-sm bg-transparent" placeholder="Ej. Ingeniería en Sistemas" required>
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer">
+                        <div class="modal-footer border-top-0">
                             <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
                             <button class="btn btn-sm text-white fw-semibold" style="background-color:#1a3a5c;" @click="guardar" :disabled="guardando">
                                 <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>

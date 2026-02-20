@@ -159,14 +159,14 @@ const perfilDocente = {
     template: `
     <div>
         <div class="d-flex align-items-center mb-3 border-bottom pb-2">
-            <i class="bi bi-person-circle me-2 fs-5 text-secondary"></i>
-            <h5 class="mb-0 fw-semibold">Mi Perfil</h5>
+            <i class="bi bi-person-circle me-2 fs-5 text-body-secondary"></i>
+            <h5 class="mb-0 fw-semibold text-body">Mi Perfil</h5>
         </div>
         <div v-if="cargando" class="text-center py-5"><div class="spinner-border text-secondary"></div></div>
         <div v-else class="row g-4">
             <div class="col-lg-7">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white fw-semibold border-bottom">
+                <div class="card border-0 shadow-sm bg-body-tertiary">
+                    <div class="card-header bg-transparent fw-bold border-bottom py-3">
                         <i class="bi bi-person me-2 text-success"></i>Datos Personales
                     </div>
                     <div class="card-body">
@@ -175,36 +175,36 @@ const perfilDocente = {
                             <div class="col-12 text-center mb-3">
                                 <div class="position-relative d-inline-block">
                                     <img :src="perfil.foto || 'https://via.placeholder.com/150?text=Foto'"
-                                         class="rounded-circle border"
+                                         class="rounded-circle border border-2 border-primary-subtle"
                                          style="width:120px; height:120px; object-fit: cover;">
-                                    <label class="position-absolute bottom-0 end-0 bg-white border rounded-circle p-2 shadow-sm"
-                                           style="cursor:pointer;" title="Cambiar foto">
-                                        <i class="bi bi-camera-fill text-dark"></i>
+                                    <label class="position-absolute bottom-0 end-0 bg-body shadow-sm border rounded-circle p-2"
+                                           style="cursor:pointer; width:38px; height:38px; display:flex; align-items:center; justify-content:center;" title="Cambiar foto">
+                                        <i class="bi bi-camera-fill text-primary"></i>
                                         <input type="file" class="d-none" accept="image/*" @change="seleccionarFoto">
                                     </label>
                                 </div>
                             </div>
 
                             <div class="col-sm-6">
-                                <label class="form-label small fw-semibold text-muted text-uppercase">Código de Docente</label>
-                                <input :value="perfil.codigo" class="form-control form-control-sm bg-light" readonly>
-                                <div class="form-text">Asignado por el administrador.</div>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Código de Docente</label>
+                                <input :value="perfil.codigo" class="form-control form-control-sm bg-body-secondary border-secondary-subtle" readonly>
+                                <div class="form-text text-body-secondary">Asignado por el administrador.</div>
                             </div>
                             <div class="col-sm-6">
-                                <label class="form-label small fw-semibold text-muted text-uppercase">Especialidad</label>
-                                <input v-model="perfil.especialidad" class="form-control form-control-sm" placeholder="Ej. Ingeniería de Software">
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Especialidad</label>
+                                <input v-model="perfil.especialidad" class="form-control form-control-sm bg-transparent" placeholder="Ej. Ingeniería de Software">
                             </div>
                             <div class="col-12">
-                                <label class="form-label small fw-semibold text-muted text-uppercase">Nombre completo *</label>
-                                <input v-model="perfil.nombre" class="form-control form-control-sm" placeholder="Tu nombre completo">
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Nombre completo *</label>
+                                <input v-model="perfil.nombre" class="form-control form-control-sm bg-transparent" placeholder="Tu nombre completo">
                             </div>
                             <div class="col-sm-6">
-                                <label class="form-label small fw-semibold text-muted text-uppercase">Correo electrónico</label>
-                                <input v-model="perfil.email" type="email" class="form-control form-control-sm" placeholder="correo@ejemplo.com">
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Correo electrónico</label>
+                                <input v-model="perfil.email" type="email" class="form-control form-control-sm bg-transparent" placeholder="correo@ejemplo.com">
                             </div>
                             <div class="col-sm-6">
-                                <label class="form-label small fw-semibold text-muted text-uppercase">Teléfono</label>
-                                <input v-model="perfil.telefono" class="form-control form-control-sm" placeholder="7777-1234">
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Teléfono</label>
+                                <input v-model="perfil.telefono" class="form-control form-control-sm bg-transparent" placeholder="7777-1234">
                             </div>
                             <div class="col-12 text-end">
                                 <button class="btn btn-sm fw-semibold px-4 text-white" style="background-color:#1a5c30;"
@@ -218,33 +218,33 @@ const perfilDocente = {
                 </div>
             </div>
             <div class="col-lg-5">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white fw-semibold border-bottom">
+                <div class="card border-0 shadow-sm bg-body-tertiary">
+                    <div class="card-header bg-transparent fw-bold border-bottom py-3">
                         <i class="bi bi-lock me-2 text-warning"></i>Cambiar Contraseña
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-12">
-                                <label class="form-label small fw-semibold text-muted text-uppercase">Contraseña actual</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Contraseña actual</label>
                                 <div class="input-group input-group-sm">
-                                    <input v-model="pwd.actual" :type="pwd.mostrarActual?'text':'password'" class="form-control" placeholder="••••••">
+                                    <input v-model="pwd.actual" :type="pwd.mostrarActual?'text':'password'" class="form-control bg-transparent" placeholder="••••••">
                                     <button class="btn btn-outline-secondary" @click="pwd.mostrarActual=!pwd.mostrarActual">
                                         <i :class="pwd.mostrarActual?'bi bi-eye-slash':'bi bi-eye'"></i>
                                     </button>
                                 </div>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small fw-semibold text-muted text-uppercase">Nueva contraseña</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Nueva contraseña</label>
                                 <div class="input-group input-group-sm">
-                                    <input v-model="pwd.nueva" :type="pwd.mostrarNueva?'text':'password'" class="form-control" placeholder="Mín. 6 caracteres">
+                                    <input v-model="pwd.nueva" :type="pwd.mostrarNueva?'text':'password'" class="form-control bg-transparent" placeholder="Mín. 6 caracteres">
                                     <button class="btn btn-outline-secondary" @click="pwd.mostrarNueva=!pwd.mostrarNueva">
                                         <i :class="pwd.mostrarNueva?'bi bi-eye-slash':'bi bi-eye'"></i>
                                     </button>
                                 </div>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small fw-semibold text-muted text-uppercase">Confirmar nueva</label>
-                                <input v-model="pwd.confirmar" type="password" class="form-control form-control-sm" placeholder="Repite">
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Confirmar nueva</label>
+                                <input v-model="pwd.confirmar" type="password" class="form-control form-control-sm bg-transparent" placeholder="Repite">
                                 <div v-if="pwd.confirmar && pwd.nueva!==pwd.confirmar" class="form-text text-danger">No coinciden.</div>
                             </div>
                             <div class="col-12 text-end">
@@ -264,17 +264,17 @@ const perfilDocente = {
             <!-- Modal Recorte Docente -->
             <div class="modal fade" id="modalRecorteDocente" tabindex="-1" data-bs-backdrop="static">
                 <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Ajustar Foto</h5>
+                    <div class="modal-content bg-body-tertiary border-0 shadow-lg">
+                        <div class="modal-header border-bottom py-3">
+                            <h5 class="modal-title fw-bold text-primary"><i class="bi bi-crop me-2"></i>Ajustar Foto</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body p-0 bg-dark text-center" style="max-height:500px; overflow:hidden;">
                             <img id="img-recortar-docente" :src="imagenRecortar" style="max-width:100%; max-height: 500px; display:block;">
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="button" class="btn btn-primary" @click="guardarFotoRecortada">Aplicar y Guardar</button>
+                        <div class="modal-footer border-top-0">
+                            <button type="button" class="btn btn-sm btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-sm btn-primary px-4 fw-bold" @click="guardarFotoRecortada">Aplicar y Guardar</button>
                         </div>
                     </div>
                 </div>

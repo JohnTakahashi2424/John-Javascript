@@ -94,15 +94,15 @@ const estadisticasAdmin = {
 
                 <!-- Alumnos por carrera -->
                 <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-header bg-white border-bottom small fw-semibold text-muted text-uppercase">
+                    <div class="card border-0 shadow-sm h-100 bg-body-tertiary">
+                        <div class="card-header bg-transparent border-bottom small fw-bold text-body-secondary text-uppercase py-3">
                             <i class="bi bi-people me-1"></i>Alumnos por carrera
                         </div>
                         <div class="card-body">
-                            <div v-if="stats.alumnosPorCarrera.length===0" class="text-muted text-center py-3 small">Sin datos</div>
+                            <div v-if="stats.alumnosPorCarrera.length===0" class="text-body-secondary text-center py-3 small">Sin datos</div>
                             <div v-for="c in stats.alumnosPorCarrera" :key="c.codigo" class="mb-3">
                                 <div class="d-flex justify-content-between small mb-1">
-                                    <span class="fw-semibold">{{ c.nombre }}</span>
+                                    <span class="fw-semibold text-body">{{ c.nombre }}</span>
                                     <span class="badge bg-primary rounded-pill">{{ c.total }}</span>
                                 </div>
                                 <div class="progress" style="height:8px;">
@@ -116,19 +116,19 @@ const estadisticasAdmin = {
 
                 <!-- Materias por carrera -->
                 <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-header bg-white border-bottom small fw-semibold text-muted text-uppercase">
+                    <div class="card border-0 shadow-sm h-100 bg-body-tertiary">
+                        <div class="card-header bg-transparent border-bottom small fw-bold text-body-secondary text-uppercase py-3">
                             <i class="bi bi-book me-1"></i>Materias por carrera
                         </div>
                         <div class="card-body">
-                            <div v-if="stats.materiasPorCarrera.length===0" class="text-muted text-center py-3 small">Sin datos</div>
+                            <div v-if="stats.materiasPorCarrera.length===0" class="text-body-secondary text-center py-3 small">Sin datos</div>
                             <table v-else class="table table-sm small mb-0">
-                                <thead class="table-light"><tr><th>Carrera</th><th class="text-center">Habilitadas</th><th class="text-center">Total</th></tr></thead>
+                                <thead class="bg-body-secondary"><tr><th class="text-body-secondary">Carrera</th><th class="text-center text-body-secondary">Habilitadas</th><th class="text-center text-body-secondary">Total</th></tr></thead>
                                 <tbody>
                                     <tr v-for="c in stats.materiasPorCarrera" :key="c.nombre">
-                                        <td>{{ c.nombre }}</td>
+                                        <td class="text-body">{{ c.nombre }}</td>
                                         <td class="text-center"><span class="badge bg-success">{{ c.habilitadas }}</span></td>
-                                        <td class="text-center text-muted">{{ c.total }}</td>
+                                        <td class="text-center text-body-secondary">{{ c.total }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -140,23 +140,23 @@ const estadisticasAdmin = {
                 <div class="col-12">
                     <div class="row g-3">
                         <div class="col-sm-4">
-                            <div class="card border-0 shadow-sm text-center py-3">
+                            <div class="card border-0 shadow-sm text-center py-3 bg-body-tertiary">
                                 <div class="fw-bold fs-3 text-success">{{ stats.docentesActivos }}</div>
-                                <div class="text-muted small">Docentes activos</div>
+                                <div class="text-body-secondary small">Docentes activos</div>
                             </div>
                         </div>
                         <div class="col-sm-4">
-                            <div class="card border-0 shadow-sm text-center py-3">
+                            <div class="card border-0 shadow-sm text-center py-3 bg-body-tertiary">
                                 <div class="fw-bold fs-3 text-primary">{{ stats.totalInscritos }}</div>
-                                <div class="text-muted small">Inscripciones totales</div>
+                                <div class="text-body-secondary small">Inscripciones totales</div>
                             </div>
                         </div>
                         <div class="col-sm-4">
-                            <div class="card border-0 shadow-sm text-center py-3">
+                            <div class="card border-0 shadow-sm text-center py-3 bg-body-tertiary">
                                 <div class="fw-bold fs-3" :class="stats.promedioGeneral >= 6 ? 'text-success' : 'text-warning'">
                                     {{ stats.promedioGeneral || '—' }}
                                 </div>
-                                <div class="text-muted small">Promedio general (cómputos)</div>
+                                <div class="text-body-secondary small">Promedio general (cómputos)</div>
                             </div>
                         </div>
                     </div>
@@ -164,29 +164,29 @@ const estadisticasAdmin = {
 
                 <!-- Rendimiento por materia -->
                 <div class="col-12" v-if="stats.promediosPorMateria.length > 0">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white border-bottom small fw-semibold text-muted text-uppercase">
+                    <div class="card border-0 shadow-sm bg-body-tertiary">
+                        <div class="card-header bg-transparent border-bottom small fw-bold text-body-secondary text-uppercase py-3">
                             <i class="bi bi-trophy me-1"></i>Rendimiento por materia
                         </div>
                         <div class="table-responsive">
-                            <table class="table table-sm align-middle mb-0 small">
-                                <thead class="table-light">
-                                    <tr><th>Materia</th><th>Código</th><th class="text-center">Inscritos</th><th class="text-center">Promedio</th><th class="text-center">Aprobados</th></tr>
+                            <table class="table table-hover align-middle mb-0 small">
+                                <thead class="bg-body-secondary">
+                                    <tr><th class="text-body-secondary">Materia</th><th class="text-body-secondary">Código</th><th class="text-center text-body-secondary">Inscritos</th><th class="text-center text-body-secondary">Promedio</th><th class="text-center text-body-secondary">Aprobados</th></tr>
                                 </thead>
                                 <tbody>
                                     <tr v-for="m in stats.promediosPorMateria" :key="m.codigo">
-                                        <td class="fw-semibold">{{ m.nombre }}</td>
-                                        <td class="text-muted">{{ m.codigo }}</td>
-                                        <td class="text-center">{{ m.inscritos }}</td>
+                                        <td class="fw-semibold text-body">{{ m.nombre }}</td>
+                                        <td class="text-body-secondary">{{ m.codigo }}</td>
+                                        <td class="text-center text-body">{{ m.inscritos }}</td>
                                         <td class="text-center">
                                             <span v-if="m.promedio" class="badge" :class="m.promedio>=6?'bg-success':'bg-danger'">
                                                 {{ m.promedio }}
                                             </span>
-                                            <span v-else class="text-muted">—</span>
+                                            <span v-else class="text-body-secondary">—</span>
                                         </td>
                                         <td class="text-center">
-                                            <span v-if="m.total>0">{{ m.aprobados }}/{{ m.total }}</span>
-                                            <span v-else class="text-muted">—</span>
+                                            <span v-if="m.total>0" class="text-body">{{ m.aprobados }}/{{ m.total }}</span>
+                                            <span v-else class="text-body-secondary">—</span>
                                         </td>
                                     </tr>
                                 </tbody>

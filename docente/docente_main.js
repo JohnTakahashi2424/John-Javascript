@@ -36,7 +36,7 @@ const docenteApp = Vue.createApp({
             docenteSesion: { username: '', codigo: '' },
             docentePerfil: null,
             perfilBuscado: false,
-            sidebarVisible: true,
+            darkMode: false,
             windowWidth: window.innerWidth,
             menuItems: [
                 { id: 'dashboard',    label: 'Dashboard',       icon: 'bi bi-speedometer2' },
@@ -49,6 +49,15 @@ const docenteApp = Vue.createApp({
         };
     },
     async created() {
+        // Cargar preferencia de Dark Mode
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            this.darkMode = true;
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+        } else {
+            document.documentElement.setAttribute('data-bs-theme', 'light');
+        }
+
         // Verificar sesión Docente
         try {
             const stored = sessionStorage.getItem('sesionUniversidad');
@@ -103,6 +112,12 @@ const docenteApp = Vue.createApp({
             if (this.docentePerfil) {
                 this.docentePerfil.foto = foto;
             }
+        },
+        toggleDarkMode() {
+            this.darkMode = !this.darkMode;
+            const theme = this.darkMode ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('theme', theme);
         }
     }
 });

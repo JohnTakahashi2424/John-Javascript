@@ -114,8 +114,8 @@ const misNotas = {
     template: `
         <div class="container-fluid py-3">
             <div class="d-flex align-items-center mb-3 border-bottom pb-2">
-                <i class="bi bi-journal-check me-2 fs-5 text-secondary"></i>
-                <h5 class="mb-0 fw-semibold">Mis Notas</h5>
+                <i class="bi bi-journal-check me-2 fs-5 text-body-secondary"></i>
+                <h5 class="mb-0 fw-semibold text-body">Mis Notas</h5>
                 <button class="btn btn-sm btn-outline-secondary ms-auto" @click="cargar"><i class="bi bi-arrow-clockwise"></i></button>
             </div>
 
@@ -124,105 +124,105 @@ const misNotas = {
             <!-- Resumen -->
             <div v-if="materias.length>0" class="row g-2 mb-4">
                 <div class="col-4">
-                    <div class="card border-0 shadow-sm text-center py-3">
+                    <div class="card border-0 shadow-sm bg-body-tertiary text-center py-3">
                         <div class="fw-bold fs-3 text-primary">{{ materias.length }}</div>
-                        <div class="text-muted small">Materias inscritas</div>
+                        <div class="text-body-secondary small">Materias inscritas</div>
                     </div>
                 </div>
                 <div class="col-4">
-                    <div class="card border-0 shadow-sm text-center py-3">
+                    <div class="card border-0 shadow-sm bg-body-tertiary text-center py-3">
                         <div class="fw-bold fs-3 text-success">{{ totalAprobadas }}</div>
-                        <div class="text-muted small">Aprobadas ✅</div>
+                        <div class="text-body-secondary small">Aprobadas ✅</div>
                     </div>
                 </div>
                 <div class="col-4">
-                    <div class="card border-0 shadow-sm text-center py-3">
+                    <div class="card border-0 shadow-sm bg-body-tertiary text-center py-3">
                         <div class="fw-bold fs-3 text-danger">{{ totalReprobadas }}</div>
-                        <div class="text-muted small">Reprobadas ❌</div>
+                        <div class="text-body-secondary small">Reprobadas ❌</div>
                     </div>
                 </div>
             </div>
 
             <div v-if="cargando" class="text-center py-5"><div class="spinner-border text-secondary"></div></div>
-            <div v-else-if="materias.length===0 && !error" class="text-center py-5 text-muted">
+            <div v-else-if="materias.length===0 && !error" class="text-center py-5 text-body-secondary">
                 <i class="bi bi-journal-x fs-1 opacity-25"></i>
                 <p class="mt-2">No tienes evaluaciones registradas aún.</p>
             </div>
 
             <div v-else class="row g-3">
                 <div v-for="mat in materias" :key="mat.idInscripcion" class="col-12">
-                    <div class="card border-0 shadow-sm">
+                    <div class="card border-0 shadow-sm bg-body-tertiary">
                         <!-- Header de la materia -->
-                        <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
+                        <div class="card-header bg-transparent d-flex align-items-center justify-content-between py-3 border-bottom">
                             <div>
-                                <span class="fw-semibold">{{ mat.materia }}</span>
-                                <small class="text-muted ms-2">{{ mat.codigo }}</small>
-                                <small v-if="mat.carrera!=='—'" class="ms-2 badge bg-light text-dark border">{{ mat.carrera }}</small>
+                                <span class="fw-bold text-primary">{{ mat.materia }}</span>
+                                <small class="text-body-secondary ms-2 fw-semibold">{{ mat.codigo }}</small>
+                                <small v-if="mat.carrera!=='—'" class="ms-2 badge bg-body-secondary text-body-secondary border-0">{{ mat.carrera }}</small>
                             </div>
                             <div class="d-flex align-items-center gap-2">
-                                <span v-if="mat.notaFinal!==null" class="badge fs-6 py-2 px-3"
+                                <span v-if="mat.notaFinal!==null" class="badge fs-6 py-2 px-3 shadow-sm"
                                       :class="mat.aprobado?'bg-success':'bg-danger'">
                                     <i :class="mat.aprobado?'bi bi-check-circle':'bi bi-x-circle'" class="me-1"></i>
                                     {{ mat.notaFinal }} — {{ mat.aprobado?'Aprobado':'Reprobado' }}
                                 </span>
-                                <span v-else class="badge bg-secondary">Pendiente</span>
+                                <span v-else class="badge bg-body-secondary text-body-secondary border">Pendiente</span>
                             </div>
                         </div>
 
                         <!-- Tabla de cómputos -->
                         <div class="card-body p-0">
                             <div class="table-responsive">
-                                <table class="table table-sm align-middle mb-0 small">
-                                    <thead class="table-light">
+                                <table class="table table-hover align-middle mb-0 small">
+                                    <thead class="bg-body-secondary">
                                         <tr>
-                                            <th>Cómputo</th>
-                                            <th class="text-center">Lab. 1 (30%)</th>
-                                            <th class="text-center">Lab. 2 (30%)</th>
-                                            <th class="text-center">Parcial (40%)</th>
-                                            <th class="text-center fw-bold">Nota Cómputo</th>
-                                            <th>Estado</th>
-                                            <th>Observaciones</th>
+                                            <th class="text-body-secondary">Cómputo</th>
+                                            <th class="text-center text-body-secondary">Lab. 1 (30%)</th>
+                                            <th class="text-center text-body-secondary">Lab. 2 (30%)</th>
+                                            <th class="text-center text-body-secondary">Parcial (40%)</th>
+                                            <th class="text-center fw-bold text-body-secondary">Nota Cómputo</th>
+                                            <th class="text-body-secondary">Estado</th>
+                                            <th class="text-body-secondary">Observaciones</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr v-for="comp in mat.computos" :key="comp.numero"
-                                            :class="comp.notaComputo===null?'table-light':''">
+                                            :class="comp.notaComputo===null?'bg-body-secondary bg-opacity-10':''">
                                             <td class="fw-semibold">
-                                                <span class="badge bg-dark">C{{ comp.numero }}</span>
+                                                <span class="badge bg-primary">C{{ comp.numero }}</span>
                                             </td>
                                             <td class="text-center">{{ comp.lab1 ?? '—' }}</td>
                                             <td class="text-center">{{ comp.lab2 ?? '—' }}</td>
                                             <td class="text-center">{{ comp.examen ?? '—' }}</td>
                                             <td class="text-center">
-                                                <span v-if="comp.notaComputo!==null" class="badge fs-6"
+                                                <span v-if="comp.notaComputo!==null" class="badge fs-6 shadow-sm"
                                                       :class="parseFloat(comp.notaComputo)>=6?'bg-success':'bg-danger'">
                                                     {{ comp.notaComputo }}
                                                 </span>
-                                                <span v-else class="text-muted">—</span>
+                                                <span v-else class="text-body-secondary opacity-50">—</span>
                                             </td>
                                             <td>
-                                                <span v-if="comp.estado==='cerrado'" class="badge bg-secondary">
+                                                <span v-if="comp.estado==='cerrado'" class="badge bg-body-secondary text-body-secondary border">
                                                     <i class="bi bi-lock-fill me-1"></i>Cerrado
                                                 </span>
                                                 <span v-else-if="comp.notaComputo!==null" class="badge bg-warning text-dark">
                                                     <i class="bi bi-unlock me-1"></i>Abierto
                                                 </span>
-                                                <span v-else class="text-muted small">Sin evaluar</span>
+                                                <span v-else class="text-body-secondary small">Sin evaluar</span>
                                             </td>
-                                            <td class="text-muted">{{ comp.observaciones || '—' }}</td>
+                                            <td class="text-body-secondary italic">{{ comp.observaciones || '—' }}</td>
                                         </tr>
                                     </tbody>
-                                    <tfoot v-if="mat.notaFinal!==null" class="table-light">
+                                    <tfoot v-if="mat.notaFinal!==null" class="bg-body-tertiary">
                                         <tr>
-                                            <td colspan="4" class="text-end fw-bold pe-3">Promedio Final:</td>
+                                            <td colspan="4" class="text-end fw-bold pe-3 text-body">Promedio Final:</td>
                                             <td class="text-center">
-                                                <span class="badge fs-5 py-2 px-3"
+                                                <span class="badge fs-5 py-2 px-3 shadow"
                                                       :class="mat.aprobado?'bg-success':'bg-danger'">
                                                     {{ mat.notaFinal }}
                                                 </span>
                                             </td>
                                             <td colspan="2">
-                                                <span :class="mat.aprobado?'text-success':'text-danger'" class="fw-semibold">
+                                                <span :class="mat.aprobado?'text-success':'text-danger'" class="fw-bold fs-6">
                                                     {{ mat.aprobado?'✅ APROBADO':'❌ REPROBADO' }}
                                                 </span>
                                             </td>

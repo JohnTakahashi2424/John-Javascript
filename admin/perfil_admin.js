@@ -83,24 +83,24 @@ const perfilAdmin = {
         <div v-if="cargando" class="text-center py-5"><div class="spinner-border text-secondary"></div></div>
         <div v-else class="row g-4">
             <div class="col-lg-6">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white fw-semibold border-bottom">
+                <div class="card border-0 shadow-sm bg-body-tertiary">
+                    <div class="card-header bg-transparent fw-bold border-bottom py-3">
                         <i class="bi bi-shield-lock me-2 text-primary"></i>Datos de la Cuenta
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-12">
-                                <label class="form-label small fw-semibold text-muted text-uppercase">Rol</label>
-                                <input value="Administrador" class="form-control form-control-sm bg-light" readonly>
+                                <label class="form-label small fw-semibold text-body-secondary text-uppercase">Rol</label>
+                                <input value="Administrador" class="form-control form-control-sm bg-body-secondary border-secondary-subtle" readonly>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small fw-semibold text-muted text-uppercase">Nombre de usuario *</label>
-                                <input v-model="perfil.username" class="form-control form-control-sm" placeholder="admin">
-                                <div class="form-text">Este es el nombre con el que inicias sesión.</div>
+                                <label class="form-label small fw-semibold text-body-secondary text-uppercase">Nombre de usuario *</label>
+                                <input v-model="perfil.username" class="form-control form-control-sm bg-transparent" placeholder="admin">
+                                <div class="form-text text-body-secondary">Este es el nombre con el que inicias sesión.</div>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small fw-semibold text-muted text-uppercase">Correo electrónico</label>
-                                <input v-model="perfil.email" type="email" class="form-control form-control-sm" placeholder="admin@universidad.edu">
+                                <label class="form-label small fw-semibold text-body-secondary text-uppercase">Correo electrónico</label>
+                                <input v-model="perfil.email" type="email" class="form-control form-control-sm bg-transparent" placeholder="admin@universidad.edu">
                             </div>
                             <div class="col-12 text-end">
                                 <button class="btn btn-sm text-white fw-semibold px-4" style="background-color:#1a3a5c;"
@@ -114,37 +114,37 @@ const perfilAdmin = {
                 </div>
             </div>
             <div class="col-lg-6">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white fw-semibold border-bottom">
+                <div class="card border-0 shadow-sm bg-body-tertiary">
+                    <div class="card-header bg-transparent fw-bold border-bottom py-3">
                         <i class="bi bi-lock me-2 text-warning"></i>Cambiar Contraseña
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-12">
-                                <label class="form-label small fw-semibold text-muted text-uppercase">Contraseña actual</label>
+                                <label class="form-label small fw-semibold text-body-secondary text-uppercase">Contraseña actual</label>
                                 <div class="input-group input-group-sm">
-                                    <input v-model="pwd.actual" :type="pwd.mostrarActual?'text':'password'" class="form-control" placeholder="••••••">
+                                    <input v-model="pwd.actual" :type="pwd.mostrarActual?'text':'password'" class="form-control bg-transparent" placeholder="••••••">
                                     <button class="btn btn-outline-secondary" @click="pwd.mostrarActual=!pwd.mostrarActual">
                                         <i :class="pwd.mostrarActual?'bi bi-eye-slash':'bi bi-eye'"></i>
                                     </button>
                                 </div>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small fw-semibold text-muted text-uppercase">Nueva contraseña</label>
+                                <label class="form-label small fw-semibold text-body-secondary text-uppercase">Nueva contraseña</label>
                                 <div class="input-group input-group-sm">
-                                    <input v-model="pwd.nueva" :type="pwd.mostrarNueva?'text':'password'" class="form-control" placeholder="Mín. 6 caracteres">
+                                    <input v-model="pwd.nueva" :type="pwd.mostrarNueva?'text':'password'" class="form-control bg-transparent" placeholder="Mín. 6 caracteres">
                                     <button class="btn btn-outline-secondary" @click="pwd.mostrarNueva=!pwd.mostrarNueva">
                                         <i :class="pwd.mostrarNueva?'bi bi-eye-slash':'bi bi-eye'"></i>
                                     </button>
                                 </div>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small fw-semibold text-muted text-uppercase">Confirmar nueva</label>
-                                <input v-model="pwd.confirmar" type="password" class="form-control form-control-sm" placeholder="Repite la nueva contraseña">
+                                <label class="form-label small fw-semibold text-body-secondary text-uppercase">Confirmar nueva</label>
+                                <input v-model="pwd.confirmar" type="password" class="form-control form-control-sm bg-transparent" placeholder="Repite la nueva contraseña">
                                 <div v-if="pwd.confirmar && pwd.nueva!==pwd.confirmar" class="form-text text-danger">No coinciden.</div>
                             </div>
                             <div class="col-12 text-end">
-                                <button class="btn btn-sm btn-outline-warning fw-semibold px-4"
+                                <button class="btn btn-sm btn-outline-warning fw-bold px-4"
                                         @click="cambiarPassword" :disabled="cambiandoPwd">
                                     <span v-if="cambiandoPwd" class="spinner-border spinner-border-sm me-1"></span>
                                     <i v-else class="bi bi-key me-1"></i>Cambiar contraseña

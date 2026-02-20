@@ -146,9 +146,9 @@ const docentesAdmin = {
             </div>
 
             <div class="mb-3" style="max-width:400px;">
-                <div class="input-group">
-                    <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
-                    <input v-model="filtro" type="text" class="form-control border-start-0"
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-body-secondary border-end-0"><i class="bi bi-search text-body-secondary"></i></span>
+                    <input v-model="filtro" type="text" class="form-control border-start-0 bg-transparent"
                            placeholder="Buscar por nombre, código o especialidad...">
                     <button v-if="filtro" class="btn btn-outline-secondary" @click="filtro=''">
                         <i class="bi bi-x"></i>
@@ -161,20 +161,20 @@ const docentesAdmin = {
                 <i class="bi bi-person-workspace fs-1 opacity-25"></i>
                 <p class="mt-2">No hay docentes registrados.</p>
             </div>
-            <div v-else class="card border-0 shadow-sm">
+            <div v-else class="card border-0 shadow-sm bg-body-tertiary">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0 small">
-                        <thead class="table-light">
+                        <thead class="bg-body-secondary">
                             <tr>
-                                <th style="width:50px;">Foto</th>
-                                <th>Código</th>
-                                <th>Nombre</th>
-                                <th>Especialidad</th>
-                                <th>Escalafón</th>
-                                <th>Email</th>
-                                <th>Estado</th>
-                                <th>Token</th>
-                                <th class="text-end">Acciones</th>
+                                <th style="width:50px;" class="text-body-secondary">Foto</th>
+                                <th class="text-body-secondary">Código</th>
+                                <th class="text-body-secondary">Nombre</th>
+                                <th class="text-body-secondary">Especialidad</th>
+                                <th class="text-body-secondary">Escalafón</th>
+                                <th class="text-body-secondary">Email</th>
+                                <th class="text-body-secondary">Estado</th>
+                                <th class="text-body-secondary">Token</th>
+                                <th class="text-end text-body-secondary">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -188,7 +188,7 @@ const docentesAdmin = {
                                 <td class="fw-semibold">{{ d.codigo }}</td>
                                 <td>{{ d.nombre }}</td>
                                 <td>{{ d.especialidad || '—' }}</td>
-                                <td><span class="badge bg-light text-dark border">{{ d.escalafon || '—' }}</span></td>
+                                <td><span class="badge bg-body-secondary text-body-secondary border border-secondary-subtle">{{ d.escalafon || '—' }}</span></td>
                                 <td>{{ d.email || '—' }}</td>
                                 <td>
                                     <span class="badge" :class="estado(d)==='activo' ? 'bg-success' : 'bg-secondary'">
@@ -223,7 +223,7 @@ const docentesAdmin = {
                         </tbody>
                     </table>
                 </div>
-                <div class="card-footer bg-white text-muted small">
+                <div class="card-footer bg-transparent border-top-0 text-body-secondary small">
                     {{ docentesFiltrados.length }} de {{ docentes.length }} docentes
                 </div>
             </div>
@@ -231,8 +231,8 @@ const docentesAdmin = {
             <!-- Modal Editar -->
             <div class="modal fade" id="modalEditarDocente" tabindex="-1">
                 <div class="modal-dialog">
-                    <div class="modal-content" v-if="editando">
-                        <div class="modal-header" style="background-color:#1a3a5c;">
+                    <div class="modal-content border-0 shadow bg-body-tertiary" v-if="editando">
+                        <div class="modal-header bg-primary bg-opacity-75">
                             <h5 class="modal-title text-white"><i class="bi bi-pencil me-2"></i>Editar Docente</h5>
                             <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
@@ -244,37 +244,37 @@ const docentesAdmin = {
                                         <img :src="editando.foto || 'https://via.placeholder.com/100?text=Foto'"
                                              class="rounded-circle border"
                                              style="width:100px; height:100px; object-fit: cover;">
-                                        <label class="position-absolute bottom-0 end-0 bg-white border rounded-circle p-1 shadow-sm"
+                                        <label class="position-absolute bottom-0 end-0 bg-body border rounded-circle p-1 shadow-sm"
                                                style="cursor:pointer;" title="Cambiar foto">
-                                            <i class="bi bi-camera-fill text-dark small"></i>
+                                            <i class="bi bi-camera-fill text-body small"></i>
                                             <input type="file" class="d-none" accept="image/*" @change="seleccionarFoto">
                                         </label>
                                     </div>
                                 </div>
 
                                 <div class="col-6">
-                                    <label class="form-label small fw-semibold text-muted text-uppercase">Código *</label>
-                                    <input v-model="editando.codigo" class="form-control form-control-sm" required>
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Código *</label>
+                                    <input v-model="editando.codigo" class="form-control form-control-sm bg-transparent" required>
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-label small fw-semibold text-muted text-uppercase">Especialidad</label>
-                                    <input v-model="editando.especialidad" class="form-control form-control-sm" placeholder="Ej. Matemáticas">
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Especialidad</label>
+                                    <input v-model="editando.especialidad" class="form-control form-control-sm bg-transparent" placeholder="Ej. Matemáticas">
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label small fw-semibold text-muted text-uppercase">Nombre completo *</label>
-                                    <input v-model="editando.nombre" class="form-control form-control-sm" required>
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Nombre completo *</label>
+                                    <input v-model="editando.nombre" class="form-control form-control-sm bg-transparent" required>
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-label small fw-semibold text-muted text-uppercase">Email</label>
-                                    <input v-model="editando.email" type="email" class="form-control form-control-sm">
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Email</label>
+                                    <input v-model="editando.email" type="email" class="form-control form-control-sm bg-transparent">
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-label small fw-semibold text-muted text-uppercase">Teléfono</label>
-                                    <input v-model="editando.telefono" class="form-control form-control-sm">
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Teléfono</label>
+                                    <input v-model="editando.telefono" class="form-control form-control-sm bg-transparent">
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-label small fw-semibold text-muted text-uppercase">Escalafón</label>
-                                    <select v-model="editando.escalafon" class="form-select form-select-sm">
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Escalafón</label>
+                                    <select v-model="editando.escalafon" class="form-select form-select-sm bg-transparent">
                                         <option value="">— Seleccionar —</option>
                                         <option value="tecnico">Técnico</option>
                                         <option value="profesor">Profesor</option>
@@ -285,7 +285,7 @@ const docentesAdmin = {
                                 </div>
                             </div>
                         </div>
-                        <div class="modal-footer">
+                        <div class="modal-footer border-top-0">
                             <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
                             <button class="btn btn-sm text-white fw-semibold" style="background-color:#1a3a5c;"
                                     @click="guardarEdicion" :disabled="guardandoEdit">
@@ -300,15 +300,15 @@ const docentesAdmin = {
             <!-- Modal Materias del Docente -->
             <div class="modal fade" id="modalMateriasDocente" tabindex="-1">
                 <div class="modal-dialog">
-                    <div class="modal-content" v-if="docenteDetalle">
-                        <div class="modal-header" style="background-color:#1a3a5c;">
+                    <div class="modal-content border-0 shadow bg-body-tertiary" v-if="docenteDetalle">
+                        <div class="modal-header bg-primary bg-opacity-75">
                             <h5 class="modal-title text-white">
                                 <i class="bi bi-book me-2"></i>Materias — {{ docenteDetalle.nombre }}
                             </h5>
                             <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <div v-if="materiasDocente.length===0" class="text-muted text-center py-3">
+                            <div v-if="materiasDocente.length===0" class="text-body-secondary text-center py-3">
                                 <i class="bi bi-book fs-2 opacity-25"></i>
                                 <p class="mt-2 small">Este docente no tiene materias asignadas.</p>
                             </div>
@@ -316,8 +316,8 @@ const docentesAdmin = {
                                 <li v-for="m in materiasDocente" :key="m.idMateria"
                                     class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>
-                                        <div class="fw-semibold">{{ m.nombre }}</div>
-                                        <div class="text-muted small">{{ m.codigo }}</div>
+                                        <div class="fw-semibold text-body">{{ m.nombre }}</div>
+                                        <div class="text-body-secondary small">{{ m.codigo }}</div>
                                     </div>
                                     <span class="badge" :class="(m.estado||'habilitada')==='habilitada'?'bg-success':'bg-secondary'">
                                         {{ (m.estado||'habilitada')==='habilitada' ? 'Habilitada' : 'Deshabilitada' }}
