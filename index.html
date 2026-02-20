@@ -102,6 +102,22 @@
                                     <i class="bi bi-pencil-square"></i> Inscripciones
                                 </a>
                             </li>
+                            <li class="nav-item" v-if="sesion.rol === 'Alumno'">
+                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2"
+                                   :class="forms.mis_notas.mostrar ? 'active text-white' : 'text-secondary'"
+                                   :style="forms.mis_notas.mostrar ? 'background-color:#1a3a5c;' : ''"
+                                   href="#" @click.prevent="abrirVentana('mis_notas')">
+                                    <i class="bi bi-journal-check"></i> Mis Notas
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2"
+                                   :class="forms.mi_perfil.mostrar ? 'active text-white' : 'text-secondary'"
+                                   :style="forms.mi_perfil.mostrar ? 'background-color:#1a3a5c;' : ''"
+                                   href="#" @click.prevent="abrirVentana('mi_perfil')">
+                                    <i class="bi bi-person-circle"></i> Mi Perfil
+                                </a>
+                            </li>
                         </ul>
                     </nav>
 
@@ -128,6 +144,9 @@
 
                         <inscripciones @buscar='buscar("busqueda_inscripciones","obtenerInscripciones")' :forms="forms" ref="inscripciones" v-show="forms.inscripciones.mostrar"></inscripciones>
                         <busqueda_inscripciones @modificar='modificar("inscripciones","modificarInscripcion", $event)' ref="busqueda_inscripciones" v-show="forms.busqueda_inscripciones.mostrar"></busqueda_inscripciones>
+
+                        <mis_notas ref="mis_notas" v-show="forms.mis_notas.mostrar"></mis_notas>
+                        <mi_perfil ref="mi_perfil" v-show="forms.mi_perfil.mostrar"></mi_perfil>
 
                     </main>
                 </div>
@@ -157,6 +176,8 @@
 
     <script src="registro-alumnos/inscripciones.js"></script>
     <script src="registro-alumnos/busqueda_inscripciones.js"></script>
+    <script src="registro-alumnos/mis_notas.js"></script>
+    <script src="registro-alumnos/mi_perfil.js"></script>
 
     <script src="main.js"></script>
 </body>

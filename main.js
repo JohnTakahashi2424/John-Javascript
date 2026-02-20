@@ -25,6 +25,26 @@ db.version(3).stores({
     inscripciones:'idInscripcion, idMatricula, idMateria',
     usuarios:     '++id, username, codigo, email, rol'
 });
+db.version(4).stores({
+    alumnos:      'idAlumno, codigo, nombre, carrera, estado',
+    materias:     'idMateria, codigo, nombre, docenteId, estado',
+    docentes:     'idDocente, codigo, nombre, especialidad, estado',
+    matricula:    'idMatricula, codigo, nombreAlumno, idAlumno, periodoId, estado',
+    inscripciones:'idInscripcion, idMatricula, idMateria, idAlumno',
+    periodos:     '++idPeriodo, año, ciclo, estado',
+    usuarios:     '++id, username, codigo, email, rol, estado'
+});
+db.version(5).stores({
+    alumnos:      'idAlumno, codigo, nombre, carrera, carreraId, estado',
+    materias:     'idMateria, codigo, nombre, docenteId, carreraId, carrera, estado',
+    docentes:     'idDocente, codigo, nombre, especialidad, estado',
+    matricula:    'idMatricula, codigo, nombreAlumno, idAlumno, periodoId, estado',
+    inscripciones:'idInscripcion, idMatricula, idMateria, idAlumno',
+    periodos:     '++idPeriodo, año, ciclo, estado',
+    carreras:     '++idCarrera, codigo, nombre, estado',
+    evaluaciones: '++id, idInscripcion, idMateria, computo, estado',
+    usuarios:     '++id, username, codigo, email, rol, estado'
+});
 
 // =============================================
 // APP VUE
@@ -48,8 +68,24 @@ const app = Vue.createApp({
                 busqueda_matricula:    { mostrar: false },
                 inscripciones:         { mostrar: false },
                 busqueda_inscripciones:{ mostrar: false },
+                mis_notas:             { mostrar: false },
+                mi_perfil:             { mostrar: false },
             }
         };
+    },
+    created(){
+        // Restaurar sesión desde sessionStorage al recargar la página
+        try {
+            const stored = sessionStorage.getItem('sesionUniversidad');
+            if (stored) {
+                const s = JSON.parse(stored);
+                if (s && s.autenticado && s.rol !== 'Admin') {
+                    this.sesion.autenticado = true;
+                    this.sesion.username    = s.username;
+                    this.sesion.rol         = s.rol;
+                }
+            }
+        } catch(e) { /* sesión corrupta, ignorar */ }
     },
     methods:{
         abrirVentana(nombre){
@@ -69,12 +105,14 @@ const app = Vue.createApp({
             if(this.forms[busquedaKey]) this.forms[busquedaKey].mostrar = false;
             this.$refs[refForm][metodo](datos);
         },
-        loginExitoso({ username, rol }) {
+        loginExitoso({ username, rol, codigo }) {
             this.sesion.autenticado = true;
             this.sesion.username    = username;
             this.sesion.rol         = rol;
+            sessionStorage.setItem('sesionUniversidad', JSON.stringify({ autenticado: true, username, rol, codigo: codigo || '' }));
         },
         cerrarSesion() {
+            sessionStorage.removeItem('sesionUniversidad');
             this.sesion.autenticado = false;
             this.sesion.username    = '';
             this.sesion.rol         = '';
@@ -98,5 +136,7 @@ app.component('matricula',              matricula);
 app.component('busqueda_matricula',     busqueda_matricula);
 app.component('inscripciones',          inscripciones);
 app.component('busqueda_inscripciones', busqueda_inscripciones);
+app.component('mis_notas',              misNotas);
+app.component('mi_perfil',              miPerfil);
 
 app.mount('#app');

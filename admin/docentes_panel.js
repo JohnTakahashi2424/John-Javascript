@@ -1,0 +1,230 @@
+// =============================================
+// ADMIN — Gestión de Docentes
+// =============================================
+
+const docentesAdmin = {
+    data() {
+        return {
+            docentes: [],
+            filtro: '',
+            cargando: false,
+            editando: null,
+            guardandoEdit: false,
+            docenteDetalle: null,
+            materiasDocente: []
+        };
+    },
+    async mounted() { await this.cargar(); },
+    computed: {
+        docentesFiltrados() {
+            const f = this.filtro.toLowerCase().trim();
+            if (!f) return this.docentes;
+            return this.docentes.filter(d =>
+                (d.nombre      || '').toLowerCase().includes(f) ||
+                (d.codigo      || '').toLowerCase().includes(f) ||
+                (d.especialidad|| '').toLowerCase().includes(f)
+            );
+        }
+    },
+    methods: {
+        async cargar() {
+            this.cargando = true;
+            this.docentes = await db.docentes.orderBy('nombre').toArray();
+            this.cargando = false;
+        },
+        estado(d) { return d.estado || 'activo'; },
+        async toggleEstado(docente) {
+            const nuevo = this.estado(docente) === 'activo' ? 'inactivo' : 'activo';
+            await db.docentes.update(docente.idDocente, { estado: nuevo });
+            docente.estado = nuevo;
+            alertify.success(`Docente ${nuevo === 'activo' ? 'activado' : 'desactivado'}.`);
+        },
+        abrirEditar(docente) {
+            this.editando = { ...docente };
+            this.abrirModal('modalEditarDocente');
+        },
+        async guardarEdicion() {
+            if (!this.editando.nombre || !this.editando.codigo) {
+                alertify.error('Nombre y código son obligatorios.');
+                return;
+            }
+            this.guardandoEdit = true;
+            await db.docentes.update(this.editando.idDocente, {
+                codigo: this.editando.codigo,
+                nombre: this.editando.nombre,
+                especialidad: this.editando.especialidad || '',
+                email: this.editando.email || '',
+                telefono: this.editando.telefono || ''
+            });
+            await this.cargar();
+            this.cerrarModal('modalEditarDocente');
+            this.guardandoEdit = false;
+            alertify.success('Docente actualizado.');
+        },
+        async verMaterias(docente) {
+            this.docenteDetalle = docente;
+            const todas = await db.materias.toArray();
+            this.materiasDocente = todas.filter(m =>
+                String(m.docenteId) === String(docente.idDocente) ||
+                (m.docente || '').toLowerCase() === docente.nombre.toLowerCase()
+            );
+            this.abrirModal('modalMateriasDocente');
+        },
+        abrirModal(id) { new bootstrap.Modal(document.getElementById(id)).show(); },
+        cerrarModal(id) { bootstrap.Modal.getInstance(document.getElementById(id))?.hide(); }
+    },
+    template: `
+        <div>
+            <div class="d-flex align-items-center mb-3 border-bottom pb-2">
+                <i class="bi bi-person-workspace me-2 fs-5 text-secondary"></i>
+                <h5 class="mb-0 fw-semibold">Gestión de Docentes</h5>
+                <button class="btn btn-sm btn-outline-secondary ms-auto" @click="cargar">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+
+            <div class="mb-3" style="max-width:400px;">
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
+                    <input v-model="filtro" type="text" class="form-control border-start-0"
+                           placeholder="Buscar por nombre, código o especialidad...">
+                    <button v-if="filtro" class="btn btn-outline-secondary" @click="filtro=''">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div v-if="cargando" class="text-center py-4"><div class="spinner-border text-secondary"></div></div>
+            <div v-else-if="docentes.length===0" class="text-center py-5 text-muted">
+                <i class="bi bi-person-workspace fs-1 opacity-25"></i>
+                <p class="mt-2">No hay docentes registrados.</p>
+            </div>
+            <div v-else class="card border-0 shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Especialidad</th>
+                                <th>Email</th>
+                                <th>Estado</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="d in docentesFiltrados" :key="d.idDocente"
+                                :class="estado(d)==='inactivo' ? 'table-light text-muted' : ''">
+                                <td class="fw-semibold">{{ d.codigo }}</td>
+                                <td>{{ d.nombre }}</td>
+                                <td>{{ d.especialidad || '—' }}</td>
+                                <td>{{ d.email || '—' }}</td>
+                                <td>
+                                    <span class="badge" :class="estado(d)==='activo' ? 'bg-success' : 'bg-secondary'">
+                                        {{ estado(d)==='activo' ? 'Activo' : 'Inactivo' }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <button class="btn btn-sm btn-outline-primary" @click="abrirEditar(d)" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm" @click="toggleEstado(d)" title="Cambiar estado"
+                                                :class="estado(d)==='activo' ? 'btn-outline-warning' : 'btn-outline-success'">
+                                            <i :class="estado(d)==='activo' ? 'bi bi-person-slash' : 'bi bi-person-check'"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-info" @click="verMaterias(d)" title="Ver materias">
+                                            <i class="bi bi-book"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer bg-white text-muted small">
+                    {{ docentesFiltrados.length }} de {{ docentes.length }} docentes
+                </div>
+            </div>
+
+            <!-- Modal Editar -->
+            <div class="modal fade" id="modalEditarDocente" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content" v-if="editando">
+                        <div class="modal-header" style="background-color:#1a3a5c;">
+                            <h5 class="modal-title text-white"><i class="bi bi-pencil me-2"></i>Editar Docente</h5>
+                            <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold text-muted text-uppercase">Código *</label>
+                                    <input v-model="editando.codigo" class="form-control form-control-sm" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold text-muted text-uppercase">Especialidad</label>
+                                    <input v-model="editando.especialidad" class="form-control form-control-sm" placeholder="Ej. Matemáticas">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-semibold text-muted text-uppercase">Nombre completo *</label>
+                                    <input v-model="editando.nombre" class="form-control form-control-sm" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold text-muted text-uppercase">Email</label>
+                                    <input v-model="editando.email" type="email" class="form-control form-control-sm">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold text-muted text-uppercase">Teléfono</label>
+                                    <input v-model="editando.telefono" class="form-control form-control-sm">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                            <button class="btn btn-sm text-white fw-semibold" style="background-color:#1a3a5c;"
+                                    @click="guardarEdicion" :disabled="guardandoEdit">
+                                <span v-if="guardandoEdit" class="spinner-border spinner-border-sm me-1"></span>
+                                <i v-else class="bi bi-save me-1"></i>Guardar cambios
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Materias del Docente -->
+            <div class="modal fade" id="modalMateriasDocente" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content" v-if="docenteDetalle">
+                        <div class="modal-header" style="background-color:#1a3a5c;">
+                            <h5 class="modal-title text-white">
+                                <i class="bi bi-book me-2"></i>Materias — {{ docenteDetalle.nombre }}
+                            </h5>
+                            <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div v-if="materiasDocente.length===0" class="text-muted text-center py-3">
+                                <i class="bi bi-book fs-2 opacity-25"></i>
+                                <p class="mt-2 small">Este docente no tiene materias asignadas.</p>
+                            </div>
+                            <ul v-else class="list-group list-group-flush">
+                                <li v-for="m in materiasDocente" :key="m.idMateria"
+                                    class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-semibold">{{ m.nombre }}</div>
+                                        <div class="text-muted small">{{ m.codigo }}</div>
+                                    </div>
+                                    <span class="badge" :class="(m.estado||'habilitada')==='habilitada'?'bg-success':'bg-secondary'">
+                                        {{ (m.estado||'habilitada')==='habilitada' ? 'Habilitada' : 'Deshabilitada' }}
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `
+};
