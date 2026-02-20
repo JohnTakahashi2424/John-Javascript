@@ -20,7 +20,7 @@
 
 <div id="docenteApp" v-cloak>
     <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark px-3 shadow-sm" style="background-color: #1a3a5c; height: 56px;">
+    <nav class="navbar navbar-expand-lg navbar-dark px-3 shadow-sm" style="background-color: #1b4f36; height: 56px;">
         <div class="container-fluid px-0">
             <div class="navbar-brand d-flex align-items-center gap-2 mb-0" style="padding: 0;">
                 <i class="bi bi-mortarboard-fill fs-4"></i>
@@ -58,8 +58,8 @@
         <nav class="bg-white border-end shadow-sm flex-shrink-0"
              :style="sidebarVisible || windowWidth >= 768 ? 'width:220px;' : 'width:0;overflow:hidden;'"
              style="transition:width .2s;">
-            <div class="p-3 border-bottom bg-light">
-                <small class="text-muted fw-bold text-uppercase" style="font-size:.7rem;letter-spacing:1px;">Módulos</small>
+            <div class="px-3 pt-3 pb-2">
+                <p class="text-uppercase text-muted fw-semibold mb-0" style="font-size:.65rem;letter-spacing:1px;">Módulos</p>
             </div>
             <ul class="nav flex-column gap-1 px-2 pb-3">
                 <li v-for="item in menuItems" :key="item.id" class="nav-item">
