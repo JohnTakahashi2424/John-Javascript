@@ -33,6 +33,36 @@ const docentesAdmin = {
             this.cargando = false;
         },
         estado(d) { return d.estado || 'activo'; },
+        async eliminar(docente) {
+            alertify.confirm(
+                'Eliminar Docente Definitivamente',
+                `¿Estás seguro de ELIMINAR a <b>${docente.nombre}</b>?<br>Se borrarán su usuario y datos. Las materias asignadas quedarán sin docente.`,
+                async () => {
+                    try {
+                        // 1. Desasignar materias
+                        const materiasAsignadas = await db.materias.where('docenteId').equals(String(docente.idDocente)).toArray();
+                        for (const m of materiasAsignadas) {
+                            await db.materias.update(m.idMateria, { docenteId: '' });
+                        }
+                        
+                        // 2. Eliminar usuario asociado (si existe)
+                        if (docente.codigo) {
+                            const user = await db.usuarios.where('codigo').equals(docente.codigo).first();
+                            if (user) await db.usuarios.delete(user.id);
+                        }
+
+                        // 3. Eliminar docente
+                        await db.docentes.delete(docente.idDocente);
+                        
+                        alertify.success('Docente eliminado y materias desasignadas.');
+                        await this.cargar();
+                    } catch(e) {
+                        alertify.error('Error al eliminar: ' + e.message);
+                    }
+                },
+                () => {}
+            ).set('labels', { ok: 'Sí, ELIMINAR', cancel: 'Cancelar' });
+        },
         async toggleEstado(docente) {
             const nuevo = this.estado(docente) === 'activo' ? 'inactivo' : 'activo';
             await db.docentes.update(docente.idDocente, { estado: nuevo });
@@ -68,6 +98,7 @@ const docentesAdmin = {
                 especialidad: this.editando.especialidad || '',
                 email: this.editando.email || '',
                 telefono: this.editando.telefono || '',
+                escalafon: this.editando.escalafon || '',
                 foto: this.editando.foto
             });
             await this.cargar();
@@ -122,6 +153,7 @@ const docentesAdmin = {
                                 <th>Código</th>
                                 <th>Nombre</th>
                                 <th>Especialidad</th>
+                                <th>Escalafón</th>
                                 <th>Email</th>
                                 <th>Estado</th>
                                 <th class="text-end">Acciones</th>
@@ -138,6 +170,7 @@ const docentesAdmin = {
                                 <td class="fw-semibold">{{ d.codigo }}</td>
                                 <td>{{ d.nombre }}</td>
                                 <td>{{ d.especialidad || '—' }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ d.escalafon || '—' }}</span></td>
                                 <td>{{ d.email || '—' }}</td>
                                 <td>
                                     <span class="badge" :class="estado(d)==='activo' ? 'bg-success' : 'bg-secondary'">
@@ -152,6 +185,9 @@ const docentesAdmin = {
                                         <button class="btn btn-sm" @click="toggleEstado(d)" title="Cambiar estado"
                                                 :class="estado(d)==='activo' ? 'btn-outline-warning' : 'btn-outline-success'">
                                             <i :class="estado(d)==='activo' ? 'bi bi-person-slash' : 'bi bi-person-check'"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" @click="eliminar(d)" title="Eliminar definitivamente">
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                         <button class="btn btn-sm btn-outline-info" @click="verMaterias(d)" title="Ver materias">
                                             <i class="bi bi-book"></i>
@@ -210,6 +246,17 @@ const docentesAdmin = {
                                 <div class="col-6">
                                     <label class="form-label small fw-semibold text-muted text-uppercase">Teléfono</label>
                                     <input v-model="editando.telefono" class="form-control form-control-sm">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold text-muted text-uppercase">Escalafón</label>
+                                    <select v-model="editando.escalafon" class="form-select form-select-sm">
+                                        <option value="">— Seleccionar —</option>
+                                        <option value="tecnico">Técnico</option>
+                                        <option value="profesor">Profesor</option>
+                                        <option value="ingeniero">Licenciado / Ingeniero</option>
+                                        <option value="maestria">Maestría</option>
+                                        <option value="doctor">Doctor</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>

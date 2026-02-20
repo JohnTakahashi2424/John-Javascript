@@ -54,10 +54,26 @@ const login = {
                     return;
                 }
 
-                // Verificar estado de cuenta
+                // Verificar estado de cuenta (Usuario)
                 if (usuario.estado === 'inactivo') {
                     alertify.error('Tu cuenta está desactivada. Contacta al administrador.');
                     return;
+                }
+
+                // Verificar estado del perfil específico (Alumno/Docente)
+                // Esto es necesario porque el Admin desactiva desde el panel de Alumnos/Docentes
+                if (usuario.rol === 'Alumno' && usuario.codigo) {
+                    const perfil = await db.alumnos.where('codigo').equalsIgnoreCase(usuario.codigo).first();
+                    if (perfil && (perfil.estado === 'inactivo')) {
+                        alertify.error('Tu expediente de alumno ha sido desactivado. Contacta a registro académico.');
+                        return;
+                    }
+                } else if (usuario.rol === 'Docente' && usuario.codigo) {
+                    const perfil = await db.docentes.where('codigo').equalsIgnoreCase(usuario.codigo).first();
+                    if (perfil && (perfil.estado === 'inactivo')) {
+                        alertify.error('Tu perfil docente ha sido desactivado. Contacta a recursos humanos.');
+                        return;
+                    }
                 }
 
                 const hashIngresado = await this.hashPassword(this.loginForm.password);

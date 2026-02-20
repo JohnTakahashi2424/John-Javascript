@@ -94,10 +94,17 @@ const app = Vue.createApp({
                     this.sesion.username    = s.username;
                     this.sesion.rol         = s.rol;
                     
-                    // SIEMPRE cargar la foto desde la BD, no del sessionStorage (por límites de espacio)
+                    // SIEMPRE cargar la foto desde la BD
                     if(s.rol === 'Alumno' && s.codigo){
                          const alumno = await db.alumnos.where('codigo').equals(s.codigo).first();
-                         if(alumno && alumno.foto) this.sesion.foto = alumno.foto;
+                         if (alumno) {
+                             if (alumno.estado === 'inactivo') {
+                                 console.warn('Sesión cerrada: Alumno inactivo.');
+                                 this.cerrarSesion();
+                                 return;
+                             }
+                             if (alumno.foto) this.sesion.foto = alumno.foto;
+                         }
                     }
                 }
             }

@@ -74,6 +74,11 @@ const docenteApp = Vue.createApp({
             this.docentePerfil = docente;
             window.docenteData  = docente;
             this.perfilBuscado  = true;
+
+            if (docente && docente.estado === 'inactivo') {
+                alert('Tu cuenta de docente ha sido desactivada.');
+                this.cerrarSesion();
+            }
         },
         cerrarSesion() {
             sessionStorage.removeItem('sesionUniversidad');

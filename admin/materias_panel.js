@@ -30,6 +30,10 @@ const materiasAdmin = {
         },
         carrerasUnicas() {
             return [...new Set(this.materias.map(m => m.carrera).filter(Boolean))];
+        },
+        docenteSeleccionado() {
+            if (!this.form.docenteId) return null;
+            return this.docentes.find(d => String(d.idDocente) === String(this.form.docenteId)) || null;
         }
     },
     methods: {
@@ -278,9 +282,20 @@ const materiasAdmin = {
                                     <select v-model="form.docenteId" class="form-select form-select-sm">
                                         <option value="">— Sin asignar —</option>
                                         <option v-for="d in docentes" :key="d.idDocente" :value="String(d.idDocente)">
-                                            {{ d.nombre }} ({{ d.especialidad || d.codigo }})
+                                            {{ d.nombre }} — {{ d.escalafon || '?' }} ({{ d.especialidad || 'S/E' }})
                                         </option>
                                     </select>
+                                    <!-- Info Docente Seleccionado -->
+                                    <div v-if="docenteSeleccionado" class="mt-2 p-2 bg-light border rounded small d-flex gap-2 align-items-center">
+                                        <img :src="docenteSeleccionado.foto || 'https://via.placeholder.com/40'" class="rounded-circle border" style="width:40px;height:40px;object-fit:cover;">
+                                        <div>
+                                            <div class="fw-bold text-dark">{{ docenteSeleccionado.nombre }}</div>
+                                            <div class="text-muted" style="font-size:0.8em;">
+                                                <span class="badge bg-white text-dark border me-1">{{ docenteSeleccionado.escalafon || 'Sin escalafón' }}</span>
+                                                {{ docenteSeleccionado.especialidad || 'Sin especialidad' }}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label small fw-semibold text-muted text-uppercase">Carrera</label>

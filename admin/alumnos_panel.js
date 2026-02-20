@@ -38,6 +38,47 @@ const alumnosAdmin = {
             this.cargando = false;
         },
         estado(a) { return a.estado || 'activo'; },
+        async eliminar(alumno) {
+            alertify.confirm(
+                'Eliminar Alumno Definitivamente',
+                `¿Estás seguro de ELIMINAR a <b>${alumno.nombre}</b>?<br>Se borrarán su usuario, matrícula, inscripciones y notas de forma permanente.`,
+                async () => {
+                    try {
+                        // 1. Eliminar Matrícula
+                        const matriculas = await db.matricula.where('idAlumno').equals(alumno.idAlumno).toArray();
+                        const idsMatricula = matriculas.map(m => m.idMatricula);
+                        await db.matricula.where('idAlumno').equals(alumno.idAlumno).delete();
+
+                        // 2. Eliminar Inscripciones y Evaluaciones (Notas)
+                        if (idsMatricula.length > 0) {
+                            const inscripciones = await db.inscripciones.where('idMatricula').anyOf(idsMatricula).toArray();
+                            const idsInscripciones = inscripciones.map(i => i.idInscripcion);
+                            
+                            await db.inscripciones.where('idMatricula').anyOf(idsMatricula).delete();
+                            
+                            if (idsInscripciones.length > 0) {
+                                await db.evaluaciones.where('idInscripcion').anyOf(idsInscripciones).delete();
+                            }
+                        }
+
+                        // 3. Eliminar usuario asociado (si existe)
+                        if (alumno.codigo) {
+                            const user = await db.usuarios.where('codigo').equals(alumno.codigo).first();
+                            if (user) await db.usuarios.delete(user.id);
+                        }
+
+                        // 4. Eliminar Alumno
+                        await db.alumnos.delete(alumno.idAlumno);
+                        
+                        alertify.success('Alumno y todos sus registros eliminados.');
+                        await this.cargar();
+                    } catch(e) {
+                        alertify.error('Error al eliminar: ' + e.message);
+                    }
+                },
+                () => {}
+            ).set('labels', { ok: 'Sí, ELIMINAR', cancel: 'Cancelar' });
+        },
         async toggleEstado(alumno) {
             const nuevo = this.estado(alumno) === 'activo' ? 'inactivo' : 'activo';
             await db.alumnos.update(alumno.idAlumno, { estado: nuevo });
@@ -164,6 +205,9 @@ const alumnosAdmin = {
                                         <button class="btn btn-sm" @click="toggleEstado(a)" title="Cambiar estado"
                                                 :class="estado(a)==='activo' ? 'btn-outline-warning' : 'btn-outline-success'">
                                             <i :class="estado(a)==='activo' ? 'bi bi-person-slash' : 'bi bi-person-check'"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" @click="eliminar(a)" title="Eliminar definitivamente">
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                         <button class="btn btn-sm btn-outline-info" @click="verHistorial(a)" title="Ver historial">
                                             <i class="bi bi-clock-history"></i>
