@@ -91,7 +91,7 @@ const inscripciones = {
                 return;
             }
             this.materiasInscritas = await db.inscripciones
-                .filter(i => i.idMatricula == this.inscripcion.idMatricula)
+                .where('matriculaId').equals(Number(this.inscripcion.idMatricula))
                 .toArray();
         },
         // Al seleccionar una materia, guarda el nombre
@@ -181,9 +181,9 @@ const inscripciones = {
 
             let datos = {
                 idInscripcion: esModificar ? this.idInscripcion : this.getId(),
-                idMatricula:   this.inscripcion.idMatricula,
+                matriculaId:   Number(this.inscripcion.idMatricula),
                 alumno:        this.inscripcion.alumno,
-                idMateria:     this.inscripcion.idMateria,
+                materiaId:     Number(this.inscripcion.idMateria),
                 materia:       this.inscripcion.materia,
                 fecha:         this.inscripcion.fecha,
                 ciclo:         this.inscripcion.ciclo

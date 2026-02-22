@@ -45,19 +45,19 @@ const alumnosAdmin = {
                 async () => {
                     try {
                         // 1. Eliminar Matrícula
-                        const matriculas = await db.matricula.where('idAlumno').equals(alumno.idAlumno).toArray();
+                        const matriculas = await db.matricula.where('alumnoId').equals(alumno.idAlumno).toArray();
                         const idsMatricula = matriculas.map(m => m.idMatricula);
-                        await db.matricula.where('idAlumno').equals(alumno.idAlumno).delete();
+                        await db.matricula.where('alumnoId').equals(alumno.idAlumno).delete();
 
                         // 2. Eliminar Inscripciones y Evaluaciones (Notas)
                         if (idsMatricula.length > 0) {
                             const inscripciones = await db.inscripciones.where('idMatricula').anyOf(idsMatricula).toArray();
                             const idsInscripciones = inscripciones.map(i => i.idInscripcion);
                             
-                            await db.inscripciones.where('idMatricula').anyOf(idsMatricula).delete();
+                            await db.inscripciones.where('matriculaId').anyOf(idsMatricula).delete();
                             
                             if (idsInscripciones.length > 0) {
-                                await db.evaluaciones.where('idInscripcion').anyOf(idsInscripciones).delete();
+                                await db.evaluaciones.where('inscripcionId').anyOf(idsInscripciones).delete();
                             }
                         }
 
@@ -144,11 +144,11 @@ const alumnosAdmin = {
         async verHistorial(alumno) {
             this.alumnoDetalle = alumno;
             this.histMatriculas = await db.matricula
-                .filter(m => String(m.codigo) === String(alumno.codigo) || String(m.nombreAlumno) === String(alumno.nombre))
+                .where('alumnoId').equals(alumno.idAlumno)
                 .toArray();
             const idMatriculas = this.histMatriculas.map(m => m.idMatricula);
             this.histInscripciones = idMatriculas.length
-                ? await db.inscripciones.filter(i => idMatriculas.includes(i.idMatricula)).toArray()
+                ? await db.inscripciones.where('matriculaId').anyOf(idMatriculas).toArray()
                 : [];
             this.abrirModal('modalHistorialAlumno');
         },

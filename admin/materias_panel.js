@@ -48,7 +48,7 @@ const materiasAdmin = {
             const inscripciones = await db.inscripciones.toArray();
             const mapa = {};
             inscripciones.forEach(i => {
-                const k = String(i.idMateria);
+                const k = String(i.materiaId || i.idMateria);
                 mapa[k] = (mapa[k] || 0) + 1;
             });
             this.cuposOcupados = mapa;
