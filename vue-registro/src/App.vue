@@ -1,9 +1,8 @@
 <script setup>
-import AlumnoRegistro from './components/AlumnoRegistro.vue'
 </script>
 
 <template>
-  <AlumnoRegistro />
+  <router-view />
 </template>
 
 <style>
