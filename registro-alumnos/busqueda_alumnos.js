@@ -11,7 +11,7 @@ const busqueda_alumnos = {
         },
         async obtenerAlumnos(){
             this.alumnos = await db.alumnos.filter(
-                alumno => alumno.codigo.toLowerCase().includes(this.buscar.toLowerCase())
+                alumno => alumno.carnet.toLowerCase().includes(this.buscar.toLowerCase())
                     || alumno.nombre.toLowerCase().includes(this.buscar.toLowerCase())
             ).toArray();
         },
@@ -32,13 +32,13 @@ const busqueda_alumnos = {
             </div>
             <div class="mb-3" style="max-width: 340px;">
                 <input autocomplete="off" type="search" @keyup="obtenerAlumnos()" v-model="buscar"
-                    placeholder="Buscar por código o nombre..." class="form-control form-control-sm bg-transparent">
+                    placeholder="Buscar por carnet o nombre..." class="form-control form-control-sm bg-transparent">
             </div>
             <div class="table-responsive">
                 <table class="table table-sm table-hover align-middle" id="tblAlumnos">
                     <thead class="bg-body-secondary">
                         <tr>
-                            <th class="text-body-secondary small text-uppercase fw-bold">Código</th>
+                            <th class="text-body-secondary small text-uppercase fw-bold">Carnet</th>
                             <th class="text-body-secondary small text-uppercase fw-bold">Nombre</th>
                             <th class="text-body-secondary small text-uppercase fw-bold">Dirección</th>
                             <th class="text-body-secondary small text-uppercase fw-bold">Email</th>
@@ -51,7 +51,7 @@ const busqueda_alumnos = {
                             <td colspan="6" class="text-center text-body-secondary py-3 small italic">Sin resultados</td>
                         </tr>
                         <tr v-for="alumno in alumnos" :key="alumno.idAlumno" @click="modificarAlumno(alumno)" style="cursor:pointer;">
-                            <td class="small">{{ alumno.codigo }}</td>
+                            <td class="small font-monospace">{{ alumno.carnet }}</td>
                             <td class="small fw-semibold text-body">{{ alumno.nombre }}</td>
                             <td class="small text-body-secondary">{{ alumno.direccion }}</td>
                             <td class="small text-body-secondary">{{ alumno.email }}</td>

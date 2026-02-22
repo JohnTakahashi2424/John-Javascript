@@ -4,17 +4,19 @@
 // =============================================
 
 const db = new Dexie('universidad');
-db.version(1).stores({ alumnos:'idAlumno,codigo,nombre', materias:'idMateria,codigo,nombre', docentes:'idDocente,codigo,nombre', matricula:'idMatricula,codigo,nombreAlumno', inscripciones:'idInscripcion,idMatricula,idMateria' });
-db.version(2).stores({ alumnos:'idAlumno,codigo,nombre', materias:'idMateria,codigo,nombre', docentes:'idDocente,codigo,nombre', matricula:'idMatricula,codigo,nombreAlumno', inscripciones:'idInscripcion,idMatricula,idMateria', usuarios:'++id,username,rol' });
-db.version(3).stores({ alumnos:'idAlumno,codigo,nombre', materias:'idMateria,codigo,nombre', docentes:'idDocente,codigo,nombre', matricula:'idMatricula,codigo,nombreAlumno', inscripciones:'idInscripcion,idMatricula,idMateria', usuarios:'++id,username,codigo,email,rol' });
-db.version(4).stores({ alumnos:'idAlumno,codigo,nombre,carrera,estado', materias:'idMateria,codigo,nombre,docenteId,estado', docentes:'idDocente,codigo,nombre,especialidad,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', usuarios:'++id,username,codigo,email,rol,estado' });
-db.version(5).stores({ alumnos:'idAlumno,codigo,nombre,carrera,carreraId,estado', materias:'idMateria,codigo,nombre,docenteId,carreraId,carrera,estado', docentes:'idDocente,codigo,nombre,especialidad,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', carreras:'++idCarrera,codigo,nombre,estado', evaluaciones:'++id,idInscripcion,idMateria,computo,estado', usuarios:'++id,username,codigo,email,rol,estado' });
-db.version(6).stores({ alumnos:'idAlumno,codigo,nombre,carrera,carreraId,foto,estado', materias:'idMateria,codigo,nombre,docenteId,carreraId,carrera,estado', docentes:'idDocente,codigo,nombre,especialidad,foto,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', carreras:'++idCarrera,codigo,nombre,estado', evaluaciones:'++id,idInscripcion,idMateria,computo,estado', usuarios:'++id,username,codigo,email,rol,estado' });
-db.version(7).stores({ alumnos:'idAlumno,codigo,nombre,carrera,carreraId,foto,estado', materias:'idMateria,codigo,nombre,docenteId,carreraId,carrera,estado', docentes:'idDocente,codigo,nombre,especialidad,foto,estado', matricula:'idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', carreras:'++idCarrera,codigo,nombre,estado', evaluaciones:'++id,idInscripcion,idMateria,computo,estado', usuarios:'++id,username,codigo,email,rol,estado', solicitudes:'++id,tipo,nombre,codigo,fecha,estado' });
-// v8: Corrige idAlumno/idDocente/etc. a auto-increment (++), necesario para add() sin clave manual
-db.version(8).stores({ alumnos:'++idAlumno,codigo,nombre,carrera,carreraId,foto,estado,tokenAcceso', materias:'++idMateria,codigo,nombre,docenteId,carreraId,carrera,estado', docentes:'++idDocente,codigo,nombre,especialidad,foto,estado,tokenAcceso', matricula:'++idMatricula,codigo,nombreAlumno,idAlumno,periodoId,estado', inscripciones:'++idInscripcion,idMatricula,idMateria,idAlumno', periodos:'++idPeriodo,año,ciclo,estado', carreras:'++idCarrera,codigo,nombre,estado', evaluaciones:'++id,idInscripcion,idMateria,computo,estado', usuarios:'++id,username,codigo,email,rol,estado', solicitudes:'++id,tipo,nombre,codigo,fecha,estado' });
-// v9: Schema relacional — todos los registros vinculados por FK numérico
-db.version(9).stores({ usuarios:'++id,username,codigo,email,rol,estado', alumnos:'++idAlumno,codigo,nombre,usuarioId,carreraId,foto,estado,tokenAcceso', docentes:'++idDocente,codigo,nombre,usuarioId,especialidad,foto,estado,tokenAcceso', carreras:'++idCarrera,codigo,nombre,facultad,estado', materias:'++idMateria,codigo,nombre,docenteId,carreraId,estado', periodos:'++idPeriodo,año,ciclo,estado', matricula:'++idMatricula,codigo,alumnoId,periodoId,carreraId,estado', inscripciones:'++idInscripcion,matriculaId,materiaId,estado', evaluaciones:'++id,inscripcionId,estado', solicitudes:'++id,tipo,nombre,codigo,fecha,estado' });
+// v10: Arquitectura de Carnetización Automática e Inmutable
+db.version(10).stores({
+    usuarios:     '++id, &username, &email, rol, &carnet, estado',
+    alumnos:      '++idAlumno, &carnet, nombre, usuarioId, carreraId, sexo, añoIngreso, estado',
+    docentes:     '++idDocente, &carnet, nombre, usuarioId, especialidad, sexo, añoIngreso, estado',
+    carreras:     '++idCarrera, &codigo, nombre, facultad, estado',
+    materias:     '++idMateria, &codigo, nombre, docenteId, carreraId, estado',
+    periodos:     '++idPeriodo, año, ciclo, estado',
+    matricula:    '++idMatricula, &codigo, alumnoId, periodoId, carreraId, estado',
+    inscripciones:'++idInscripcion, matriculaId, materiaId, estado',
+    evaluaciones: '++id, inscripcionId, estado',
+    solicitudes:  '++id, tipo, username, &email, sexo, carreraId, fecha, estado'
+});
 
 // Auto-recovery: si la BD no puede migrar (cambio de PK), borrar y recargar
 db.open().catch(err => {
@@ -33,7 +35,7 @@ const docenteApp = Vue.createApp({
     data() {
         return {
             modulo: 'dashboard',
-            docenteSesion: { username: '', codigo: '' },
+            docenteSesion: { username: '', carnet: '' },
             docentePerfil: null,
             perfilBuscado: false,
             darkMode: false,
@@ -65,7 +67,7 @@ const docenteApp = Vue.createApp({
             const s = JSON.parse(stored);
             if (!s || s.rol !== 'Docente') { window.location.href = '../index.html'; return; }
             this.docenteSesion.username = s.username;
-            this.docenteSesion.codigo   = s.codigo || '';
+            this.docenteSesion.carnet   = s.carnet || '';
         } catch(e) {
             window.location.href = '../index.html';
             return;
@@ -77,13 +79,13 @@ const docenteApp = Vue.createApp({
     },
     methods: {
         async buscarPerfil() {
-            const codigo   = this.docenteSesion.codigo;
+            const carnet   = this.docenteSesion.carnet;
             const username = this.docenteSesion.username;
             let docente = null;
 
-            if (codigo) {
+            if (carnet) {
                 docente = await db.docentes.filter(d =>
-                    (d.codigo || '').toLowerCase() === codigo.toLowerCase()
+                    (d.carnet || '').toLowerCase() === carnet.toLowerCase()
                 ).first();
             }
             // Fallback: buscar por nombre similar al username

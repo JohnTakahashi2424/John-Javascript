@@ -22,14 +22,14 @@ const misNotas = {
             this.error = null;
             try {
                 const sesion = JSON.parse(sessionStorage.getItem('sesionUniversidad') || '{}');
-                const codigo = sesion.codigo || '';
+                const carnet = sesion.carnet || '';
                 const username = sesion.username || '';
 
-                // Buscar alumno por código o nombre
+                // Buscar alumno por carnet o nombre
                 let alumno = null;
                 const todosAlumnos = await db.alumnos.toArray();
-                if (codigo) {
-                    alumno = todosAlumnos.find(a => (a.codigo || '').toLowerCase() === codigo.toLowerCase());
+                if (carnet) {
+                    alumno = todosAlumnos.find(a => (a.carnet || '').toLowerCase() === carnet.toLowerCase());
                 }
                 if (!alumno && username) {
                     alumno = todosAlumnos.find(a =>

@@ -34,20 +34,21 @@ db.version(8).stores({
     carreras: '++idCarrera, codigo, nombre, estado',
     evaluaciones: '++id, idInscripcion, idMateria, computo, estado',
     usuarios: '++id, username, codigo, email, rol, estado',
-    solicitudes: '++id, tipo, nombre, codigo, fecha, estado'
+    solicitudes:  '++id, tipo, nombre, codigo, fecha, estado'
 });
-// v9: Schema relacional — todos los registros vinculados por FK numérico
-db.version(9).stores({
-    usuarios:     '++id, username, codigo, email, rol, estado',
-    alumnos:      '++idAlumno, codigo, nombre, usuarioId, carreraId, foto, estado, tokenAcceso',
-    docentes:     '++idDocente, codigo, nombre, usuarioId, especialidad, foto, estado, tokenAcceso',
-    carreras:     '++idCarrera, codigo, nombre, facultad, estado',
-    materias:     '++idMateria, codigo, nombre, docenteId, carreraId, estado',
+
+// v10: Arquitectura de Carnetización Automática e Inmutable
+db.version(10).stores({
+    usuarios:     '++id, &username, &email, rol, &carnet, estado',
+    alumnos:      '++idAlumno, &carnet, nombre, usuarioId, carreraId, sexo, añoIngreso, estado',
+    docentes:     '++idDocente, &carnet, nombre, usuarioId, especialidad, sexo, añoIngreso, estado',
+    carreras:     '++idCarrera, &codigo, nombre, facultad, estado',
+    materias:     '++idMateria, &codigo, nombre, docenteId, carreraId, estado',
     periodos:     '++idPeriodo, año, ciclo, estado',
-    matricula:    '++idMatricula, codigo, alumnoId, periodoId, carreraId, estado',
+    matricula:    '++idMatricula, &codigo, alumnoId, periodoId, carreraId, estado',
     inscripciones:'++idInscripcion, matriculaId, materiaId, estado',
     evaluaciones: '++id, inscripcionId, estado',
-    solicitudes:  '++id, tipo, nombre, codigo, fecha, estado'
+    solicitudes:  '++id, tipo, username, &email, sexo, carreraId, fecha, estado'
 });
 
 // Auto-recovery: si la BD no puede migrar (cambio de PK), borrar y recargar
@@ -70,6 +71,7 @@ const adminApp = Vue.createApp({
             windowWidth: window.innerWidth,
             menuItems: [
                 { id: 'dashboard',      label: 'Dashboard',      icon: 'bi bi-speedometer2' },
+                { id: 'solicitudes',    label: 'Solicitudes',    icon: 'bi bi-person-plus-fill' },
                 { id: 'alumnos',        label: 'Alumnos',        icon: 'bi bi-person-badge' },
                 { id: 'docentes',       label: 'Docentes',       icon: 'bi bi-person-workspace' },
                 { id: 'carreras',       label: 'Carreras',       icon: 'bi bi-building' },
@@ -123,20 +125,21 @@ const adminApp = Vue.createApp({
                 const usuarios = await db.usuarios.toArray();
                 for (const u of usuarios) {
                     if (u.rol === 'Alumno') {
-                        // Buscar por usuarioId (FK v9) primero, fallback a codigo
+                        // Buscar por usuarioId (FK v9) primero, fallback a carnet (v10)
                         let perfil = u.id
                             ? await db.alumnos.where('usuarioId').equals(u.id).first()
                             : null;
-                        if (!perfil && u.codigo)
-                            perfil = await db.alumnos.where('codigo').equalsIgnoreCase(u.codigo).first();
+                        if (!perfil && u.carnet)
+                            perfil = await db.alumnos.where('carnet').equalsIgnoreCase(u.carnet).first();
 
                         if (!perfil) {
                             // Crear perfil faltante y vincularlo
                             await db.alumnos.add({
-                                codigo: u.codigo || '', nombre: u.username,
-                                email: u.email || '', carreraId: '', _carreraNombre: '',
+                                carnet: u.carnet || '', nombre: u.username,
+                                email: u.email || '', carreraId: '',
                                 foto: '', telefono: '', direccion: '',
-                                usuarioId: u.id, estado: 'activo', tokenAcceso: ''
+                                sexo: 'Masculino', añoIngreso: new Date().getFullYear(),
+                                usuarioId: u.id, estado: 'activo'
                             });
                         } else if (!perfil.usuarioId) {
                             // Perfil existe pero sin FK — sellar el vínculo
@@ -146,15 +149,16 @@ const adminApp = Vue.createApp({
                         let perfil = u.id
                             ? await db.docentes.where('usuarioId').equals(u.id).first()
                             : null;
-                        if (!perfil && u.codigo)
-                            perfil = await db.docentes.where('codigo').equalsIgnoreCase(u.codigo).first();
+                        if (!perfil && u.carnet)
+                            perfil = await db.docentes.where('carnet').equalsIgnoreCase(u.carnet).first();
 
                         if (!perfil) {
                             await db.docentes.add({
-                                codigo: u.codigo || '', nombre: u.username,
+                                carnet: u.carnet || '', nombre: u.username,
                                 email: u.email || '', especialidad: '',
                                 foto: '', telefono: '',
-                                usuarioId: u.id, estado: 'activo', tokenAcceso: ''
+                                sexo: 'Masculino', añoIngreso: new Date().getFullYear(),
+                                usuarioId: u.id, estado: 'activo'
                             });
                         } else if (!perfil.usuarioId) {
                             await db.docentes.update(perfil.idDocente, { usuarioId: u.id });
@@ -167,6 +171,7 @@ const adminApp = Vue.createApp({
 });
 
 adminApp.component('admin-dashboard',    adminDashboard);
+adminApp.component('solicitudes-admin',  solicitudesAdmin);
 adminApp.component('alumnos-admin',      alumnosAdmin);
 adminApp.component('docentes-admin',     docentesAdmin);
 adminApp.component('carreras-admin',     carrerasAdmin);

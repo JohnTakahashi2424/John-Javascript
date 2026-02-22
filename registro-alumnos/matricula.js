@@ -24,6 +24,8 @@ const matricula = {
             periodosDisponibles: [],
             // Carreras disponibles (desde BD)
             carrerasDisponibles: [],
+            // Sesión
+            sesion: { autenticado: false, rol: '', username: '', id: null, email: '' }
         }
     },
     methods:{
@@ -44,7 +46,7 @@ const matricula = {
             this.buscandoAlumno = true;
             const q = this.buscarAlumno.toLowerCase();
             this.alumnosEncontrados = await db.alumnos.filter(
-                a => a.nombre.toLowerCase().includes(q) || a.codigo.toLowerCase().includes(q)
+                a => a.nombre.toLowerCase().includes(q) || a.carnet.toLowerCase().includes(q)
             ).toArray();
             this.sinAlumnos = this.alumnosEncontrados.length === 0;
             this.buscandoAlumno = false;
@@ -61,10 +63,31 @@ const matricula = {
         seleccionarCarrera(carrera){
             this.matricula.carreraId = carrera.idCarrera;
             this.matricula._carreraNombre = carrera.nombre;
+            this.generarCodigoMatricula();
         },
         seleccionarPeriodo(periodo){
             this.matricula.periodoId = periodo.idPeriodo;
             this.matricula._periodoCiclo = periodo.ciclo + ' - ' + periodo.año;
+            this.generarCodigoMatricula();
+        },
+        async generarCodigoMatricula(){
+            if(this.accion === 'modificar' || !this.matricula.carreraId || !this.matricula.periodoId) return;
+            
+            const carrera = this.carrerasDisponibles.find(c => c.idCarrera === this.matricula.carreraId);
+            const periodo = this.periodosDisponibles.find(p => p.idPeriodo === this.matricula.periodoId);
+            if(!carrera || !periodo) return;
+
+            const codCarrera = (carrera.codigo || 'GEN').toUpperCase();
+            const anio = periodo.año;
+
+            // Contar cuantas matriculas existen para esta carrera y periodo
+            const total = await db.matricula
+                .where('carreraId').equals(this.matricula.carreraId)
+                .filter(m => m.periodoId === this.matricula.periodoId)
+                .count();
+
+            const correlativo = String(total + 1).padStart(4, '0');
+            this.matricula.codigo = `MAT-${anio}-${codCarrera}-${correlativo}`;
         },
         async cargarPeriodos(){
             this.periodosDisponibles = await db.periodos.where('estado').equals('abierto').toArray();
@@ -126,10 +149,26 @@ const matricula = {
                 await db.matricula.update(this.idMatricula, datos);
                 alertify.success(`Matrícula de ${datos._alumnoNombre} actualizada correctamente.`);
             } else {
+                if (await this.validarEstadoRegistro()) {
+                    alertify.error('Ya posees un registro de matrícula activo para este período.');
+                    return;
+                }
                 await db.matricula.add(datos);
                 alertify.success(`Matrícula de ${datos._alumnoNombre} guardada correctamente.`);
             }
             this.limpiarFormulario();
+        },
+        async validarEstadoRegistro() {
+            if (this.sesion.rol === 'Alumno' && this.matricula.alumnoId) {
+                const matriculado = await db.matricula
+                    .where('alumnoId').equals(this.matricula.alumnoId)
+                    .filter(m => m.periodoId === this.matricula.periodoId)
+                    .first();
+                if (matriculado && this.accion === 'nuevo') {
+                    return true; // Ya está matriculado
+                }
+            }
+            return false;
         },
         limpiarFormulario(){
             this.accion = 'nuevo';
@@ -151,6 +190,20 @@ const matricula = {
     async mounted(){
         await this.cargarPeriodos();
         await this.cargarCarreras();
+
+        // Cargar sesión y precargar datos
+        const stored = sessionStorage.getItem('sesionUniversidad');
+        if (stored) {
+            const s = JSON.parse(stored);
+            this.sesion = s;
+            
+            if (s.rol === 'Alumno' && s.id) {
+                const alumno = await db.alumnos.where('usuarioId').equals(s.id).first();
+                if (alumno) {
+                    this.seleccionarAlumno(alumno);
+                }
+            }
+        }
     },
     template: `
         <div>
@@ -165,8 +218,11 @@ const matricula = {
 
                         <div class="row mb-3">
                             <div class="col-12">
-                                <label class="form-label text-body-secondary small fw-bold text-uppercase">Código</label>
-                                <input placeholder="MATR-001" required v-model="matricula.codigo" type="text" class="form-control form-control-sm bg-transparent" @input="matricula.codigo = matricula.codigo.toUpperCase()">
+                                <label class="form-label text-body-secondary small fw-bold text-uppercase">Código de Matrícula</label>
+                                <div class="form-control form-control-sm bg-body-secondary border-secondary-subtle font-monospace text-primary fw-bold">
+                                    {{ matricula.codigo || 'SE GENERARÁ AL SELECCIONAR CARRERA' }}
+                                </div>
+                                <div class="form-text text-body-secondary small">Basado en periodo, carrera y correlativo.</div>
                             </div>
                         </div>
 
@@ -185,6 +241,8 @@ const matricula = {
                                 placeholder="Escribe el nombre o código del alumno..."
                                 class="form-control form-control-sm bg-transparent"
                                 :class="sinAlumnos ? 'is-invalid' : alumnoSeleccionado ? 'is-valid' : ''"
+                                :readonly="sesion.rol === 'Alumno'"
+                                :disabled="sesion.rol === 'Alumno'"
                                 autocomplete="off">
                             <!-- Lista de sugerencias -->
                             <ul v-if="alumnosEncontrados.length > 0"
@@ -195,7 +253,7 @@ const matricula = {
                                     style="cursor:pointer;"
                                     @mousedown.prevent="seleccionarAlumno(a)">
                                     <span class="fw-semibold text-body">{{ a.nombre }}</span>
-                                    <span class="text-body-secondary ms-2 small">{{ a.codigo }}</span>
+                                    <span class="text-body-secondary ms-2 small font-monospace">{{ a.carnet }}</span>
                                 </li>
                             </ul>
                             <!-- Mensaje de error -->

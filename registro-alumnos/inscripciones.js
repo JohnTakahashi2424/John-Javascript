@@ -52,11 +52,11 @@ const inscripciones = {
             // Filtrar por carrera del alumno logueado
             try {
                 const sesion = JSON.parse(sessionStorage.getItem('sesionUniversidad') || '{}');
-                const codigo = sesion.codigo || '';
+                const carnet = sesion.carnet || '';
                 const username = sesion.username || '';
                 let alumno = null;
                 const todosAlumnos = await db.alumnos.toArray();
-                if (codigo) alumno = todosAlumnos.find(a => (a.codigo||'').toLowerCase() === codigo.toLowerCase());
+                if (carnet) alumno = todosAlumnos.find(a => (a.carnet||'').toLowerCase() === carnet.toLowerCase());
                 if (!alumno && username) alumno = todosAlumnos.find(a => (a.nombre||'').toLowerCase().includes(username.toLowerCase()));
 
                 if (alumno && alumno.carrera) {

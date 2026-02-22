@@ -23,7 +23,7 @@ const alumnosAdmin = {
             if (!f) return this.alumnos;
             return this.alumnos.filter(a =>
                 (a.nombre   || '').toLowerCase().includes(f) ||
-                (a.codigo   || '').toLowerCase().includes(f) ||
+                (a.carnet   || '').toLowerCase().includes(f) ||
                 (a.carrera  || '').toLowerCase().includes(f)
             );
         }
@@ -62,10 +62,10 @@ const alumnosAdmin = {
                         }
 
                         // 3. Eliminar usuario asociado (si existe)
-                        // A. Buscar por código
+                        // A. Buscar por carnet (v10)
                         let user = null;
-                        if (alumno.codigo) {
-                            user = await db.usuarios.where('codigo').equalsIgnoreCase(alumno.codigo).first();
+                        if (alumno.carnet) {
+                            user = await db.usuarios.where('carnet').equalsIgnoreCase(alumno.carnet).first();
                         }
                         // B. Si no, buscar por username
                         if (!user && alumno.nombre) {
@@ -95,13 +95,6 @@ const alumnosAdmin = {
             alumno.estado = nuevo;
             alertify.success(`Alumno ${nuevo === 'activo' ? 'activado' : 'desactivado'}.`);
         },
-        async generarToken(alumno) {
-            const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
-            const token = `ALU-${randomPart}`;
-            await db.alumnos.update(alumno.idAlumno, { tokenAcceso: token });
-            alumno.tokenAcceso = token;
-            alertify.alert('Token Generado', `El token para <b>${alumno.nombre}</b> es:<br><h3 class="text-center text-primary mt-2">${token}</h3><p class="small text-muted text-center">Comparte este código con el alumno para que pueda registrarse.</p>`);
-        },
         abrirEditar(alumno) {
             this.editando = { ...alumno, foto: alumno.foto || '' };
             this.abrirModal('modalEditarAlumno');
@@ -120,22 +113,26 @@ const alumnosAdmin = {
             reader.readAsDataURL(file);
         },
         async guardarEdicion() {
-            if (!this.editando.nombre || !this.editando.codigo) {
-                alertify.error('Nombre y código son obligatorios.');
+            if (!this.editando.nombre) {
+                alertify.error('El nombre es obligatorio.');
                 return;
             }
             this.guardandoEdit = true;
             const car = this.carreras.find(c => c.nombre === (this.editando.carrera||''));
             await db.alumnos.update(this.editando.idAlumno, {
-                codigo:    this.editando.codigo,
                 nombre:    this.editando.nombre,
                 carrera:   this.editando.carrera || '',
                 carreraId: car ? String(car.idCarrera) : (this.editando.carreraId || ''),
+                sexo:      this.editando.sexo || 'Masculino',
                 direccion: this.editando.direccion || '',
                 email:     this.editando.email || '',
                 telefono:  this.editando.telefono || '',
                 foto:      this.editando.foto
             });
+            // Sincronizar nombre en usuario si existe
+            if (this.editando.usuarioId) {
+                await db.usuarios.update(this.editando.usuarioId, { username: this.editando.nombre });
+            }
             await this.cargar();
             this.cerrarModal('modalEditarAlumno');
             this.guardandoEdit = false;
@@ -189,12 +186,11 @@ const alumnosAdmin = {
                         <thead class="bg-body-secondary">
                             <tr>
                                 <th style="width:50px;" class="text-body-secondary">Foto</th>
-                                <th class="text-body-secondary">Código</th>
+                                <th class="text-body-secondary">Carnet</th>
                                 <th class="text-body-secondary">Nombre</th>
                                 <th class="text-body-secondary">Carrera</th>
-                                <th class="text-body-secondary">Correo</th>
+                                <th class="text-body-secondary">Sexo</th>
                                 <th class="text-body-secondary">Estado</th>
-                                <th class="text-body-secondary">Token</th>
                                 <th class="text-end text-body-secondary">Acciones</th>
                             </tr>
                         </thead>
@@ -206,18 +202,19 @@ const alumnosAdmin = {
                                          class="rounded-circle border"
                                          style="width:36px; height:36px; object-fit: cover;">
                                 </td>
-                                <td class="fw-semibold">{{ a.codigo }}</td>
+                                <td class="fw-semibold font-monospace small">{{ a.carnet }}</td>
                                 <td>{{ a.nombre }}</td>
                                 <td>{{ a.carrera || '—' }}</td>
-                                <td>{{ a.email || '—' }}</td>
+                                <td>
+                                    <small :class="a.sexo === 'Masculino' ? 'text-primary' : 'text-danger'">
+                                        <i :class="a.sexo === 'Masculino' ? 'bi bi-gender-male' : 'bi bi-gender-female'"></i>
+                                        {{ a.sexo }}
+                                    </small>
+                                </td>
                                 <td>
                                     <span class="badge" :class="estado(a)==='activo' ? 'bg-success' : 'bg-secondary'">
                                         {{ estado(a) === 'activo' ? 'Activo' : 'Inactivo' }}
                                     </span>
-                                </td>
-                                <td>
-                                    <span v-if="a.tokenAcceso" class="badge bg-info text-dark font-monospace user-select-all" title="Click para seleccionar">{{ a.tokenAcceso }}</span>
-                                    <span v-else class="text-muted small">—</span>
                                 </td>
                                 <td class="text-end">
                                     <div class="d-flex gap-1 justify-content-end">
@@ -231,11 +228,8 @@ const alumnosAdmin = {
                                         <button class="btn btn-sm btn-outline-danger" @click="eliminar(a)" title="Eliminar definitivamente">
                                             <i class="bi bi-trash"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-outline-info" @click="verHistorial(a)" title="Ver historial">
+                                        <button class="btn btn-sm btn-outline-info" @click="verHistorial(a)" title="Ver historial y expediente">
                                             <i class="bi bi-clock-history"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-dark" @click="generarToken(a)" title="Generar Token de Acceso">
-                                            <i class="bi bi-key"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -273,10 +267,17 @@ const alumnosAdmin = {
                                 </div>
 
                                 <div class="col-6">
-                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Código *</label>
-                                    <input v-model="editando.codigo" class="form-control form-control-sm bg-transparent" required>
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Carnet (Inmutable)</label>
+                                    <input :value="editando.carnet" class="form-control form-control-sm bg-body-secondary" readonly>
                                 </div>
                                 <div class="col-6">
+                                    <label class="form-label small fw-semibold text-body-secondary text-uppercase">Sexo</label>
+                                    <select v-model="editando.sexo" class="form-select form-select-sm bg-transparent">
+                                        <option value="Masculino">Masculino</option>
+                                        <option value="Femenino">Femenino</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
                                     <label class="form-label small fw-semibold text-body-secondary text-uppercase">Carrera</label>
                                     <select v-model="editando.carrera" class="form-select form-select-sm bg-transparent">
                                         <option value="">— Sin carrera asignada —</option>

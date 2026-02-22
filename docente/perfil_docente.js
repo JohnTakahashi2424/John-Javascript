@@ -6,7 +6,7 @@ const perfilDocente = {
         return {
             cargando: true,
             guardando: false,
-            perfil: { nombre: '', email: '', telefono: '', especialidad: '', codigo: '', foto: '' },
+            perfil: { nombre: '', email: '', telefono: '', especialidad: '', carnet: '', sexo: 'Masculino', foto: '' },
             imagenRecortar: '',
             cropper: null,
             pwd: { actual: '', nueva: '', confirmar: '', mostrarActual: false, mostrarNueva: false },
@@ -27,13 +27,13 @@ const perfilDocente = {
             try {
                 const s = JSON.parse(sessionStorage.getItem('sesionUniversidad') || '{}');
                 const username = s.username || '';
-                const codigo   = s.codigo   || '';
+                const carnet   = s.carnet   || '';
 
                 const usuario = await db.usuarios.where('username').equals(username).first();
                 if (usuario) { this._userId = usuario.id; this.perfil.email = usuario.email || ''; }
 
                 let docente = null;
-                if (codigo) docente = await db.docentes.where('codigo').equals(codigo).first();
+                if (carnet) docente = await db.docentes.where('carnet').equals(carnet).first();
                 if (!docente && username) {
                     const todos = await db.docentes.toArray();
                     docente = todos.find(d =>
@@ -46,7 +46,8 @@ const perfilDocente = {
                     this.perfil.nombre      = docente.nombre      || '';
                     this.perfil.telefono    = docente.telefono    || '';
                     this.perfil.especialidad= docente.especialidad|| '';
-                    this.perfil.codigo      = docente.codigo      || '';
+                    this.perfil.carnet      = docente.carnet      || '';
+                    this.perfil.sexo        = docente.sexo        || 'Masculino';
                     this.perfil.foto        = docente.foto        || '';
                     if (!this.perfil.email) this.perfil.email = docente.email || '';
                 }
@@ -131,6 +132,7 @@ const perfilDocente = {
                         email:        this.perfil.email.trim(),
                         telefono:     this.perfil.telefono.trim(),
                         especialidad: this.perfil.especialidad.trim(),
+                        sexo:         this.perfil.sexo,
                         foto:         this.perfil.foto
                     });
                 }
@@ -186,13 +188,25 @@ const perfilDocente = {
                             </div>
 
                             <div class="col-sm-6">
-                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Código de Docente</label>
-                                <input :value="perfil.codigo" class="form-control form-control-sm bg-body-secondary border-secondary-subtle" readonly>
-                                <div class="form-text text-body-secondary">Asignado por el administrador.</div>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Carnet Institucional</label>
+                                <div class="form-control form-control-sm bg-body-secondary border-secondary-subtle font-monospace text-primary fw-bold">
+                                    {{ perfil.carnet }}
+                                </div>
+                                <div class="form-text text-body-secondary">Identificador único inmutable.</div>
                             </div>
                             <div class="col-sm-6">
                                 <label class="form-label small fw-bold text-body-secondary text-uppercase">Especialidad</label>
                                 <input v-model="perfil.especialidad" class="form-control form-control-sm bg-transparent" placeholder="Ej. Ingeniería de Software">
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Sexo</label>
+                                <select v-model="perfil.sexo" class="form-select form-select-sm bg-transparent">
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Femenino">Femenino</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-6">
+                                <!-- Espaciador -->
                             </div>
                             <div class="col-12">
                                 <label class="form-label small fw-bold text-body-secondary text-uppercase">Nombre completo *</label>

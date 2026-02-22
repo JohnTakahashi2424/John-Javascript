@@ -7,7 +7,7 @@ const miPerfil = {
             cargando: true,
             guardando: false,
             // Datos del perfil
-            perfil: { nombre: '', email: '', telefono: '', direccion: '', codigo: '', carrera: '', foto: '' },
+            perfil: { nombre: '', email: '', telefono: '', direccion: '', carnet: '', carrera: '', sexo: 'Masculino', foto: '' },
             imagenRecortar: '',
             cropper: null,
             // Cambio de contraseña
@@ -32,7 +32,7 @@ const miPerfil = {
             try {
                 const s = JSON.parse(sessionStorage.getItem('sesionUniversidad') || '{}');
                 const username = s.username || '';
-                const codigo   = s.codigo   || '';
+                const carnet   = s.carnet   || '';
 
                 // Cargar usuario
                 const usuario = await db.usuarios.where('username').equals(username).first();
@@ -42,7 +42,7 @@ const miPerfil = {
                 }
                 // Cargar perfil alumno
                 let alumno = null;
-                if (codigo) alumno = await db.alumnos.where('codigo').equals(codigo).first();
+                if (carnet) alumno = await db.alumnos.where('carnet').equals(carnet).first();
                 if (!alumno && username) {
                     const todos = await db.alumnos.toArray();
                     alumno = todos.find(a =>
@@ -55,8 +55,9 @@ const miPerfil = {
                     this.perfil.nombre    = alumno.nombre    || '';
                     this.perfil.telefono  = alumno.telefono  || '';
                     this.perfil.direccion = alumno.direccion || '';
-                    this.perfil.codigo    = alumno.codigo    || '';
+                    this.perfil.carnet    = alumno.carnet    || '';
                     this.perfil.carrera   = alumno.carrera   || '';
+                    this.perfil.sexo      = alumno.sexo      || 'Masculino';
                     this.perfil.foto      = alumno.foto      || '';
                     if (!this.perfil.email) this.perfil.email = alumno.email || '';
                 }
@@ -144,6 +145,7 @@ const miPerfil = {
                         email:     this.perfil.email.trim(),
                         telefono:  this.perfil.telefono.trim(),
                         direccion: this.perfil.direccion.trim(),
+                        sexo:      this.perfil.sexo,
                         foto:      this.perfil.foto
                     });
                 }
@@ -215,14 +217,26 @@ const miPerfil = {
                             </div>
 
                             <div class="col-sm-6">
-                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Código de Alumno</label>
-                                <input :value="perfil.codigo" class="form-control form-control-sm bg-body-secondary border-secondary-subtle" readonly>
-                                <div class="form-text text-body-secondary">Asignado por el administrador.</div>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Carnet Institucional</label>
+                                <div class="form-control form-control-sm bg-body-secondary border-secondary-subtle font-monospace text-primary fw-bold">
+                                    {{ perfil.carnet }}
+                                </div>
+                                <div class="form-text text-body-secondary">Identificador único inmutable.</div>
                             </div>
                             <div class="col-sm-6">
                                 <label class="form-label small fw-bold text-body-secondary text-uppercase">Carrera</label>
                                 <input :value="perfil.carrera || '—'" class="form-control form-control-sm bg-body-secondary border-secondary-subtle" readonly>
                                 <div class="form-text text-body-secondary">Asignada por el administrador.</div>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Sexo</label>
+                                <select v-model="perfil.sexo" class="form-select form-select-sm bg-transparent">
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Femenino">Femenino</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-6">
+                                <!-- Espaciador o campo adicional futuro -->
                             </div>
                             <div class="col-12">
                                 <label class="form-label small fw-bold text-body-secondary text-uppercase">Nombre completo *</label>

@@ -12,7 +12,7 @@ const busqueda_docentes = {
         },
         async obtenerDocentes(){
             this.docentes = await db.docentes.filter(
-                docente => docente.codigo.toLowerCase().includes(this.buscar.toLowerCase())
+                docente => docente.carnet.toLowerCase().includes(this.buscar.toLowerCase())
                     || docente.nombre.toLowerCase().includes(this.buscar.toLowerCase())
             ).toArray();
         },
@@ -37,13 +37,13 @@ const busqueda_docentes = {
             </div>
             <div class="mb-3" style="max-width: 340px;">
                 <input autocomplete="off" type="search" @keyup="obtenerDocentes()" v-model="buscar"
-                    placeholder="Buscar por código o nombre..." class="form-control form-control-sm">
+                    placeholder="Buscar por carnet o nombre..." class="form-control form-control-sm bg-transparent">
             </div>
             <div class="table-responsive">
                 <table class="table table-sm table-hover align-middle" id="tblDocentes">
                     <thead class="table-light">
                         <tr>
-                            <th class="text-muted small text-uppercase fw-semibold">Código</th>
+                            <th class="text-body-secondary small text-uppercase fw-bold">Carnet</th>
                             <th class="text-muted small text-uppercase fw-semibold">Nombre</th>
                             <th class="text-muted small text-uppercase fw-semibold">Dirección</th>
                             <th class="text-muted small text-uppercase fw-semibold">Email</th>
@@ -58,7 +58,7 @@ const busqueda_docentes = {
                         </tr>
                         <tr v-for="docente in docentes" :key="docente.idDocente"
                             @click="modificarDocente(docente)" style="cursor:pointer;">
-                            <td class="small">{{ docente.codigo }}</td>
+                            <td class="small font-monospace">{{ docente.carnet }}</td>
                             <td class="small fw-semibold">{{ docente.nombre }}</td>
                             <td class="small text-muted">{{ docente.direccion }}</td>
                             <td class="small text-muted">{{ docente.email }}</td>

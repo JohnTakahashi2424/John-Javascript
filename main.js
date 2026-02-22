@@ -95,6 +95,20 @@ db.version(9).stores({
     solicitudes:  '++id, tipo, nombre, codigo, fecha, estado'
 });
 
+// v10: Arquitectura de Carnetización Automática e Inmutable
+db.version(10).stores({
+    usuarios:     '++id, &username, &email, rol, &carnet, estado',
+    alumnos:      '++idAlumno, &carnet, nombre, usuarioId, carreraId, sexo, añoIngreso, estado',
+    docentes:     '++idDocente, &carnet, nombre, usuarioId, especialidad, sexo, añoIngreso, estado',
+    carreras:     '++idCarrera, &codigo, nombre, facultad, estado',
+    materias:     '++idMateria, &codigo, nombre, docenteId, carreraId, estado',
+    periodos:     '++idPeriodo, año, ciclo, estado',
+    matricula:    '++idMatricula, &codigo, alumnoId, periodoId, carreraId, estado',
+    inscripciones:'++idInscripcion, matriculaId, materiaId, estado',
+    evaluaciones: '++id, inscripcionId, estado',
+    solicitudes:  '++id, tipo, username, &email, sexo, carreraId, fecha, estado'
+});
+
 // =============================================
 // APERTURA SEGURA DE BD (auto-recover on schema error)
 // =============================================
@@ -170,8 +184,8 @@ const app = Vue.createApp({
                     this.sesion.rol         = s.rol;
                     
                     // SIEMPRE cargar la foto desde la BD
-                    if(s.rol === 'Alumno' && s.codigo){
-                         const alumno = await db.alumnos.where('codigo').equals(s.codigo).first();
+                    if(s.rol === 'Alumno' && s.carnet){
+                         const alumno = await db.alumnos.where('carnet').equals(s.carnet).first();
                          if (alumno) {
                              if (alumno.estado === 'inactivo') {
                                  console.warn('Sesión cerrada: Alumno inactivo.');
@@ -210,19 +224,19 @@ const app = Vue.createApp({
 
             this.$refs[refForm][metodo](datos);
         },
-        async loginExitoso({ username, rol, codigo }) {
+        async loginExitoso({ username, rol, carnet }) {
             this.sesion.autenticado = true;
             this.sesion.username    = username;
             this.sesion.rol         = rol;
             this.sesion.foto        = '';
 
-            if(rol === 'Alumno' && codigo){
-                const alumno = await db.alumnos.where('codigo').equals(codigo).first();
+            if(rol === 'Alumno' && carnet){
+                const alumno = await db.alumnos.where('carnet').equals(carnet).first();
                 if(alumno && alumno.foto) this.sesion.foto = alumno.foto;
             }
 
             // NO guardar la foto en sessionStorage
-            sessionStorage.setItem('sesionUniversidad', JSON.stringify({ autenticado: true, username, rol, codigo: codigo || '' }));
+            sessionStorage.setItem('sesionUniversidad', JSON.stringify({ autenticado: true, username, rol, carnet: carnet || '' }));
         },
         cerrarSesion() {
             sessionStorage.removeItem('sesionUniversidad');

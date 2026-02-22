@@ -3,7 +3,7 @@ const docentes = {
         return{
             docente:{
                 idDocente:0,
-                codigo:"",
+                carnet:"",
                 nombre:"",
                 direccion:"",
                 email:"",
@@ -15,7 +15,36 @@ const docentes = {
             },
             accion:'nuevo',
             idDocente:0,
-            data_docentes:[]
+            data_docentes:[],
+            sesion: { autenticado: false, rol: '', username: '', id: null, carnet: '' }
+        }
+    },
+    async mounted() {
+        // Cargar sesión y precargar datos
+        const stored = sessionStorage.getItem('sesionUniversidad');
+        if (stored) {
+            const s = JSON.parse(stored);
+            this.sesion = s;
+            
+            if (s.rol === 'Docente' && s.id) {
+                // Buscar docente por usuarioId
+                let docente = await db.docentes.where('usuarioId').equals(s.id).first();
+                // Fallback por carnet
+                if (!docente && s.carnet) {
+                    docente = await db.docentes.where('carnet').equals(s.carnet).first();
+                }
+
+                if (docente) {
+                    // Mapeo de sexo si viene con nombre completo
+                    if (docente.sexo === 'Masculino') docente.sexo = 'M';
+                    if (docente.sexo === 'Femenino') docente.sexo = 'F';
+                    
+                    // Asegurar que el email del docente sea el de la cuenta
+                    if (s.email) docente.email = s.email;
+
+                    this.modificarDocente(docente);
+                }
+            }
         }
     },
     emits: ['ir-busqueda'],
@@ -26,7 +55,7 @@ const docentes = {
         modificarDocente(docente){
             this.accion = 'modificar';
             this.idDocente = docente.idDocente;
-            this.docente.codigo = docente.codigo;
+            this.docente.carnet = docente.carnet;
             this.docente.nombre = docente.nombre;
             this.docente.direccion = docente.direccion;
             this.docente.email = docente.email;
@@ -52,7 +81,7 @@ const docentes = {
         async guardarDocente() {
             let datos = {
                 idDocente: this.accion=='modificar' ? this.idDocente : this.getId(),
-                codigo: this.docente.codigo,
+                carnet: this.docente.carnet,
                 nombre: this.docente.nombre,
                 direccion: this.docente.direccion,
                 email: this.docente.email,
@@ -78,7 +107,7 @@ const docentes = {
         limpiarFormulario(){
             this.accion = 'nuevo';
             this.idDocente = 0;
-            this.docente.codigo = '';
+            this.docente.carnet = '';
             this.docente.nombre = '';
             this.docente.direccion = '';
             this.docente.email = '';
@@ -117,13 +146,17 @@ const docentes = {
                         <div class="mb-3 row align-items-center">
                             <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Código</label>
                             <div class="col-sm-4">
-                                <input placeholder="Ej. D-001" required v-model="docente.codigo" type="text" class="form-control form-control-sm bg-transparent">
+                                <input placeholder="Ej. D-001" required v-model="docente.carnet" type="text" 
+                                    class="form-control form-control-sm bg-transparent"
+                                    :readonly="sesion.rol === 'Docente'" :disabled="sesion.rol === 'Docente'">
                             </div>
                         </div>
                         <div class="mb-3 row align-items-center">
                             <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Nombre</label>
                             <div class="col-sm-8">
-                                <input placeholder="Nombre completo" required v-model="docente.nombre" type="text" class="form-control form-control-sm bg-transparent">
+                                <input placeholder="Nombre completo" required v-model="docente.nombre" type="text" 
+                                    class="form-control form-control-sm bg-transparent"
+                                    :readonly="sesion.rol === 'Docente'" :disabled="sesion.rol === 'Docente'">
                             </div>
                         </div>
                         <div class="mb-3 row align-items-center">
@@ -133,9 +166,12 @@ const docentes = {
                             </div>
                         </div>
                         <div class="mb-3 row align-items-center">
-                            <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Email</label>
+                            <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Correo</label>
                             <div class="col-sm-8">
-                                <input placeholder="correo@universidad.edu" required v-model="docente.email" type="text" class="form-control form-control-sm bg-transparent">
+                                <input placeholder="correo@universidad.edu" required v-model="docente.email" type="text" 
+                                    class="form-control form-control-sm bg-transparent"
+                                    :readonly="sesion.rol === 'Docente'" :disabled="sesion.rol === 'Docente'">
+                                <div v-if="sesion.rol === 'Docente'" class="form-text small">Vinculado a tu cuenta de usuario.</div>
                             </div>
                         </div>
                         <div class="mb-3 row align-items-center">
@@ -151,9 +187,10 @@ const docentes = {
                             </div>
                         </div>
                         <div class="mb-3 row align-items-center">
-                            <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Sexo</label>
+                            <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Género</label>
                             <div class="col-sm-5">
-                                <select required v-model="docente.sexo" class="form-select form-select-sm bg-transparent">
+                                <select required v-model="docente.sexo" class="form-select form-select-sm bg-transparent"
+                                    :readonly="sesion.rol === 'Docente'" :disabled="sesion.rol === 'Docente'">
                                     <option value="" disabled>Seleccione...</option>
                                     <option value="M">Masculino</option>
                                     <option value="F">Femenino</option>

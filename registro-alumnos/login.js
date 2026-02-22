@@ -16,13 +16,12 @@ const login = {
 
             regForm: {
                 username: '',
-                codigo: '',
                 email: '',
                 password: '',
                 confirmar: '',
                 rol: 'Alumno',
-                codigoAdmin: '',
-                token: ''
+                sexo: 'Masculino', // Valor por defecto
+                carreraId: ''
             },
 
             cargando: false
@@ -45,13 +44,12 @@ const login = {
             }
             this.cargando = true;
             try {
-                // Buscar por username, codigo o email (en ese orden)
+                // Buscar únicamente por username o email (El código/carnet ya no se usa para login)
                 let usuario = await db.usuarios.where('username').equalsIgnoreCase(id).first();
-                if (!usuario) usuario = await db.usuarios.where('codigo').equalsIgnoreCase(id).first();
                 if (!usuario) usuario = await db.usuarios.where('email').equalsIgnoreCase(id).first();
 
                 if (!usuario) {
-                    alertify.error('No se encontró ninguna cuenta con ese usuario, código o correo.');
+                    alertify.error('No se encontró ninguna cuenta con ese usuario o correo.');
                     return;
                 }
 
@@ -64,12 +62,12 @@ const login = {
                 // Verificar estado del perfil específico (Alumno/Docente)
                 // Esto es necesario porque el Admin desactiva desde el panel de Alumnos/Docentes
                 if (usuario.rol === 'Alumno') {
-                    // Buscar perfil primero por usuarioId (FK v9), fallback a codigo
+                    // Buscar perfil primero por usuarioId (FK v9), fallback a carnet (v10)
                     let perfil = usuario.id
                         ? await db.alumnos.where('usuarioId').equals(usuario.id).first()
                         : null;
-                    if (!perfil && usuario.codigo)
-                        perfil = await db.alumnos.where('codigo').equalsIgnoreCase(usuario.codigo).first();
+                    if (!perfil && usuario.carnet)
+                        perfil = await db.alumnos.where('carnet').equalsIgnoreCase(usuario.carnet).first();
 
                     if (!perfil) {
                         alertify.alert('Error de Cuenta', 'Tu usuario existe pero no se encontró tu expediente de Alumno. Posiblemente fue eliminado. Contacta al administrador.');
@@ -80,12 +78,12 @@ const login = {
                         return;
                     }
                 } else if (usuario.rol === 'Docente') {
-                    // Buscar perfil primero por usuarioId (FK v9), fallback a codigo
+                    // Buscar perfil primero por usuarioId (FK v9), fallback a carnet (v10)
                     let perfil = usuario.id
                         ? await db.docentes.where('usuarioId').equals(usuario.id).first()
                         : null;
-                    if (!perfil && usuario.codigo)
-                        perfil = await db.docentes.where('codigo').equalsIgnoreCase(usuario.codigo).first();
+                    if (!perfil && usuario.carnet)
+                        perfil = await db.docentes.where('carnet').equalsIgnoreCase(usuario.carnet).first();
 
                     if (!perfil) {
                         alertify.alert('Error de Cuenta', 'Tu usuario existe pero no se encontró tu perfil Docente. Posiblemente fue eliminado. Contacta al administrador.');
@@ -104,7 +102,7 @@ const login = {
                 }
 
                 // Guardar sesión en sessionStorage
-                const sesionData = { autenticado: true, username: usuario.username, rol: usuario.rol, id: usuario.id, codigo: usuario.codigo || '' };
+                const sesionData = { autenticado: true, username: usuario.username, rol: usuario.rol, id: usuario.id, carnet: usuario.carnet || '' };
                 sessionStorage.setItem('sesionUniversidad', JSON.stringify(sesionData));
 
                 alertify.success(`¡Bienvenido, ${usuario.username}!`);
@@ -119,7 +117,7 @@ const login = {
                     return;
                 }
 
-                this.$emit('login-exitoso', { username: usuario.username, rol: usuario.rol, codigo: usuario.codigo || '' });
+                this.$emit('login-exitoso', { username: usuario.username, rol: usuario.rol, carnet: usuario.carnet || '' });
 
             } catch (e) {
                 alertify.error('Error al iniciar sesión: ' + e.message);
@@ -130,20 +128,28 @@ const login = {
 
         // ── REGISTRO ─────────────────────────────────────────────────
         async registrar() {
-            const { username, codigo, email, password, confirmar, rol, codigoAdmin } = this.regForm;
+            // Validar que no haya sesión activa
+            const sesion = sessionStorage.getItem('sesionUniversidad');
+            if (sesion) {
+                alertify.warning('Ya tienes una sesión activa. No es necesario registrarte de nuevo.');
+                return;
+            }
 
-            if (!username || !password || !confirmar) {
-                alertify.error('Completa los campos obligatorios: usuario, contraseña y confirmación.');
+            const { username, email, password, confirmar, rol, sexo, codigoAdmin, carreraId } = this.regForm;
+
+            if (!username || !password || !confirmar || !email) {
+                alertify.error('Completa los campos obligatorios: usuario, correo, contraseña y confirmación.');
                 return;
             }
             if (username.length < 4) { alertify.error('El usuario debe tener al menos 4 caracteres.'); return; }
             if (password.length < 6) { alertify.error('La contraseña debe tener al menos 6 caracteres.'); return; }
             if (password !== confirmar) { alertify.error('Las contraseñas no coinciden.'); return; }
-            if (email && !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+            if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
                 alertify.error('El formato del correo no es válido.');
                 return;
             }
-            // Validar código secreto para Admin
+            
+            // Validar código secreto para Admin (creación directa)
             if (rol === 'Admin' && codigoAdmin !== 'ADMIN-2026') {
                 alertify.error('Código de administrador incorrecto.');
                 return;
@@ -153,103 +159,43 @@ const login = {
             try {
                 const existeUser = await db.usuarios.where('username').equalsIgnoreCase(username).first();
                 if (existeUser) { alertify.error('Ese nombre de usuario ya está en uso.'); return; }
-                if (codigo) {
-                    const existeCod = await db.usuarios.where('codigo').equalsIgnoreCase(codigo).first();
-                    if (existeCod) { alertify.error('Ese código ya tiene una cuenta asociada.'); return; }
-                }
-                if (email) {
-                    const existeEmail = await db.usuarios.where('email').equalsIgnoreCase(email).first();
-                    if (existeEmail) { alertify.error('Ese correo ya tiene una cuenta asociada.'); return; }
+                
+                const existeEmail = await db.usuarios.where('email').equalsIgnoreCase(email).first();
+                if (existeEmail) { alertify.error('Ese correo ya tiene una cuenta asociada.'); return; }
+
+                const existeSolicitud = await db.solicitudes.where('email').equalsIgnoreCase(email).first();
+                if (existeSolicitud) { alertify.error('Ya existe una solicitud pendiente con este correo.'); return; }
+
+                // 2. Si es Admin, crear directamente (como antes)
+                if (rol === 'Admin') {
+                    const hashPwd = await this.hashPassword(password);
+                    await db.usuarios.add({
+                        username, email, hashPwd, rol, carnet: 'ADMIN', estado: 'activo'
+                    });
+                    alertify.success('¡Administrador creado!');
+                    this.cambiarVista('login');
+                    return;
                 }
 
+                // 3. Si es Alumno/Docente, crear una SOLICITUD (Pre-registro)
+                // El carnet real lo generará el Admin al aprobar.
                 const hashPwd = await this.hashPassword(password);
-                // Añadir usuario y capturar su ID auto-generado (FK para alumnos/docentes)
-                const nuevoUsuarioId = await db.usuarios.add({
-                    username, codigo: codigo || '', email: email || '',
-                    hashPwd, rol, estado: 'activo'
+                
+                await db.solicitudes.add({
+                    tipo: rol,
+                    nombre: username, // Se usará para el perfil
+                    username,
+                    email,
+                    hashPwd,
+                    sexo,
+                    carreraId: rol === 'Alumno' ? (carreraId || '') : '',
+                    fecha: new Date().toLocaleString(),
+                    estado: 'pendiente'
                 });
 
-                // Crear o vincular perfil en la tabla correspondiente con usuarioId (FK)
-                if (rol === 'Alumno') {
-                    // Validar formato de Token de Alumno
-                    if (this.regForm.token && !this.regForm.token.startsWith('ALU-')) {
-                        await db.usuarios.delete(nuevoUsuarioId); // Revertir usuario
-                        alertify.error('El token ingresado no es de Alumno (debe empezar con ALU-). Verifica tu rol.');
-                        this.cargando = false;
-                        return;
-                    }
-
-                    let perfil = codigo
-                        ? await db.alumnos.where('codigo').equalsIgnoreCase(codigo).first()
-                        : null;
-
-                    if (perfil) {
-                        // VINCULACIÓN: perfil ya existe — exigir Token correcto
-                        if (!this.regForm.token || this.regForm.token !== perfil.tokenAcceso) {
-                            await db.usuarios.delete(nuevoUsuarioId); // Revertir usuario
-                            alertify.error('Para vincularte a este Carnet/Código existente, necesitas el Token de Vinculación correcto provisto por el administrador.');
-                            this.cargando = false;
-                            return;
-                        }
-                        // Token correcto: vincular usuarioId y consumir token
-                        await db.alumnos.update(perfil.idAlumno, { usuarioId: nuevoUsuarioId, tokenAcceso: null });
-                    } else {
-                        // CREACIÓN NUEVA: crear perfil con usuarioId
-                        await db.alumnos.add({
-                            codigo:    codigo || '',
-                            nombre:    username,
-                            email:     email  || '',
-                            usuarioId: nuevoUsuarioId,
-                            carreraId: '',
-                            foto:      '',
-                            telefono:  '',
-                            direccion: '',
-                            estado:    'activo',
-                            tokenAcceso: ''
-                        });
-                    }
-                } else if (rol === 'Docente') {
-                    // Validar formato de Token de Docente
-                    if (this.regForm.token && !this.regForm.token.startsWith('DOC-')) {
-                        await db.usuarios.delete(nuevoUsuarioId); // Revertir usuario
-                        alertify.error('El token ingresado no es de Docente (debe empezar con DOC-). Verifica tu rol.');
-                        this.cargando = false;
-                        return;
-                    }
-
-                    let perfil = codigo
-                        ? await db.docentes.where('codigo').equalsIgnoreCase(codigo).first()
-                        : null;
-
-                    if (perfil) {
-                        // VINCULACIÓN
-                        if (!this.regForm.token || this.regForm.token !== perfil.tokenAcceso) {
-                            await db.usuarios.delete(nuevoUsuarioId); // Revertir usuario
-                            alertify.error('Para vincularte a este Código Docente existente, necesitas el Token de Vinculación correcto provisto por el administrador.');
-                            this.cargando = false;
-                            return;
-                        }
-                        // Token correcto: vincular usuarioId y consumir token
-                        await db.docentes.update(perfil.idDocente, { usuarioId: nuevoUsuarioId, tokenAcceso: null });
-                    } else {
-                        // CREACIÓN NUEVA: crear perfil con usuarioId
-                        await db.docentes.add({
-                            codigo:       codigo || '',
-                            nombre:       username,
-                            email:        email  || '',
-                            usuarioId:    nuevoUsuarioId,
-                            especialidad: '',
-                            foto:         '',
-                            telefono:     '',
-                            estado:       'activo',
-                            tokenAcceso:  ''
-                        });
-                    }
-                }
-
-                alertify.success('¡Cuenta creada! Ahora puedes iniciar sesión.');
-                this.regForm = { username: '', codigo: '', email: '', password: '', confirmar: '', rol: 'Alumno', codigoAdmin: '', token: '' };
-                this.vista = 'login';
+                alertify.alert('Solicitud Enviada', 'Tu solicitud ha sido enviada. El sistema generará tu carnet oficial una vez que el administrador apruebe tu registro.');
+                this.regForm = { username: '', email: '', password: '', confirmar: '', rol: 'Alumno', sexo: 'Masculino', carreraId: '' };
+                this.cambiarVista('login');
 
             } catch (e) {
                 alertify.error('Error al registrar: ' + e.message);
@@ -258,52 +204,12 @@ const login = {
             }
         },
 
-        async solicitarToken() {
-            const { username, codigo, rol } = this.regForm;
-            if (!username || !codigo) {
-                alertify.error('Ingresa tu Nombre de Usuario y Código para solicitar el token.');
-                return;
-            }
-
-            // Validar que el código corresponde al rol seleccionado
-            if (rol === 'Alumno' && !codigo.toUpperCase().startsWith('A-')) {
-                alertify.error('Los códigos de Alumno deben empezar con A- (ej. A-001). Verifica tu rol o tu código.');
-                return;
-            }
-            if (rol === 'Docente' && !codigo.toUpperCase().startsWith('D-')) {
-                alertify.error('Los códigos de Docente deben empezar con D- (ej. D-001). Verifica tu rol o tu código.');
-                return;
-            }
-
-            try {
-                // Verificar si ya existe solicitud pendiente
-                const existe = await db.solicitudes
-                    .filter(s => s.codigo === codigo && s.nombre === username && s.estado === 'pendiente')
-                    .first();
-                
-                if (existe) {
-                    alertify.alert('Solicitud Pendiente', 'Ya has enviado una solicitud. Por favor espera a que el administrador te contacte.');
-                    return;
-                }
-
-                await db.solicitudes.add({
-                    tipo: rol,
-                    nombre: username,
-                    codigo: codigo,
-                    fecha: new Date().toLocaleString(),
-                    estado: 'pendiente'
-                });
-                alertify.success('Solicitud enviada al Administrador.');
-                alertify.alert('Solicitud Enviada', 'El administrador ha sido notificado. Te contactará con tu Token de Vinculación pronto.');
-            } catch (e) {
-                alertify.error('Error al solicitar: ' + e.message);
-            }
-        },
+        // se eliminó solicitarToken ya que el carnet se genera al aprobar solicitud
 
         cambiarVista(v) {
             this.vista = v;
             this.loginForm = { identificador: '', password: '' };
-            this.regForm = { username: '', codigo: '', email: '', password: '', confirmar: '', rol: 'Alumno', codigoAdmin: '', token: '' };
+            this.regForm = { username: '', email: '', password: '', confirmar: '', rol: 'Alumno', sexo: 'Masculino', carreraId: '' };
             this.mostrarPass = false;
             this.mostrarPassReg = false;
             this.mostrarPassConf = false;
@@ -348,7 +254,7 @@ const login = {
                         <form @submit.prevent="iniciarSesion">
                             <div class="mb-3">
                                 <label class="form-label fw-semibold small text-uppercase text-body-secondary">
-                                    Usuario / Código / Correo
+                                    Nombre de Usuario / Correo Electrónico
                                 </label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-body-secondary border-end-0">
@@ -356,7 +262,7 @@ const login = {
                                     </span>
                                     <input v-model="loginForm.identificador" type="text"
                                            class="form-control border-start-0 bg-transparent"
-                                           placeholder="Usuario, código o correo"
+                                           placeholder="Ej. juan.perez o juan@uni.edu"
                                            autocomplete="username" required>
                                 </div>
                             </div>
@@ -394,7 +300,7 @@ const login = {
                         </p>
                     </div>
 
-                    <!-- ═══ REGISTRO ═══ -->
+                    <!-- ═══ REGISTRO (SOLICITUD) ═══ -->
                     <div v-if="vista==='registro'" class="card-body p-4">
                         <form @submit.prevent="registrar">
 
@@ -414,97 +320,68 @@ const login = {
                                 </div>
                             </div>
 
-                            <!-- Código secreto Admin -->
-                            <div v-if="regForm.rol==='Admin'" class="mb-3">
-                                <label class="form-label fw-semibold small text-uppercase text-body-secondary">Código de administrador</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-body-tertiary border-end-0">
-                                        <i class="bi bi-shield-lock text-danger"></i>
-                                    </span>
-                                    <input v-model="regForm.codigoAdmin" type="password"
-                                           class="form-control border-start-0 bg-transparent"
-                                           placeholder="Código institucional secreto" required>
+                            <!-- Género -->
+                            <div v-if="regForm.rol !== 'Admin'" class="mb-3">
+                                <label class="form-label fw-semibold small text-uppercase text-body-secondary">Sexo</label>
+                                <div class="d-flex gap-2">
+                                    <div v-for="s in ['Masculino','Femenino']" :key="s"
+                                         class="form-check flex-fill border rounded p-2 m-0 shadow-sm"
+                                         :class="regForm.sexo===s ? 'border-primary bg-primary bg-opacity-10' : 'border-secondary-subtle'">
+                                        <input class="form-check-input" type="radio" :id="'sexo'+s" :value="s" v-model="regForm.sexo">
+                                        <label class="form-check-label d-flex align-items-center gap-1 small fw-semibold" :for="'sexo'+s">
+                                            <i :class="s==='Masculino' ? 'bi bi-gender-male text-primary' : 'bi bi-gender-female text-danger'"></i>
+                                            {{ s }}
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
+
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold small text-uppercase text-body-secondary">Nombre de usuario <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-person text-body-secondary"></i></span>
                                     <input v-model="regForm.username" type="text" class="form-control border-start-0 bg-transparent"
-                                           placeholder="Mínimo 4 caracteres" minlength="4" required autocomplete="username">
-                                </div>
-                            </div>
-
-                            <div class="row g-2 mb-3">
-                                <div class="col-6" v-if="regForm.rol !== 'Admin'">
-                                    <label class="form-label fw-semibold small text-uppercase text-body-secondary">
-                                        Código <span class="text-body-secondary fw-normal">(opcional)</span>
-                                    </label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-card-text text-body-secondary"></i></span>
-                                        <input v-model="regForm.codigo" type="text" class="form-control border-start-0 bg-transparent" placeholder="Ej. A-001">
-                                    </div>
-                                </div>
-                                <div class="col-6" v-if="regForm.rol !== 'Admin'">
-                                    <label class="form-label fw-semibold small text-uppercase text-body-secondary">
-                                        Token de Vinculación
-                                    </label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-key text-body-secondary"></i></span>
-                                        <input v-model="regForm.token" type="text" class="form-control border-start-0 bg-transparent" placeholder="Token provisto">
-                                    </div>
-                                    <div class="text-end mt-1">
-                                        <a href="#" @click.prevent="solicitarToken" class="small text-decoration-none" style="font-size:0.75rem;">
-                                            Solicitar token
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label fw-semibold small text-uppercase text-body-secondary">
-                                        Correo <span class="text-body-secondary fw-normal">(opcional)</span>
-                                    </label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-envelope text-body-secondary"></i></span>
-                                        <input v-model="regForm.email" type="email" class="form-control border-start-0 bg-transparent" placeholder="correo@uni.edu" autocomplete="email">
-                                    </div>
+                                           placeholder="Ej. juan.perez" minlength="4" required autocomplete="username">
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label fw-semibold small text-uppercase text-body-secondary">Contraseña <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold small text-uppercase text-body-secondary">
+                                    Correo Electrónico <span class="text-danger">*</span>
+                                </label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-lock text-body-secondary"></i></span>
-                                    <input v-model="regForm.password" :type="mostrarPassReg ? 'text' : 'password'"
-                                           class="form-control border-start-0 border-end-0 bg-transparent"
-                                           placeholder="Mínimo 6 caracteres" minlength="6" required>
-                                    <button type="button" class="input-group-text bg-body-tertiary" @click="mostrarPassReg=!mostrarPassReg">
-                                        <i :class="mostrarPassReg ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-body-secondary"></i>
-                                    </button>
+                                    <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-envelope text-body-secondary"></i></span>
+                                    <input v-model="regForm.email" type="email" class="form-control border-start-0 bg-transparent" placeholder="ejemplo@uni.edu" required autocomplete="email">
                                 </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold small text-uppercase text-body-secondary">Confirmar contraseña</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-shield-lock text-body-secondary"></i></span>
-                                    <input v-model="regForm.confirmar" :type="mostrarPassConf ? 'text' : 'password'"
-                                           class="form-control border-end-0 bg-transparent"
-                                           :class="regForm.confirmar && regForm.confirmar !== regForm.password ? 'is-invalid border-start-0' : 'border-start-0'"
-                                           placeholder="Repite tu contraseña" required>
-                                    <button type="button" class="input-group-text bg-body-tertiary" @click="mostrarPassConf=!mostrarPassConf">
-                                        <i :class="mostrarPassConf ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-body-secondary"></i>
-                                    </button>
+                            <div class="mb-4">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <label class="form-label fw-semibold small text-uppercase text-body-secondary">Contraseña</label>
+                                        <div class="input-group">
+                                            <input v-model="regForm.password" :type="mostrarPassReg ? 'text' : 'password'"
+                                                   class="form-control bg-transparent" placeholder="Mínimo 6" minlength="6" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-semibold small text-uppercase text-body-secondary">Confirmar</label>
+                                        <div class="input-group">
+                                            <input v-model="regForm.confirmar" :type="mostrarPassReg ? 'text' : 'password'"
+                                                   class="form-control bg-transparent" placeholder="Repite" required>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="d-grid shadow-sm">
-                                <button type="submit" class="btn fw-semibold text-white"
+                                <button type="submit" class="btn fw-semibold text-white py-2"
                                         :class="regForm.rol==='Admin' ? 'btn-danger' : regForm.rol==='Docente' ? 'btn-success' : 'btn-primary'"
                                         :disabled="cargando">
                                     <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
-                                    <i v-else class="bi bi-person-check me-2"></i>
-                                    {{ cargando ? 'Creando cuenta...' : 'Crear cuenta' }}
+                                    <i v-else class="bi bi-send me-2"></i>
+                                    {{ cargando ? 'Enviando...' : (regForm.rol==='Admin' ? 'Crear Administrador' : 'Enviar Solicitud de Registro') }}
                                 </button>
                             </div>
                         </form>
