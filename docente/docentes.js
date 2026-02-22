@@ -9,7 +9,9 @@ const docentes = {
                 email:"",
                 telefono:"",
                 escalafon:"",
-                foto: ""
+                foto: "",
+                fechaNacimiento: "",
+                sexo: ""
             },
             accion:'nuevo',
             idDocente:0,
@@ -31,6 +33,8 @@ const docentes = {
             this.docente.telefono = docente.telefono;
             this.docente.escalafon = docente.escalafon;
             this.docente.foto = docente.foto || "";
+            this.docente.fechaNacimiento = docente.fechaNacimiento || "";
+            this.docente.sexo = docente.sexo || "";
         },
         seleccionarFoto(event) {
             const file = event.target.files[0];
@@ -54,7 +58,9 @@ const docentes = {
                 email: this.docente.email,
                 telefono: this.docente.telefono,
                 escalafon: this.docente.escalafon,
-                foto: this.docente.foto
+                foto: this.docente.foto,
+                fechaNacimiento: this.docente.fechaNacimiento,
+                sexo: this.docente.sexo
             };
             this.buscar = datos.codigo;
 
@@ -79,17 +85,19 @@ const docentes = {
             this.docente.telefono = '';
             this.docente.escalafon = '';
             this.docente.foto = '';
+            this.docente.fechaNacimiento = '';
+            this.docente.sexo = '';
         },
     },
     template: `
         <div>
             <div class="d-flex align-items-center mb-3 border-bottom pb-2">
                 <i class="bi bi-person-workspace me-2 fs-5 text-secondary"></i>
-                <h5 class="mb-0 fw-semibold">Registro de Docentes</h5>
+                <h5 class="mb-0 fw-semibold text-body">Registro de Docentes</h5>
                 <span v-if="accion=='modificar'" class="badge bg-warning text-dark ms-2">Editando</span>
             </div>
             <form id="frmDocentes" @submit.prevent="guardarDocente" @reset.prevent="limpiarFormulario">
-                <div class="card border-0 shadow-sm" style="max-width: 480px;">
+                <div class="card border-0 shadow-sm bg-body-tertiary" style="max-width: 480px;">
                     <div class="card-body p-4">
 
                         <!-- FOTO -->
@@ -98,48 +106,65 @@ const docentes = {
                                 <img :src="docente.foto || 'https://via.placeholder.com/150?text=Foto'"
                                      class="rounded-circle border"
                                      style="width:100px; height:100px; object-fit: cover;">
-                                <label class="position-absolute bottom-0 end-0 bg-white border rounded-circle p-1 shadow-sm"
+                                <label class="position-absolute bottom-0 end-0 bg-body border rounded-circle p-1 shadow-sm"
                                        style="cursor:pointer;" title="Subir foto">
-                                    <i class="bi bi-camera-fill text-dark small"></i>
+                                    <i class="bi bi-camera-fill text-body small"></i>
                                     <input type="file" class="d-none" accept="image/*" @change="seleccionarFoto">
                                 </label>
                             </div>
                         </div>
 
                         <div class="mb-3 row align-items-center">
-                            <label class="col-sm-3 col-form-label text-muted small fw-semibold text-uppercase">Código</label>
+                            <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Código</label>
                             <div class="col-sm-4">
-                                <input placeholder="Ej. D-001" required v-model="docente.codigo" type="text" class="form-control form-control-sm">
+                                <input placeholder="Ej. D-001" required v-model="docente.codigo" type="text" class="form-control form-control-sm bg-transparent">
                             </div>
                         </div>
                         <div class="mb-3 row align-items-center">
-                            <label class="col-sm-3 col-form-label text-muted small fw-semibold text-uppercase">Nombre</label>
+                            <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Nombre</label>
                             <div class="col-sm-8">
-                                <input placeholder="Nombre completo" required v-model="docente.nombre" type="text" class="form-control form-control-sm">
+                                <input placeholder="Nombre completo" required v-model="docente.nombre" type="text" class="form-control form-control-sm bg-transparent">
                             </div>
                         </div>
                         <div class="mb-3 row align-items-center">
-                            <label class="col-sm-3 col-form-label text-muted small fw-semibold text-uppercase">Dirección</label>
+                            <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Dirección</label>
                             <div class="col-sm-9">
-                                <input placeholder="Dirección" required v-model="docente.direccion" type="text" class="form-control form-control-sm">
+                                <input placeholder="Dirección" required v-model="docente.direccion" type="text" class="form-control form-control-sm bg-transparent">
                             </div>
                         </div>
                         <div class="mb-3 row align-items-center">
-                            <label class="col-sm-3 col-form-label text-muted small fw-semibold text-uppercase">Email</label>
+                            <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Email</label>
                             <div class="col-sm-8">
-                                <input placeholder="correo@universidad.edu" required v-model="docente.email" type="text" class="form-control form-control-sm">
+                                <input placeholder="correo@universidad.edu" required v-model="docente.email" type="text" class="form-control form-control-sm bg-transparent">
                             </div>
                         </div>
                         <div class="mb-3 row align-items-center">
-                            <label class="col-sm-3 col-form-label text-muted small fw-semibold text-uppercase">Teléfono</label>
+                            <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Teléfono</label>
                             <div class="col-sm-5">
-                                <input placeholder="0000-0000" required v-model="docente.telefono" type="text" class="form-control form-control-sm">
+                                <input placeholder="0000-0000" required v-model="docente.telefono" type="text" class="form-control form-control-sm bg-transparent">
+                            </div>
+                        </div>
+                        <div class="mb-3 row align-items-center">
+                            <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Nacimiento</label>
+                            <div class="col-sm-5">
+                                <input required v-model="docente.fechaNacimiento" type="date" class="form-control form-control-sm bg-transparent">
+                            </div>
+                        </div>
+                        <div class="mb-3 row align-items-center">
+                            <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Sexo</label>
+                            <div class="col-sm-5">
+                                <select required v-model="docente.sexo" class="form-select form-select-sm bg-transparent">
+                                    <option value="" disabled>Seleccione...</option>
+                                    <option value="M">Masculino</option>
+                                    <option value="F">Femenino</option>
+                                    <option value="O">Otro</option>
+                                </select>
                             </div>
                         </div>
                         <div class="mb-1 row align-items-center">
-                            <label class="col-sm-3 col-form-label text-muted small fw-semibold text-uppercase">Escalafón</label>
+                            <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Escalafón</label>
                             <div class="col-sm-6">
-                                <select required v-model="docente.escalafon" class="form-select form-select-sm">
+                                <select required v-model="docente.escalafon" class="form-select form-select-sm bg-transparent">
                                     <option value="" disabled>Seleccione...</option>
                                     <option value="tecnico">Técnico</option>
                                     <option value="profesor">Profesor</option>
@@ -150,8 +175,8 @@ const docentes = {
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer bg-white border-top d-flex gap-2 px-4 py-3">
-                        <button type="submit" class="btn btn-sm px-3" style="background-color:#1b4f36; color:white;">
+                    <div class="card-footer bg-transparent border-top d-flex gap-2 px-4 py-3">
+                        <button type="submit" class="btn btn-sm px-3" style="background-color:#1a3a5c; color:white;">
                             <i class="bi bi-save me-1"></i>Guardar
                         </button>
                         <button type="reset" class="btn btn-sm btn-outline-secondary px-3">

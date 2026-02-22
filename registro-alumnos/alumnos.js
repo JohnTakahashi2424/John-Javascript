@@ -8,7 +8,9 @@ const alumnos = {
                 nombre:"",
                 direccion:"",
                 email:"",
-                telefono:""
+                telefono:"",
+                fechaNacimiento: "",
+                sexo: ""
             },
             accion:'nuevo',
             idAlumno:0,
@@ -28,6 +30,8 @@ const alumnos = {
             this.alumno.direccion = alumno.direccion;
             this.alumno.email = alumno.email;
             this.alumno.telefono = alumno.telefono;
+            this.alumno.fechaNacimiento = alumno.fechaNacimiento || "";
+            this.alumno.sexo = alumno.sexo || "";
         },
         async guardarAlumno() {
             let datos = {
@@ -36,7 +40,9 @@ const alumnos = {
                 nombre: this.alumno.nombre,
                 direccion: this.alumno.direccion,
                 email: this.alumno.email,
-                telefono: this.alumno.telefono
+                telefono: this.alumno.telefono,
+                fechaNacimiento: this.alumno.fechaNacimiento,
+                sexo: this.alumno.sexo
             };
             this.buscar = datos.codigo;
 
@@ -59,6 +65,8 @@ const alumnos = {
             this.alumno.direccion = '';
             this.alumno.email = '';
             this.alumno.telefono = '';
+            this.alumno.fechaNacimiento = '';
+            this.alumno.sexo = '';
         },
     },
     template: `
@@ -95,10 +103,27 @@ const alumnos = {
                                 <input placeholder="correo@universidad.edu" required v-model="alumno.email" type="text" class="form-control form-control-sm bg-transparent">
                             </div>
                         </div>
-                        <div class="mb-1 row align-items-center">
+                        <div class="mb-3 row align-items-center">
                             <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Teléfono</label>
                             <div class="col-sm-5">
                                 <input placeholder="0000-0000" required v-model="alumno.telefono" type="text" class="form-control form-control-sm bg-transparent">
+                            </div>
+                        </div>
+                        <div class="mb-3 row align-items-center">
+                            <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Nacimiento</label>
+                            <div class="col-sm-5">
+                                <input required v-model="alumno.fechaNacimiento" type="date" class="form-control form-control-sm bg-transparent">
+                            </div>
+                        </div>
+                        <div class="mb-1 row align-items-center">
+                            <label class="col-sm-3 col-form-label text-body-secondary small fw-bold text-uppercase">Sexo</label>
+                            <div class="col-sm-5">
+                                <select required v-model="alumno.sexo" class="form-select form-select-sm bg-transparent">
+                                    <option value="" disabled>Seleccione...</option>
+                                    <option value="M">Masculino</option>
+                                    <option value="F">Femenino</option>
+                                    <option value="O">Otro</option>
+                                </select>
                             </div>
                         </div>
                     </div>
