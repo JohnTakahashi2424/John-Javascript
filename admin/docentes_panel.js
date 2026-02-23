@@ -77,19 +77,11 @@ const docentesAdmin = {
                         }
                         
                         // 2. Eliminar usuario asociado (si existe)
-                        // A. Buscar por carnet (v10)
-                        let user = null;
-                        if (docente.carnet) {
-                            user = await db.usuarios.where('carnet').equalsIgnoreCase(docente.carnet).first();
-                        }
-                        // B. Si no, buscar por username (asumiendo que coinciden o es similar)
-                        if (!user && docente.nombre) {
-                             user = await db.usuarios.where('username').equalsIgnoreCase(docente.nombre).first();
-                        }
-                        
-                        // C. Si encontramos usuario, verificar que sea Docente antes de borrar
-                        if (user && user.rol === 'Docente') {
-                            await db.usuarios.delete(user.id);
+                        if (docente.usuarioId) {
+                            await db.usuarios.delete(docente.usuarioId);
+                            // También eliminar el perfil
+                            const p = await db.perfiles.where('usuarioId').equals(docente.usuarioId).first();
+                            if (p) await db.perfiles.delete(p.id);
                         }
 
                         // 3. Eliminar docente

@@ -29,76 +29,72 @@ const misMaterias = {
     methods: {
         async cargar() {
             this.cargando = true;
-            const docente = window.docenteData;
-            if (!docente) { this.cargando = false; return; }
+            try {
+                const s = JSON.parse(sessionStorage.getItem('sesionUniversidad') || '{}');
+                const userId = s.id;
+                if (!userId) { this.cargando = false; return; }
 
-            const [todasMaterias, inscripciones, alumnos] = await Promise.all([
-                db.materias.toArray(),
-                db.inscripciones.toArray(),
-                db.alumnos.toArray()
-            ]);
+                const docente = await db.docentes.where('usuarioId').equals(userId).first();
+                if (!docente) { this.cargando = false; return; }
 
-            const misMaterias = todasMaterias.filter(m =>
-                String(m.docenteId) === String(docente.idDocente)
-            );
+                const todasMaterias = await db.materias.where('docenteId').equals(docente.idDocente).toArray();
+                const inscripciones = await db.inscripciones.toArray();
 
-            // Calcular estadísticas por materia
-            this.materias = misMaterias.map(mat => {
-                const inscs = inscripciones.filter(i => String(i.idMateria) === String(mat.idMateria));
-
-                // Distribución por carrera
-                const distribCarrera = {};
-                inscs.forEach(i => {
-                    // Intentar obtener carrera del alumno inscrito
-                    const alum = alumnos.find(a => a.nombre === i.alumno || String(a.idAlumno) === String(i.idAlumno));
-                    const car = alum?.carrera || 'Sin carrera';
-                    distribCarrera[car] = (distribCarrera[car] || 0) + 1;
+                this.materias = todasMaterias.map(mat => {
+                    const inscs = inscripciones.filter(i => String(i.idMateria) === String(mat.idMateria));
+                    return {
+                        ...mat,
+                        totalInscritos: inscs.length,
+                        cupoOcupado: inscs.length,
+                        distribCarrera: {}, // Opcional: implementar join con carreras si es necesario
+                        estado: mat.estado || 'habilitada'
+                    };
                 });
-
-                return {
-                    ...mat,
-                    totalInscritos: inscs.length,
-                    cupoOcupado: inscs.length,
-                    distribCarrera,
-                    estado: mat.estado || 'habilitada'
-                };
-            });
-
-            this.cargando = false;
+            } catch (e) {
+                console.error(e);
+            } finally {
+                this.cargando = false;
+            }
         },
         async verDetalle(mat) {
             this.materiaDetalle = mat;
             this.cargandoDetalle = true;
 
-            const [inscripciones, evaluaciones, alumnos] = await Promise.all([
-                db.inscripciones.filter(i => String(i.idMateria) === String(mat.idMateria)).toArray(),
-                db.evaluaciones.filter(e => String(e.idMateria) === String(mat.idMateria)).toArray(),
-                db.alumnos.toArray()
-            ]);
+            try {
+                const [inscripciones, evaluaciones, alumnos, perfiles] = await Promise.all([
+                    db.inscripciones.filter(i => String(i.idMateria) === String(mat.idMateria)).toArray(),
+                    db.evaluaciones.filter(e => String(e.idMateria) === String(mat.idMateria)).toArray(),
+                    db.alumnos.toArray(),
+                    db.perfiles.toArray()
+                ]);
 
-            this.alumnosDetalle = inscripciones.map(insc => {
-                const alumnoObj = alumnos.find(a => a.nombre === insc.alumno);
-                // Calcular promedio final de los 3 cómputos
-                const evsAlumno = evaluaciones.filter(e => String(e.idInscripcion) === String(insc.idInscripcion));
-                const computos = [1,2,3].map(c => evsAlumno.find(e => e.computo === c));
-                const notaFinal = computos.filter(c => c?.notaComputo != null).length > 0
-                    ? (computos.reduce((s, c) => s + (c?.notaComputo ? parseFloat(c.notaComputo) : 0), 0) /
-                       computos.filter(c => c?.notaComputo != null).length).toFixed(2)
-                    : null;
+                this.alumnosDetalle = inscripciones.map(insc => {
+                    const alumnoObj = alumnos.find(a => a.idAlumno === insc.idAlumno);
+                    const perfilObj = alumnoObj ? perfiles.find(p => p.usuarioId === alumnoObj.usuarioId) : null;
+                    
+                    const evsAlumno = evaluaciones.filter(e => String(e.idInscripcion) === String(insc.idInscripcion));
+                    const computos = [1,2,3].map(c => evsAlumno.find(e => e.computo === c));
+                    const notaFinal = computos.filter(c => c?.notaComputo != null).length > 0
+                        ? (computos.reduce((s, c) => s + (c?.notaComputo ? parseFloat(c.notaComputo) : 0), 0) /
+                           computos.filter(c => c?.notaComputo != null).length).toFixed(2)
+                        : null;
 
-                return {
-                    nombre: insc.alumno || '—',
-                    carrera: alumnoObj?.carrera || '—',
-                    matricula: insc.idMatricula,
-                    comp1: computos[0]?.notaComputo ?? '—',
-                    comp2: computos[1]?.notaComputo ?? '—',
-                    comp3: computos[2]?.notaComputo ?? '—',
-                    notaFinal,
-                    aprobado: notaFinal !== null ? parseFloat(notaFinal) >= 6 : null
-                };
-            }).sort((a, b) => (parseFloat(b.notaFinal) || 0) - (parseFloat(a.notaFinal) || 0));
-
-            this.cargandoDetalle = false;
+                    return {
+                        nombre: perfilObj?.nombre || 'Desconocido',
+                        carrera: alumnoObj?.carreraId || '—', // Opcional: join con carreras
+                        matricula: insc.idInscripcion, 
+                        comp1: computos[0]?.notaComputo ?? '—',
+                        comp2: computos[1]?.notaComputo ?? '—',
+                        comp3: computos[2]?.notaComputo ?? '—',
+                        notaFinal,
+                        aprobado: notaFinal !== null ? parseFloat(notaFinal) >= 6 : null
+                    };
+                }).sort((a, b) => (parseFloat(b.notaFinal) || 0) - (parseFloat(a.notaFinal) || 0));
+            } catch (e) {
+                console.error(e);
+            } finally {
+                this.cargandoDetalle = false;
+            }
         },
         cerrarDetalle() { this.materiaDetalle = null; this.alumnosDetalle = []; }
     },

@@ -90,16 +90,6 @@
         <!-- MAIN CONTENT -->
         <main class="flex-grow-1 p-4" style="min-width:0;">
             <docente-dashboard   v-show="modulo==='dashboard'"></docente-dashboard>
-            <docentes-form       v-show="modulo==='docentes'"
-                                 ref="docentesForm"
-                                 @ir-busqueda="modulo='busqueda_docentes'; $nextTick(()=>$refs.busqDocentes.obtenerDocentes())"
-            ></docentes-form>
-            <busqueda-docentes-view
-                                 v-show="modulo==='busqueda_docentes'"
-                                 ref="busqDocentes"
-                                 @modificar="modulo='docentes'; $refs.docentesForm.modificarDocente($event)"
-                                 @ir-registro="modulo='docentes'"
-            ></busqueda-docentes-view>
             <mis-materias-doc    v-show="modulo==='materias'"></mis-materias-doc>
             <notas-docente       v-show="modulo==='notas'"></notas-docente>
             <estadisticas-docente v-show="modulo==='estadisticas'"></estadisticas-docente>

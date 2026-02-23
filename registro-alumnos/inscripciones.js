@@ -74,24 +74,24 @@ const inscripciones = {
         async onMatriculaChange(){
             const mat = this.matriculasActivas.find(m => m.idMatricula == this.inscripcion.idMatricula);
             if(mat){
-                this.inscripcion.alumno = mat._alumnoNombre || 'Desconocido';
-                this.inscripcion.ciclo  = mat._periodoCiclo || '';
+                const perfil = await db.perfiles.where('usuarioId').equals(mat.usuarioId || 0).first();
+                this.inscripcion.alumno = perfil ? perfil.nombre : 'Desconocido';
+                this.inscripcion.idAlumno = mat.idAlumno;
             } else {
                 this.inscripcion.alumno = '';
-                this.inscripcion.ciclo  = '';
+                this.inscripcion.idAlumno = null;
             }
             this.inscripcion.idMateria = '';
             this.inscripcion.materia   = '';
             await this.cargarMateriasInscritas();
         },
-        // Carga las materias ya inscritas para la matrícula activa
         async cargarMateriasInscritas(){
-            if(!this.inscripcion.idMatricula){
+            if(!this.inscripcion.idAlumno){
                 this.materiasInscritas = [];
                 return;
             }
             this.materiasInscritas = await db.inscripciones
-                .where('matriculaId').equals(Number(this.inscripcion.idMatricula))
+                .where('idAlumno').equals(Number(this.inscripcion.idAlumno))
                 .toArray();
         },
         // Al seleccionar una materia, guarda el nombre

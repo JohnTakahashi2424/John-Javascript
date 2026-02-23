@@ -34,46 +34,55 @@ const notasDocente = {
     },
     methods: {
         async cargarMisMaterias() {
-            const docente = window.docenteData;
+            const s = JSON.parse(sessionStorage.getItem('sesionUniversidad') || '{}');
+            const userId = s.id;
+            if (!userId) return;
+
+            const docente = await db.docentes.where('usuarioId').equals(userId).first();
             if (!docente) return;
-            this.misMateriasOpts = await db.materias.filter(m =>
-                String(m.docenteId) === String(docente.idDocente)
-            ).toArray();
+
+            this.misMateriasOpts = await db.materias.where('docenteId').equals(docente.idDocente).toArray();
         },
         async cargarFilas() {
             if (!this.materiaSelId) return;
             this.cargando = true;
             this.filas = [];
 
-            const [inscripciones, alumnos, evaluaciones] = await Promise.all([
-                db.inscripciones.filter(i => String(i.idMateria) === String(this.materiaSelId)).toArray(),
-                db.alumnos.toArray(),
-                db.evaluaciones.filter(e =>
-                    String(e.idMateria) === String(this.materiaSelId) &&
-                    e.computo === this.computoSel
-                ).toArray()
-            ]);
+            try {
+                const [inscripciones, alumnos, perfiles, evaluaciones] = await Promise.all([
+                    db.inscripciones.filter(i => String(i.idMateria) === String(this.materiaSelId)).toArray(),
+                    db.alumnos.toArray(),
+                    db.perfiles.toArray(),
+                    db.evaluaciones.filter(e =>
+                        String(e.idMateria) === String(this.materiaSelId) &&
+                        e.computo === this.computoSel
+                    ).toArray()
+                ]);
 
-            this.filas = inscripciones.map(insc => {
-                const alum = alumnos.find(a => a.nombre === insc.alumno);
-                const ev = evaluaciones.find(e => String(e.idInscripcion) === String(insc.idInscripcion));
-                return {
-                    inscripcion: insc,
-                    nombre: insc.alumno || '—',
-                    carrera: alum?.carrera || '—',
-                    ev: {
-                        id: ev?.id || null,
-                        lab1: ev?.lab1 ?? '',
-                        lab2: ev?.lab2 ?? '',
-                        examen: ev?.examen ?? '',
-                        notaComputo: ev?.notaComputo ?? null,
-                        observaciones: ev?.observaciones || '',
-                        estado: ev?.estado || 'abierto'
-                    }
-                };
-            });
+                this.filas = inscripciones.map(insc => {
+                    const alum = alumnos.find(a => a.idAlumno === insc.idAlumno);
+                    const perf = alum ? perfiles.find(p => p.usuarioId === alum.usuarioId) : null;
+                    const ev = evaluaciones.find(e => String(e.idInscripcion) === String(insc.idInscripcion));
+                    return {
+                        inscripcion: insc,
+                        nombre: perf?.nombre || 'Desconocido',
+                        carrera: alum?.carreraId || '—',
+                        ev: {
+                            id: ev?.id || null,
+                            lab1: ev?.lab1 ?? '',
+                            lab2: ev?.lab2 ?? '',
+                            examen: ev?.examen ?? '',
+                            notaComputo: ev?.notaComputo ?? null,
+                            observaciones: ev?.observaciones || '',
+                            estado: ev?.estado || 'abierto'
+                        }
+                    };
+                });
+            } catch (e) {
+                console.error(e);
+            }
 
-            // Determinar estado del cómputo (si al menos una fila está cerrada, todo está cerrado)
+            // Determinar estado del cómputo
             this.estadoComputo = this.filas.some(f => f.ev.estado === 'cerrado') ? 'cerrado' : 'abierto';
             this.calcularStats();
             this.cargando = false;

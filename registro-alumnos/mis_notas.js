@@ -21,38 +21,18 @@ const misNotas = {
             this.cargando = true;
             this.error = null;
             try {
-                const sesion = JSON.parse(sessionStorage.getItem('sesionUniversidad') || '{}');
-                const carnet = sesion.carnet || '';
-                const username = sesion.username || '';
+                const s = JSON.parse(sessionStorage.getItem('sesionUniversidad') || '{}');
+                const userId = s.id;
+                if (!userId) { this.cargando = false; return; }
 
-                // Buscar alumno por carnet o nombre
-                let alumno = null;
-                const todosAlumnos = await db.alumnos.toArray();
-                if (carnet) {
-                    alumno = todosAlumnos.find(a => (a.carnet || '').toLowerCase() === carnet.toLowerCase());
-                }
-                if (!alumno && username) {
-                    alumno = todosAlumnos.find(a =>
-                        (a.nombre || '').toLowerCase().includes(username.toLowerCase()) ||
-                        username.toLowerCase().includes((a.nombre || '').split(' ')[0].toLowerCase())
-                    );
-                }
+                // 1. Encontrar registro de alumno
+                const alumno = await db.alumnos.where('usuarioId').equals(userId).first();
+                if (!alumno) { this.materias = []; this.cargando = false; return; }
 
-                // Obtener matriculas y luego inscripciones
-                const todasMatriculas = await db.matricula.toArray();
-                const misMatriculas = alumno
-                    ? todasMatriculas.filter(m =>
-                        String(m.idAlumno) === String(alumno.idAlumno) ||
-                        (m.nombreAlumno || '').toLowerCase() === (alumno.nombre || '').toLowerCase()
-                    )
-                    : todasMatriculas.filter(m =>
-                        (m.nombreAlumno || '').toLowerCase().includes(username.toLowerCase())
-                    );
-
-                const idsMisMatriculas = new Set(misMatriculas.map(m => String(m.idMatricula)));
-
-                const todasInscripciones = await db.inscripciones.toArray();
-                const misInscripciones = todasInscripciones.filter(i => idsMisMatriculas.has(String(i.idMatricula)));
+                // 2. Obtener inscripciones del alumno
+                const misInscripciones = await db.inscripciones
+                    .where('idAlumno').equals(alumno.idAlumno)
+                    .toArray();
 
                 if (misInscripciones.length === 0) {
                     this.materias = [];

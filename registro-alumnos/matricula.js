@@ -61,7 +61,7 @@ const matricula = {
         // Selecciona un alumno de la lista
         seleccionarAlumno(alumno){
             this.alumnoSeleccionado = alumno;
-            this.matricula.alumnoId = alumno.idAlumno;
+            this.matricula.idAlumno = alumno.idAlumno;
             this.matricula._alumnoNombre = alumno.nombre;
             this.buscarAlumno = alumno.nombre;
             this.alumnosEncontrados = [];

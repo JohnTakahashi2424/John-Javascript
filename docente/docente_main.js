@@ -4,28 +4,42 @@
 // =============================================
 
 const db = new Dexie('universidad');
-// v10: Arquitectura de Carnetización Automática e Inmutable
-db.version(10).stores({
-    usuarios:     '++id, &username, &email, rol, &carnet, estado',
-    alumnos:      '++idAlumno, &carnet, nombre, usuarioId, carreraId, sexo, añoIngreso, estado',
-    docentes:     '++idDocente, &carnet, nombre, usuarioId, especialidad, sexo, añoIngreso, estado',
+// Harmonized Schema - Version 11 & 12
+db.version(11).stores({
+    usuarios:     '++id, &username, &email, rol, estado',
+    perfiles:     '++id, &usuarioId, nombre, sexo, foto, telefono, direccion, fechaNacimiento',
+    alumnos:      '++idAlumno, &usuarioId, &carnet, carreraId, añoIngreso, estado',
+    docentes:     '++idDocente, &usuarioId, &carnet, especialidad, añoIngreso, estado',
     carreras:     '++idCarrera, &codigo, nombre, facultad, estado',
     materias:     '++idMateria, &codigo, nombre, docenteId, carreraId, estado',
     periodos:     '++idPeriodo, año, ciclo, estado',
-    matricula:    '++idMatricula, &codigo, alumnoId, periodoId, carreraId, estado',
-    inscripciones:'++idInscripcion, matriculaId, materiaId, estado',
-    evaluaciones: '++id, inscripcionId, estado',
+    matricula:    '++idMatricula, &codigo, idAlumno, periodoId, carreraId, estado',
+    inscripciones:'++idInscripcion, idAlumno, idMateria, periodoId, notaFinal',
+    evaluaciones: '++id, idInscripcion, idMateria, computo, lab1, lab2, examen, notaComputo, estado',
     solicitudes:  '++id, tipo, username, &email, sexo, carreraId, fecha, estado'
 });
 
-// Auto-recovery: si la BD no puede migrar (cambio de PK), borrar y recargar
+db.version(12).stores({
+    usuarios:     '++id, &username, &email, rol, estado',
+    perfiles:     '++id, &usuarioId, nombre, sexo, foto, telefono, direccion, fechaNacimiento',
+    alumnos:      '++idAlumno, &usuarioId, &carnet, carreraId, añoIngreso, estado',
+    docentes:     '++idDocente, &usuarioId, &carnet, especialidad, añoIngreso, estado',
+    carreras:     '++idCarrera, &codigo, nombre, facultad, estado',
+    materias:     '++idMateria, &codigo, nombre, docenteId, carreraId, estado',
+    periodos:     '++idPeriodo, año, ciclo, estado',
+    matricula:    '++idMatricula, &codigo, idAlumno, periodoId, carreraId, estado',
+    inscripciones:'++idInscripcion, idAlumno, idMateria, periodoId, notaFinal',
+    evaluaciones: '++id, idInscripcion, idMateria, computo, lab1, lab2, examen, notaComputo, estado',
+    solicitudes:  '++id, tipo, username, &email, sexo, carreraId, fecha, estado'
+});
+
+// Auto-recovery
 db.open().catch(err => {
-    if ((err.message || '').includes('primary key') || err.name === 'VersionError') {
-        if (confirm('⚠️ La base de datos necesita actualizarse.\n¿Borrar datos antiguos y continuar?')) {
-            indexedDB.deleteDatabase('universidad');
-            location.reload();
-        }
-    } else { console.error('[DB Docente] Error:', err); }
+    console.error('[DB Docente] Error al abrir:', err);
+    if (confirm('⚠️ La base de datos necesita actualizarse.\n¿Borrar datos antiguos y continuar?')) {
+        indexedDB.deleteDatabase('universidad');
+        location.reload();
+    }
 });
 
 // Perfil del docente actual (disponible globalmente para todos los componentes)
@@ -42,7 +56,6 @@ const docenteApp = Vue.createApp({
             windowWidth: window.innerWidth,
             menuItems: [
                 { id: 'dashboard',    label: 'Dashboard',       icon: 'bi bi-speedometer2' },
-                { id: 'docentes',     label: 'Docentes',        icon: 'bi bi-person-workspace' },
                 { id: 'materias',     label: 'Mis Materias',    icon: 'bi bi-book' },
                 { id: 'notas',        label: 'Notas',           icon: 'bi bi-journal-text' },
                 { id: 'estadisticas', label: 'Estadísticas',    icon: 'bi bi-bar-chart-line' },
@@ -67,6 +80,7 @@ const docenteApp = Vue.createApp({
             const s = JSON.parse(stored);
             if (!s || s.rol !== 'Docente') { window.location.href = '../index.html'; return; }
             this.docenteSesion.username = s.username;
+            this.docenteSesion.id       = s.id;
             this.docenteSesion.carnet   = s.carnet || '';
         } catch(e) {
             window.location.href = '../index.html';
@@ -79,15 +93,10 @@ const docenteApp = Vue.createApp({
     },
     methods: {
         async buscarPerfil() {
-            const carnet   = this.docenteSesion.carnet;
-            const username = this.docenteSesion.username;
-            let docente = null;
+            const userId = this.docenteSesion.id;
+            if (!userId) return;
 
-            if (carnet) {
-                docente = await db.docentes.filter(d =>
-                    (d.carnet || '').toLowerCase() === carnet.toLowerCase()
-                ).first();
-            }
+            const docente = await db.docentes.where('usuarioId').equals(userId).first();
             // Fallback: buscar por nombre similar al username
             if (!docente && username) {
                 const todos = await db.docentes.toArray();
@@ -129,7 +138,6 @@ docenteApp.component('mis-materias-doc',         misMaterias);
 docenteApp.component('notas-docente',            notasDocente);
 docenteApp.component('estadisticas-docente',     estadisticasDocente);
 docenteApp.component('perfil-docente',           perfilDocente);
-docenteApp.component('docentes-form',            docentes);
-docenteApp.component('busqueda-docentes-view',   busqueda_docentes);
+docenteApp.component('perfil-docente',           perfilDocente);
 
 docenteApp.mount('#docenteApp');

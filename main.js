@@ -110,7 +110,6 @@ db.version(10).stores({
 });
 
 // v11: Arquitectura Totalmente Relacional
-// Separa Autenticación (usuarios), Datos Humanos (perfiles) y Académicos (alumnos/docentes)
 db.version(11).stores({
     usuarios:     '++id, &username, &email, rol, estado',
     perfiles:     '++id, &usuarioId, nombre, sexo, foto, telefono, direccion, fechaNacimiento',
@@ -130,52 +129,45 @@ db.version(11).stores({
     const alumnos = await tx.table('alumnos').toArray();
     const docentes = await tx.table('docentes').toArray();
     
-    // 1. Crear perfiles para alumnos existentes
     for (const a of alumnos) {
         if (a.usuarioId) {
             await tx.table('perfiles').put({
-                usuarioId: a.usuarioId,
-                nombre: a.nombre || '',
-                sexo: a.sexo || '',
-                foto: a.foto || '',
-                telefono: a.telefono || '',
-                direccion: a.direccion || '',
+                usuarioId: a.usuarioId, nombre: a.nombre || '', sexo: a.sexo || '',
+                foto: a.foto || '', telefono: a.telefono || '', direccion: a.direccion || '',
                 fechaNacimiento: a.fechaNacimiento || ''
             });
-            // Limpiar campos que ahora están en perfiles
             delete a.nombre; delete a.sexo; delete a.foto; delete a.telefono; delete a.direccion; delete a.fechaNacimiento;
             await tx.table('alumnos').put(a);
         }
     }
-
-    // 2. Crear perfiles para docentes existentes
     for (const d of docentes) {
         if (d.usuarioId) {
             await tx.table('perfiles').put({
-                usuarioId: d.usuarioId,
-                nombre: d.nombre || '',
-                sexo: d.sexo || '',
-                foto: d.foto || '',
-                telefono: d.telefono || '',
-                direccion: d.direccion || '',
+                usuarioId: d.usuarioId, nombre: d.nombre || '', sexo: d.sexo || '',
+                foto: d.foto || '', telefono: d.telefono || '', direccion: d.direccion || '',
                 fechaNacimiento: d.fechaNacimiento || ''
             });
-            // Limpiar campos que ahora están en perfiles
             delete d.nombre; delete d.sexo; delete d.foto; delete d.telefono; delete d.direccion; delete d.fechaNacimiento;
             await tx.table('docentes').put(d);
         }
     }
+});
 
-    // 3. Limpiar campo carnet de tabla usuarios (ahora centralizado en perfiles/academicos)
-    const usuarios = await tx.table('usuarios').toArray();
-    for (const u of usuarios) {
-        if (u.carnet) {
-            delete u.carnet;
-            await tx.table('usuarios').put(u);
-        }
-    }
-    
-    console.log('[Migration] Migración v11 completada con éxito.');
+// v12: Estandarización de IDs y Relaciones Académicas
+db.version(12).stores({
+    usuarios:     '++id, &username, &email, rol, estado',
+    perfiles:     '++id, &usuarioId, nombre, sexo, foto, telefono, direccion, fechaNacimiento',
+    alumnos:      '++idAlumno, &usuarioId, &carnet, carreraId, añoIngreso, estado',
+    docentes:     '++idDocente, &usuarioId, &carnet, especialidad, añoIngreso, estado',
+    carreras:     '++idCarrera, &codigo, nombre, facultad, estado',
+    materias:     '++idMateria, &codigo, nombre, docenteId, carreraId, estado',
+    periodos:     '++idPeriodo, año, ciclo, estado',
+    matricula:    '++idMatricula, &codigo, idAlumno, periodoId, carreraId, estado',
+    inscripciones:'++idInscripcion, idAlumno, idMateria, periodoId, notaFinal',
+    evaluaciones: '++id, idInscripcion, idMateria, computo, lab1, lab2, examen, notaComputo, estado',
+    solicitudes:  '++id, tipo, username, &email, sexo, carreraId, fecha, estado'
+}).upgrade(async tx => {
+    console.log('[Migration] Ajustando relaciones académicas a IDs numéricos (v12)...');
 });
 
 // =============================================
@@ -216,6 +208,8 @@ const app = Vue.createApp({
                 autenticado: false,
                 username: '',
                 rol: '',
+                id: null,
+                carnet: '',
                 foto: ''
             },
             forms:{
@@ -251,10 +245,12 @@ const app = Vue.createApp({
                     this.sesion.autenticado = true;
                     this.sesion.username    = s.username;
                     this.sesion.rol         = s.rol;
+                    this.sesion.id          = s.id;
+                    this.sesion.carnet      = s.carnet || '';
                     
                     // SIEMPRE cargar la foto desde la BD
-                    if(s.rol === 'Alumno' && s.carnet){
-                         const alumno = await db.alumnos.where('carnet').equals(s.carnet).first();
+                    if(this.sesion.rol === 'Alumno' && this.sesion.carnet){
+                         const alumno = await db.alumnos.where('carnet').equals(this.sesion.carnet).first();
                          if (alumno) {
                              if (alumno.estado === 'inactivo') {
                                  console.warn('Sesión cerrada: Alumno inactivo.');
@@ -293,19 +289,21 @@ const app = Vue.createApp({
 
             this.$refs[refForm][metodo](datos);
         },
-        async loginExitoso({ username, rol, carnet }) {
+        async loginExitoso(datos) {
             this.sesion.autenticado = true;
-            this.sesion.username    = username;
-            this.sesion.rol         = rol;
+            this.sesion.username    = datos.username;
+            this.sesion.rol         = datos.rol;
+            this.sesion.id          = datos.id;
+            this.sesion.carnet      = datos.carnet || '';
             this.sesion.foto        = '';
 
-            if(rol === 'Alumno' && carnet){
-                const alumno = await db.alumnos.where('carnet').equals(carnet).first();
+            if(datos.rol === 'Alumno' && datos.carnet){
+                const alumno = await db.alumnos.where('carnet').equals(datos.carnet).first();
                 if(alumno && alumno.foto) this.sesion.foto = alumno.foto;
             }
 
-            // NO guardar la foto en sessionStorage
-            sessionStorage.setItem('sesionUniversidad', JSON.stringify({ autenticado: true, username, rol, carnet: carnet || '' }));
+            // Guardar sesión COMPLETA en sessionStorage
+            sessionStorage.setItem('sesionUniversidad', JSON.stringify(datos));
         },
         cerrarSesion() {
             sessionStorage.removeItem('sesionUniversidad');

@@ -144,16 +144,17 @@ const miPerfil = {
                     await db.usuarios.update(this._userId, { email: this.perfil.email.trim() });
 
                     // 2. Actualizar Perfil Personal
-                    const p = await db.perfiles.where('usuarioId').equals(this._userId).first();
+                    let p = await db.perfiles.where('usuarioId').equals(this._userId).first();
                     const datosPerfil = {
+                        usuarioId: this._userId, // Asegurar vínculo
                         nombre: this.perfil.nombre.trim(),
                         telefono: this.perfil.telefono.trim(),
                         direccion: this.perfil.direccion.trim(),
                         sexo: this.perfil.sexo,
-                        foto: this.perfil.foto // La foto también se guarda aquí
+                        foto: this.perfil.foto
                     };
                     if (p) await db.perfiles.update(p.id, datosPerfil);
-                    else await db.perfiles.add({ usuarioId: this._userId, ...datosPerfil });
+                    else await db.perfiles.add(datosPerfil);
                 });
 
                 // Actualizar UI del Navbar (Nombre si cambió)

@@ -26,32 +26,43 @@ const perfilDocente = {
             this.cargando = true;
             try {
                 const s = JSON.parse(sessionStorage.getItem('sesionUniversidad') || '{}');
-                const username = s.username || '';
-                const carnet   = s.carnet   || '';
+                const userId = s.id;
 
-                const usuario = await db.usuarios.where('username').equals(username).first();
-                if (usuario) { this._userId = usuario.id; this.perfil.email = usuario.email || ''; }
-
-                let docente = null;
-                if (carnet) docente = await db.docentes.where('carnet').equals(carnet).first();
-                if (!docente && username) {
-                    const todos = await db.docentes.toArray();
-                    docente = todos.find(d =>
-                        (d.nombre || '').toLowerCase().includes(username.toLowerCase()) ||
-                        username.toLowerCase().includes((d.nombre || '').split(' ')[0].toLowerCase())
-                    ) || null;
+                if (!userId) {
+                    alertify.error('Sesión no válida.');
+                    return;
                 }
+
+                // 1. Cargar datos básicos de cuenta
+                const usuario = await db.usuarios.get(userId);
+                if (usuario) {
+                    this._userId = usuario.id;
+                    this.perfil.email = usuario.email || '';
+                }
+
+                // 2. Cargar perfil personal (Relación 1:1 con usuario)
+                const perfil = await db.perfiles.where('usuarioId').equals(userId).first();
+                if (perfil) {
+                    this.perfil.nombre = perfil.nombre || '';
+                    this.perfil.sexo = perfil.sexo || 'Masculino';
+                    this.perfil.foto = perfil.foto || '';
+                    this.perfil.telefono = perfil.telefono || '';
+                    this.perfil.direccion = perfil.direccion || '';
+                }
+
+                // 3. Cargar datos académicos del docente
+                const docente = await db.docentes.where('usuarioId').equals(userId).first();
                 if (docente) {
-                    this._docenteId  = docente.idDocente;
-                    this.perfil.nombre      = docente.nombre      || '';
-                    this.perfil.telefono    = docente.telefono    || '';
-                    this.perfil.especialidad= docente.especialidad|| '';
-                    this.perfil.carnet      = docente.carnet      || '';
-                    this.perfil.sexo        = docente.sexo        || 'Masculino';
-                    this.perfil.foto        = docente.foto        || '';
-                    if (!this.perfil.email) this.perfil.email = docente.email || '';
+                    this._docenteId = docente.idDocente;
+                    this.perfil.carnet = docente.carnet || '';
+                    this.perfil.especialidad = docente.especialidad || '';
                 }
-            } finally { this.cargando = false; }
+            } catch (e) {
+                console.error(e);
+                alertify.error('Error al cargar perfil.');
+            } finally {
+                this.cargando = false;
+            }
         },
         seleccionarFoto(event) {
             const file = event.target.files[0];
