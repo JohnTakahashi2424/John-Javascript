@@ -18,9 +18,11 @@ const login = {
                 nombre: '',
                 username: '',
                 email: '',
-                fechaNacimiento: '', // Agregado
+                password: '',
+                confirmarPassword: '',
+                fechaNacimiento: '', 
                 rol: 'Alumno',
-                sexo: 'Masculino', // Valor por defecto
+                sexo: 'Masculino', 
                 carreraId: ''
             },
 
@@ -138,10 +140,20 @@ const login = {
                 return;
             }
 
-            const { nombre, username, email, fechaNacimiento, rol, sexo, codigoAdmin, carreraId } = this.regForm;
+            const { nombre, username, email, password, confirmarPassword, fechaNacimiento, rol, sexo, codigoAdmin, carreraId } = this.regForm;
 
-            if (!nombre || !username || !email || !fechaNacimiento) {
+            if (!nombre || !username || !email || !password || !confirmarPassword || !fechaNacimiento) {
                 alertify.error('Todos los campos son obligatorios.');
+                return;
+            }
+
+            if (password !== confirmarPassword) {
+                alertify.error('Las contraseñas no coinciden.');
+                return;
+            }
+
+            if (password.length < 6) {
+                alertify.error('La contraseña debe tener al menos 6 caracteres.');
                 return;
             }
             
@@ -153,19 +165,56 @@ const login = {
 
             this.cargando = true;
             try {
-                const existeUser = await db.usuarios.where('username').equalsIgnoreCase(username).first();
-                if (existeUser) { alertify.error('Usuario ya en uso.'); return; }
-                
-                const existeEmail = await db.usuarios.where('email').equalsIgnoreCase(email).first();
-                if (existeEmail) { alertify.error('Correo ya en uso.'); return; }
+                const hashPwd = await this.hashPassword(password);
 
+                // --- LOGICA DE ACTIVACION (VINCULACIÓN) ---
+                // Si el admin pre-creó el usuario, estará en 'pendiente_activacion'
+                const usuarioPrecreado = await db.usuarios.where('email').equalsIgnoreCase(email).first();
+
+                if (usuarioPrecreado) {
+                    if (usuarioPrecreado.estado === 'pendiente_activacion') {
+                        // VALIDAR ROL: El usuario debe estar registrándose con el mismo rol que pre-asignó el admin
+                        if (usuarioPrecreado.rol !== rol) {
+                            alertify.error(`El correo ${email} ya está registrado para un perfil de ${usuarioPrecreado.rol}.`);
+                            this.cargando = false;
+                            return;
+                        }
+
+                        // ACTUALIZAR (Activar)
+                        await db.usuarios.update(usuarioPrecreado.id, {
+                            hashPwd: hashPwd,
+                            estado: 'activo'
+                        });
+
+                        // Sincronizar perfiles y registros académicos (cambiar de inactivo a activo)
+                        if (rol === 'Alumno') {
+                            await db.alumnos.where('usuarioId').equals(usuarioPrecreado.id).modify({ estado: 'activo' });
+                        } else if (rol === 'Docente') {
+                            await db.docentes.where('usuarioId').equals(usuarioPrecreado.id).modify({ estado: 'activo' });
+                        }
+
+                        alertify.success('¡Cuenta activada con éxito! Ya puedes iniciar sesión.');
+                        this.regForm = { nombre: '', username: '', email: '', password: '', confirmarPassword: '', fechaNacimiento: '', rol: 'Alumno', sexo: 'Masculino', carreraId: '' };
+                        this.cambiarVista('login');
+                        return;
+
+                    } else {
+                        // Si ya está activo u otro estado, denegar por colisión
+                        alertify.error('El correo electrónico ya está en uso y la cuenta está activa.');
+                        this.cargando = false;
+                        return;
+                    }
+                }
+
+                // --- LOGICA DE PRE-REGISTRO ESTÁNDAR (Si no hay pre-creación) ---
+                const existeUser = await db.usuarios.where('username').equalsIgnoreCase(username).first();
+                if (existeUser) { alertify.error('El nombre de usuario ya está en uso.'); this.cargando = false; return; }
+                
                 const existeSolicitud = await db.solicitudes.where('email').equalsIgnoreCase(email).first();
-                if (existeSolicitud) { alertify.error('Ya tienes una solicitud pendiente.'); return; }
+                if (existeSolicitud) { alertify.error('Ya tienes una solicitud de registro pendiente.'); this.cargando = false; return; }
 
                 // 2. Si es Admin, crear directamente (y su perfil)
                 if (rol === 'Admin') {
-                    // Para Admin, la clave inicial también será su fecha de nacimiento si se proporciona, o un default.
-                    const hashPwd = await this.hashPassword(fechaNacimiento || 'admin2026');
                     const usuarioId = await db.usuarios.add({
                         username, email, hashPwd, rol, estado: 'activo'
                     });
@@ -177,61 +226,36 @@ const login = {
                     return;
                 }
 
-                // 3. Estructura Relacional v12 (Pre-registro)
-                // Se crean los registros base sin usuarioId, sujetos a aprobación.
-
                 // A. Crear Perfil (sin usuarioId por ahora)
                 const perfilId = await db.perfiles.add({
-                    usuarioId: null,
-                    nombre,
-                    sexo,
-                    email,
-                    foto: '',
-                    telefono: '',
-                    direccion: '',
-                    fechaNacimiento
+                    usuarioId: null, nombre, sexo, email, foto: '', telefono: '', direccion: '', fechaNacimiento
                 });
 
-                // B. Crear Registro Académico (sin usuarioId, carnet PENDIENTE)
+                // B. Crear Registro Académico
                 let alumnoId = null;
                 let docenteId = null;
 
                 if (rol === 'Alumno') {
                     alumnoId = await db.alumnos.add({
-                        carnet: 'PENDIENTE',
-                        usuarioId: null,
-                        carreraId: String(carreraId || ''),
-                        añoIngreso: new Date().getFullYear(),
-                        estado: 'inactivo' // Se activa al aprobar
+                        carnet: 'PENDIENTE', usuarioId: null, carreraId: String(carreraId || ''),
+                        añoIngreso: new Date().getFullYear(), estado: 'inactivo'
                     });
                 } else if (rol === 'Docente') {
                     docenteId = await db.docentes.add({
-                        carnet: 'PENDIENTE',
-                        usuarioId: null,
-                        especialidad: '',
-                        añoIngreso: new Date().getFullYear(),
-                        estado: 'inactivo'
+                        carnet: 'PENDIENTE', usuarioId: null, especialidad: '',
+                        añoIngreso: new Date().getFullYear(), estado: 'inactivo'
                     });
                 }
 
-                // C. Crear SOLICITUD de Activación vinculada
+                // C. Crear SOLICITUD
                 await db.solicitudes.add({
-                    tipo: rol,
-                    username,
-                    email,
-                    hashPwd,
-                    fechaNacimiento,
-                    sexo, // Para visualización rápida en Admin
-                    carreraId: rol === 'Alumno' ? (carreraId || '') : '', // Para visualización rápida
-                    perfilId,
-                    alumnoId,
-                    docenteId,
-                    fecha: new Date().toLocaleString(),
-                    estado: 'pendiente'
+                    tipo: rol, username, email, hashPwd, fechaNacimiento, sexo,
+                    carreraId: rol === 'Alumno' ? (carreraId || '') : '',
+                    perfilId, alumnoId, docenteId, fecha: new Date().toLocaleString(), estado: 'pendiente'
                 });
 
-                alertify.alert('Pre-Registro Exitoso', `Tus datos han sido guardados. Se ha enviado una solicitud de activación al administrador.<br><br><b>Usuario:</b> ${username}<br><b>Contraseña inicial:</b> ${fechaNacimiento}`);
-                this.regForm = { nombre: '', username: '', email: '', fechaNacimiento: '', rol: 'Alumno', sexo: 'Masculino', carreraId: '' };
+                alertify.alert('Solicitud Enviada', `Hemos guardado tu pre-registro. Un administrador debe aprobar tu cuenta antes de que puedas entrar.<br><br><b>Usuario:</b> ${username}`);
+                this.regForm = { nombre: '', username: '', email: '', password: '', confirmarPassword: '', fechaNacimiento: '', rol: 'Alumno', sexo: 'Masculino', carreraId: '' };
                 this.cambiarVista('login');
 
             } catch (e) {
@@ -246,7 +270,7 @@ const login = {
         cambiarVista(v) {
             this.vista = v;
             this.loginForm = { identificador: '', password: '' };
-            this.regForm = { nombre: '', username: '', email: '', fechaNacimiento: '', rol: 'Alumno', sexo: 'Masculino', carreraId: '' };
+            this.regForm = { nombre: '', username: '', email: '', password: '', confirmarPassword: '', fechaNacimiento: '', rol: 'Alumno', sexo: 'Masculino', carreraId: '' };
             this.mostrarPass = false;
             this.mostrarPassReg = false;
             this.mostrarPassConf = false;
@@ -410,13 +434,45 @@ const login = {
                                 </div>
                             </div>
 
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-uppercase text-body-secondary">Fecha de Nacimiento <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-calendar-event text-body-secondary"></i></span>
+                                    <input v-model="regForm.fechaNacimiento" type="date" class="form-control border-start-0 bg-transparent" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-uppercase text-body-secondary">Contraseña <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-body-tertiary border-end-0">
+                                        <i class="bi bi-lock text-body-secondary"></i>
+                                    </span>
+                                    <input v-model="regForm.password"
+                                           :type="mostrarPassReg ? 'text' : 'password'"
+                                           class="form-control border-start-0 border-end-0 bg-transparent"
+                                           placeholder="Crea una contraseña" required>
+                                    <button type="button" class="input-group-text bg-body-tertiary"
+                                            @click="mostrarPassReg = !mostrarPassReg">
+                                        <i :class="mostrarPassReg ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-body-secondary"></i>
+                                    </button>
+                                </div>
+                            </div>
+
                             <div class="mb-4">
-                                <div class="row g-2">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label small fw-bold">Fecha de Nacimiento <span class="text-danger">*</span></label>
-                                        <input v-model="regForm.fechaNacimiento" type="date" class="form-control" required>
-                                        <div class="form-text small">Se usará como tu contraseña inicial (YYYY-MM-DD).</div>
-                                    </div>
+                                <label class="form-label fw-semibold small text-uppercase text-body-secondary">Confirmar Contraseña <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-body-tertiary border-end-0">
+                                        <i class="bi bi-lock-check text-body-secondary"></i>
+                                    </span>
+                                    <input v-model="regForm.confirmarPassword"
+                                           :type="mostrarPassConf ? 'text' : 'password'"
+                                           class="form-control border-start-0 border-end-0 bg-transparent"
+                                           placeholder="Repite la contraseña" required>
+                                    <button type="button" class="input-group-text bg-body-tertiary"
+                                            @click="mostrarPassConf = !mostrarPassConf">
+                                        <i :class="mostrarPassConf ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-body-secondary"></i>
+                                    </button>
                                 </div>
                             </div>
 

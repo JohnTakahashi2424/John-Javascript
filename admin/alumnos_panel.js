@@ -216,7 +216,7 @@ const alumnosAdmin = {
                 const hashPwd = await this.hashPassword(n.fechaNacimiento);
                 await db.transaction('rw', [db.usuarios, db.alumnos, db.perfiles], async () => {
                     const usuarioId = await db.usuarios.add({
-                        username: n.username, email: n.email, hashPwd, rol: 'Alumno', carnet: nuevoCarnet, estado: 'activo'
+                        username: n.username, email: n.email, hashPwd, rol: 'Alumno', carnet: nuevoCarnet, estado: 'pendiente_activacion'
                     });
                     await db.perfiles.add({
                         usuarioId, nombre: n.nombre, sexo: n.sexo, email: n.email, foto: '',
@@ -224,11 +224,11 @@ const alumnosAdmin = {
                     });
                     await db.alumnos.add({
                         carnet: nuevoCarnet, usuarioId, carreraId: '',
-                        carrera: 'General', añoIngreso: año, estado: 'activo'
+                        carrera: 'General', añoIngreso: año, estado: 'inactivo'
                     });
                 });
 
-                alertify.success(`Alumno registrado. Carnet: ${nuevoCarnet}. Clave inicial: ${n.fechaNacimiento}`);
+                alertify.success(`Alumno pre-registrado. Carnet: ${nuevoCarnet}. En espera de activación.`);
                 this.cerrarModal('modalNuevoAlumno');
                 await this.cargar();
             } catch (e) { alertify.error('Error: ' + e.message); }

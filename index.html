@@ -70,34 +70,19 @@
                         <ul class="nav flex-column gap-1 px-2">
                             <li class="nav-item">
                                 <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2 transition-all"
-                                   :class="forms.alumnos.mostrar ? 'active bg-primary bg-opacity-10 text-primary fw-bold border border-primary border-opacity-25' : 'text-body-secondary'"
-                                   href="#" @click.prevent="abrirVentana('alumnos')">
-                                    <i class="bi bi-person-badge"></i> Alumnos
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2 transition-all"
-                                   :class="forms.materias.mostrar ? 'active bg-primary bg-opacity-10 text-primary fw-bold border border-primary border-opacity-25' : 'text-body-secondary'"
-                                   href="#" @click.prevent="abrirVentana('materias')">
-                                    <i class="bi bi-book"></i> Materias
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2 transition-all"
                                    :class="forms.matricula.mostrar ? 'active bg-primary bg-opacity-10 text-primary fw-bold border border-primary border-opacity-25' : 'text-body-secondary'"
                                    href="#" @click.prevent="abrirVentana('matricula')">
-                                    <i class="bi bi-card-checklist"></i> Matrícula
+                                    <i class="bi bi-card-checklist"></i> Mi Matrícula
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2 transition-all"
                                    :class="forms.inscripciones.mostrar ? 'active bg-primary bg-opacity-10 text-primary fw-bold border border-primary border-opacity-25' : 'text-body-secondary'"
                                    href="#" @click.prevent="abrirVentana('inscripciones')">
-                                    <i class="bi bi-pencil-square"></i> Inscripciones
+                                    <i class="bi bi-pencil-square"></i> Mis Inscripciones
                                 </a>
                             </li>
-                            <li class="nav-item" v-if="sesion.rol === 'Alumno'">
+                            <li class="nav-item">
                                 <a class="nav-link rounded d-flex align-items-center gap-2 px-3 py-2 transition-all"
                                    :class="forms.mis_notas.mostrar ? 'active bg-primary bg-opacity-10 text-primary fw-bold border border-primary border-opacity-25' : 'text-body-secondary'"
                                    href="#" @click.prevent="abrirVentana('mis_notas')">
@@ -123,18 +108,8 @@
                             <h5 class="text-body-secondary mt-3 fw-normal">Bienvenido, <strong class="text-body">{{ sesion.username }}</strong>. Seleccione un módulo del menú lateral para comenzar.</h5>
                         </div>
 
-                        <alumnos @buscar='buscar("busqueda_alumnos","obtenerAlumnos")' :forms="forms" ref="alumnos" v-show="forms.alumnos.mostrar"></alumnos>
-                        <busqueda_alumnos @modificar='modificar("alumnos","modificarAlumno", $event)' ref="busqueda_alumnos" v-show="forms.busqueda_alumnos.mostrar"></busqueda_alumnos>
-
-                        <materias @buscar='buscar("busqueda_materias","obtenerMaterias")' :forms="forms" ref="materias" v-show="forms.materias.mostrar"></materias>
-                        <busqueda_materias @modificar='modificar("materias","modificarMateria", $event)' ref="busqueda_materias" v-show="forms.busqueda_materias.mostrar"></busqueda_materias>
-
-
-                        <matricula @buscar='buscar("busqueda_matricula","obtenerMatriculas")' :forms="forms" ref="matricula" v-show="forms.matricula.mostrar"></matricula>
-                        <busqueda_matricula @modificar='modificar("matricula","modificarMatricula", $event)' ref="busqueda_matricula" v-show="forms.busqueda_matricula.mostrar"></busqueda_matricula>
-
-                        <inscripciones @buscar='buscar("busqueda_inscripciones","obtenerInscripciones")' :forms="forms" ref="inscripciones" v-show="forms.inscripciones.mostrar"></inscripciones>
-                        <busqueda_inscripciones @modificar='modificar("inscripciones","modificarInscripcion", $event)' ref="busqueda_inscripciones" v-show="forms.busqueda_inscripciones.mostrar"></busqueda_inscripciones>
+                        <matricula :forms="forms" ref="matricula" v-show="forms.matricula.mostrar"></matricula>
+                        <inscripciones :forms="forms" ref="inscripciones" v-show="forms.inscripciones.mostrar"></inscripciones>
 
                         <mis_notas ref="mis_notas" v-show="forms.mis_notas.mostrar"></mis_notas>
                         <mi_perfil ref="mi_perfil" v-if="forms.mi_perfil.mostrar" @foto-cambiada="actualizarFotoSesion"></mi_perfil>

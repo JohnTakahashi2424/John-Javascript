@@ -218,23 +218,16 @@ const inscripciones = {
         <div>
             <div class="d-flex align-items-center mb-3 border-bottom pb-2">
                 <i class="bi bi-pencil-square me-2 fs-5 text-body-secondary"></i>
-                <h5 class="mb-0 fw-semibold text-body">Registro de Inscripciones</h5>
+                <h5 class="mb-0 fw-semibold text-body">{{ (forms.sesion && forms.sesion.rol === 'Alumno') || inscripcion.alumno ? 'Mis Inscripciones' : 'Registro de Inscripciones' }}</h5>
                 <span v-if="accion=='modificar'" class="badge bg-warning text-dark ms-2">Editando</span>
             </div>
 
-            <!-- Alertas de prerrequisitos faltantes -->
+            <!-- Alertas de prerrequisitos faltantes (Solo para admin o si el alumno no tiene matricula) -->
             <div v-if="sinMatriculas" class="alert alert-warning d-flex align-items-center py-2 mb-3" style="max-width:560px;">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 <div class="small">
-                    <strong>No hay matrículas activas.</strong>
-                    Ve al módulo <strong>Matrícula</strong> y crea una primero.
-                </div>
-            </div>
-            <div v-if="sinMaterias" class="alert alert-warning d-flex align-items-center py-2 mb-3" style="max-width:560px;">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                <div class="small">
-                    <strong>No hay materias registradas.</strong>
-                    Ve al módulo <strong>Materias</strong> y regístralas primero.
+                    <strong>No se encontró una matrícula activa.</strong>
+                    {{ forms.sesion && forms.sesion.rol === 'Alumno' ? 'Contacta al administrador para completar tu proceso de matrícula.' : 'Ve al módulo Matrícula y crea una primero.' }}
                 </div>
             </div>
 
@@ -242,108 +235,81 @@ const inscripciones = {
                 <div class="card border-0 shadow-sm bg-body-tertiary" style="max-width: 560px;">
                     <div class="card-body p-4">
 
-                        <!-- Cantidad de materias a inscribir -->
-                        <div class="mb-3 p-3 rounded bg-body-secondary bg-opacity-25 border border-secondary-subtle">
-                            <label class="form-label text-body-secondary small fw-bold text-uppercase mb-2">
-                                <i class="bi bi-list-ol me-1"></i>¿Cuántas materias quieres inscribir este ciclo?
-                            </label>
-                            <div class="d-flex gap-2 flex-wrap">
-                                <button v-for="n in [1,2,3,4,5]" :key="n"
-                                    type="button"
-                                    @click="cantidadMaterias = n"
-                                    class="btn btn-sm px-3 fw-semibold"
-                                    :class="cantidadMaterias == n ? 'text-white' : 'btn-outline-secondary'"
-                                    :style="cantidadMaterias == n ? 'background-color:#1a3a5c; border-color:#1a3a5c;' : ''">
-                                    {{ n }}
-                                </button>
+                        <!-- Resumen para Alumno -->
+                        <div v-if="inscripcion.idMatricula" class="mb-3 p-3 rounded bg-body-secondary bg-opacity-25 border border-secondary-subtle">
+                            <div class="d-flex justify-content-between small text-body-secondary mb-1">
+                                <span class="fw-bold">Materias inscritas este ciclo</span>
+                                <span class="fw-bold text-primary">
+                                    {{ materiasInscritas.length }} / {{ cantidadMaterias }}
+                                </span>
                             </div>
-                            <!-- Barra de progreso -->
-                            <div v-if="inscripcion.idMatricula" class="mt-2">
-                                <div class="d-flex justify-content-between small text-body-secondary mb-1">
-                                    <span>Materias inscritas</span>
-                                    <span class="fw-bold"
-                                        :class="materiasInscritas.length >= cantidadMaterias ? 'text-danger' : 'text-success'">
-                                        {{ materiasInscritas.length }} / {{ cantidadMaterias }}
-                                    </span>
+                            <div class="progress" style="height:6px;">
+                                <div class="progress-bar bg-primary"
+                                    :style="'width:' + Math.min((materiasInscritas.length / 5) * 100, 100) + '%'">
                                 </div>
-                                <div class="progress" style="height:6px;">
-                                    <div class="progress-bar"
-                                        :class="materiasInscritas.length >= cantidadMaterias ? 'bg-danger' : 'bg-success'"
-                                        :style="'width:' + Math.min((materiasInscritas.length / cantidadMaterias) * 100, 100) + '%'">
-                                    </div>
-                                </div>
-                                <!-- Lista rápida de materias ya inscritas -->
-                                <div v-if="materiasInscritas.length > 0" class="mt-2">
-                                    <span v-for="mi in materiasInscritas" :key="mi.idInscripcion"
-                                        class="badge me-1 mb-1 fw-normal"
-                                        style="background-color:#1a3a5c; font-size:0.72rem;">
-                                        <i class="bi bi-check me-1"></i>{{ mi.materia }}
-                                    </span>
-                                </div>
+                            </div>
+                            <!-- Lista rápida de materias ya inscritas -->
+                            <div v-if="materiasInscritas.length > 0" class="mt-2">
+                                <ul class="list-unstyled mb-0">
+                                    <li v-for="mi in materiasInscritas" :key="mi.idInscripcion" class="small d-flex align-items-center gap-2 mb-1">
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                        <span class="text-body fw-semibold">{{ mi.materia }}</span>
+                                        <span class="text-body-secondary small ms-auto">{{ mi.ciclo }}</span>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
 
-                        <!-- Selector de Matrícula -->
+                        <!-- Selector de Matrícula (Solo lectura para Alumno si ya tiene una) -->
                         <div class="mb-3">
-                            <label class="form-label text-body-secondary small fw-bold text-uppercase">
-                                Matrícula
-                                <span v-if="sinMatriculas" class="text-danger ms-1 small fw-normal">(ninguna activa)</span>
-                            </label>
-                            <select v-model="inscripcion.idMatricula" @change="onMatriculaChange"
+                            <label class="form-label text-body-secondary small fw-bold text-uppercase">Matrícula Correspondiente</label>
+                            <select v-if="!(forms.sesion && forms.sesion.rol === 'Alumno')" v-model="inscripcion.idMatricula" @change="onMatriculaChange"
                                 class="form-select form-select-sm bg-transparent"
                                 :class="sinMatriculas ? 'is-invalid' : ''"
                                 required :disabled="sinMatriculas">
                                 <option value="" disabled>Seleccione una matrícula activa...</option>
                                 <option v-for="m in matriculasActivas" :key="m.idMatricula" :value="m.idMatricula">
-                                    {{ m.codigo }} — {{ m.nombreAlumno }} ({{ m.carrera }})
+                                    {{ m.codigo }} — {{ m.nombreAlumno }}
                                 </option>
                             </select>
+                            <div v-else class="form-control form-control-sm bg-body-secondary border-secondary-subtle fw-semibold text-body">
+                                {{ matriculasActivas.find(m => m.idMatricula == inscripcion.idMatricula)?.codigo || 'Cargando información...' }}
+                            </div>
                         </div>
 
-                        <!-- Alumno (solo lectura) -->
-                        <div class="mb-3">
-                            <label class="form-label text-body-secondary small fw-bold text-uppercase">Alumno</label>
-                            <input :value="inscripcion.alumno" type="text" class="form-control form-control-sm bg-body-secondary border-secondary-subtle"
-                                placeholder="Se rellena al seleccionar la matrícula" readonly>
-                        </div>
-
-                        <!-- Selector de Materia -->
-                        <div class="mb-3">
-                            <label class="form-label text-body-secondary small fw-bold text-uppercase">
-                                Materia
-                                <span v-if="sinMaterias" class="text-danger ms-1 small fw-normal">(ninguna registrada)</span>
-                            </label>
+                        <!-- Materia (Solo si el admin está inscribiendo o si permites al alumno inscribir) -->
+                        <div class="mb-3" v-if="!(forms.sesion && forms.sesion.rol === 'Alumno')">
+                            <label class="form-label text-body-secondary small fw-bold text-uppercase">Materia</label>
                             <select v-model="inscripcion.idMateria" @change="onMateriaChange"
                                 class="form-select form-select-sm bg-transparent"
-                                :class="sinMaterias ? 'is-invalid' : ''"
                                 required :disabled="sinMaterias || materiasInscritas.length >= cantidadMaterias">
                                 <option value="" disabled>Seleccione una materia...</option>
                                 <option v-for="m in materiasDisponibles" :key="m.idMateria" :value="m.idMateria"
                                     :disabled="materiasInscritas.some(i => String(i.idMateria) === String(m.idMateria))">
-                                    {{ m.codigo }} — {{ m.nombre }} ({{ m.uv }} UV)
-                                    <template v-if="materiasInscritas.some(i => String(i.idMateria) === String(m.idMateria))"> ✓ ya inscrita</template>
+                                    {{ m.codigo }} — {{ m.nombre }}
                                 </option>
                             </select>
-                            <div v-if="materiasInscritas.length >= cantidadMaterias && inscripcion.idMatricula"
-                                class="form-text text-danger">
-                                <i class="bi bi-lock-fill me-1"></i>Límite alcanzado. Ya inscribiste {{ cantidadMaterias }} materia(s).
-                            </div>
                         </div>
 
-                        <div class="row mb-1">
+                        <div class="row mb-1" v-if="!(forms.sesion && forms.sesion.rol === 'Alumno')">
                             <div class="col-6">
-                                <label class="form-label text-body-secondary small fw-bold text-uppercase">Fecha</label>
+                                <label class="form-label text-body-secondary small fw-bold text-uppercase">Fecha de Registro</label>
                                 <input required v-model="inscripcion.fecha" type="date" class="form-control form-control-sm bg-transparent">
                             </div>
                             <div class="col-6">
                                 <label class="form-label text-body-secondary small fw-bold text-uppercase">Ciclo</label>
-                                <input :value="inscripcion.ciclo" type="text" class="form-control form-control-sm bg-body-secondary border-secondary-subtle"
-                                    placeholder="Se toma de la matrícula" readonly>
+                                <input :value="inscripcion.ciclo" type="text" class="form-control form-control-sm bg-body-secondary border-secondary-subtle" readonly>
                             </div>
+                        </div>
+                        
+                        <!-- Si es Alumno, mostrar un mensaje de que la inscripción es gestionada por la universidad -->
+                        <div v-if="forms.sesion && forms.sesion.rol === 'Alumno'" class="mt-2 text-body-secondary small">
+                            <i class="bi bi-info-circle me-1"></i>Esta lista muestra las materias que tienes autorizadas para cursar en el ciclo actual. Si hay algún error, contacta a registro académico.
                         </div>
 
                     </div>
-                    <div class="card-footer bg-transparent border-top d-flex gap-2 px-4 py-3">
+                    <!-- Botonera Admin -->
+                    <div v-if="!(forms.sesion && forms.sesion.rol === 'Alumno')" class="card-footer bg-transparent border-top d-flex gap-2 px-4 py-3">
                         <button type="submit" class="btn btn-sm px-3" style="background-color:#1a3a5c; color:white;"
                             :disabled="sinMatriculas || sinMaterias || materiasInscritas.length >= cantidadMaterias">
                             <i class="bi bi-save me-1"></i>Inscribir

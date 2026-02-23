@@ -217,9 +217,15 @@ const matricula = {
         <div>
             <div class="d-flex align-items-center mb-3 border-bottom pb-2">
                 <i class="bi bi-card-checklist me-2 fs-5 text-body-secondary"></i>
-                <h5 class="mb-0 fw-semibold text-body">Gestión de Matrículas</h5>
+                <h5 class="mb-0 fw-semibold text-body">{{ sesion.rol === 'Alumno' ? 'Mi Matrícula' : 'Gestión de Matrículas' }}</h5>
                 <span v-if="accion=='modificar'" class="badge bg-warning text-dark ms-2">Editando</span>
             </div>
+            
+            <div v-if="sesion.rol === 'Alumno' && !matricula.codigo" class="alert alert-info shadow-sm border-0 bg-body-tertiary">
+                <i class="bi bi-info-circle-fill me-2 text-primary"></i>
+                Todavía no tienes un registro de matrícula activo para el ciclo actual. Contacta al administrador para completar tu proceso.
+            </div>
+
             <form id="frmMatricula" @submit.prevent="guardarMatricula" @reset.prevent="limpiarFormulario">
                 <div class="card border-0 shadow-sm bg-body-tertiary" style="max-width: 680px;">
                     <div class="card-body p-4">
@@ -228,14 +234,14 @@ const matricula = {
                             <div class="col-12">
                                 <label class="form-label text-body-secondary small fw-bold text-uppercase">Código de Matrícula</label>
                                 <div class="form-control form-control-sm bg-body-secondary border-secondary-subtle font-monospace text-primary fw-bold">
-                                    {{ matricula.codigo || 'SE GENERARÁ AL SELECCIONAR CARRERA' }}
+                                    {{ matricula.codigo || (sesion.rol==='Alumno' ? 'PENDIENTE DE ASIGNACIÓN' : 'SE GENERARÁ AL SELECCIONAR CARRERA') }}
                                 </div>
-                                <div class="form-text text-body-secondary small">Basado en periodo, carrera y correlativo.</div>
+                                <div class="form-text text-body-secondary small">Identificador oficial de tu inscripción para este período.</div>
                             </div>
                         </div>
 
-                        <!-- Búsqueda de alumno en tiempo real -->
-                        <div class="mb-3 position-relative">
+                        <!-- Búsqueda de alumno (oculta para Alumno ya cargado) -->
+                        <div class="mb-3 position-relative" v-if="sesion.rol !== 'Alumno'">
                             <label class="form-label text-body-secondary small fw-bold text-uppercase">
                                 Alumno
                                 <span v-if="alumnoSeleccionado" class="badge bg-success ms-1">
@@ -249,10 +255,7 @@ const matricula = {
                                 placeholder="Escribe el nombre o código del alumno..."
                                 class="form-control form-control-sm bg-transparent"
                                 :class="sinAlumnos ? 'is-invalid' : alumnoSeleccionado ? 'is-valid' : ''"
-                                :readonly="sesion.rol === 'Alumno'"
-                                :disabled="sesion.rol === 'Alumno'"
                                 autocomplete="off">
-                            <!-- Lista de sugerencias -->
                             <ul v-if="alumnosEncontrados.length > 0"
                                 class="list-group position-absolute w-100 shadow-sm bg-body-tertiary"
                                 style="z-index:100; top:100%; max-height:160px; overflow-y:auto;">
@@ -264,26 +267,33 @@ const matricula = {
                                     <span class="text-body-secondary ms-2 small font-monospace">{{ a.carnet }}</span>
                                 </li>
                             </ul>
-                            <!-- Mensaje de error -->
                             <div v-if="sinAlumnos" class="invalid-feedback d-block">
                                 <i class="bi bi-exclamation-triangle me-1"></i>
-                                Alumno no encontrado. <strong>Regístralo primero en el módulo Alumnos.</strong>
+                                Alumno no encontrado.
                             </div>
                         </div>
 
-                        <!-- Selector de Carrera desde BD -->
+                        <!-- Vista de Alumno para el estudiante -->
+                        <div class="row mb-3" v-else>
+                            <div class="col-12">
+                                <label class="form-label text-body-secondary small fw-bold text-uppercase">Estudiante</label>
+                                <div class="form-control form-control-sm bg-body-secondary border-secondary-subtle fw-semibold text-body">
+                                    {{ matricula._alumnoNombre || sesion.nombre }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Selector de Carrera -->
                         <div class="mb-3">
                             <label class="form-label text-body-secondary small fw-bold text-uppercase d-flex align-items-center gap-2">
                                 Carrera
                                 <span v-if="matricula._carreraNombre" class="badge bg-success fw-normal text-truncate" style="max-width:260px;">
                                     <i class="bi bi-check-circle me-1"></i>{{ matricula._carreraNombre }}
                                 </span>
-                                <span v-else class="text-danger small fw-normal">(ninguna seleccionada)</span>
                             </label>
-                            <div class="border rounded p-2 bg-body-secondary bg-opacity-10" style="max-height:160px; overflow-y:auto;">
-                                <div v-if="!carrerasDisponibles || carrerasDisponibles.length === 0" class="text-body-secondary small">
-                                    <i class="bi bi-info-circle me-1"></i>No hay carreras registradas. Añadelas en el módulo Carreras.
-                                </div>
+                            
+                            <!-- Lista de carreras (Solo para Admin o si el alumno no tiene carrera asignada) -->
+                            <div v-if="sesion.rol !== 'Alumno'" class="border rounded p-2 bg-body-secondary bg-opacity-10" style="max-height:160px; overflow-y:auto;">
                                 <button v-for="c in carrerasDisponibles" :key="c.idCarrera" type="button"
                                     @click="seleccionarCarrera(c)"
                                     class="btn btn-sm w-100 text-start py-1 px-2 mb-1"
@@ -292,28 +302,39 @@ const matricula = {
                                     <i class="bi bi-mortarboard me-2 opacity-50"></i>{{ c.nombre }}
                                 </button>
                             </div>
+                            <!-- Vista read-only para Alumno -->
+                            <div v-else class="form-control form-control-sm bg-body-secondary border-secondary-subtle fw-semibold text-body">
+                                {{ matricula._carreraNombre || 'Carrera no asignada' }}
+                            </div>
                         </div>
 
-                        <!-- Selector de Período Académico -->
+                        <!-- Selector/Ver Período Académico -->
                         <div class="mb-3">
                             <label class="form-label text-body-secondary small fw-bold text-uppercase">Período Académico</label>
-                            <select v-model="matricula.periodoId" class="form-select form-select-sm bg-transparent"
+                            <select v-if="sesion.rol !== 'Alumno'" v-model="matricula.periodoId" class="form-select form-select-sm bg-transparent"
                                 @change="seleccionarPeriodo(periodosDisponibles.find(p => p.idPeriodo === matricula.periodoId) || {})">
                                 <option :value="null" disabled>-- Selecciona un período --</option>
                                 <option v-for="p in periodosDisponibles" :key="p.idPeriodo" :value="p.idPeriodo">
                                     {{ p.ciclo }} — {{ p.año }}
                                 </option>
                             </select>
-                            <div v-if="periodosDisponibles.length === 0" class="text-danger small mt-1">
-                                <i class="bi bi-exclamation-triangle me-1"></i>No hay períodos activos. Créalos en el módulo Períodos.
+                            <div v-else class="form-control form-control-sm bg-body-secondary border-secondary-subtle fw-semibold text-body">
+                                {{ matricula._periodoCiclo || 'Ciclo actual 2026' }}
                             </div>
                         </div>
 
 
                         <div class="row mb-1">
                             <div class="col-12">
-                                <label class="form-label text-body-secondary small fw-bold text-uppercase">Estado</label>
-                                <select v-model="matricula.estado" class="form-select form-select-sm bg-transparent">
+                                <label class="form-label text-body-secondary small fw-bold text-uppercase">Estado de Matrícula</label>
+                                <div v-if="sesion.rol === 'Alumno'" class="d-flex align-items-center container-fluid p-0">
+                                     <span class="badge py-2 px-3 fs-6" 
+                                           :class="matricula.estado==='Activo'?'bg-success':(matricula.estado==='Pendiente'?'bg-warning text-dark':'bg-danger')">
+                                         <i class="bi" :class="matricula.estado==='Activo'?'bi-check-circle-fill':(matricula.estado==='Pendiente'?'bi-clock-fill':'bi-x-circle-fill')"></i>
+                                         {{ matricula.estado }}
+                                     </span>
+                                </div>
+                                <select v-else v-model="matricula.estado" class="form-select form-select-sm bg-transparent">
                                     <option value="Activo">Activo</option>
                                     <option value="Inactivo">Inactivo</option>
                                     <option value="Pendiente">Pendiente</option>
@@ -322,7 +343,8 @@ const matricula = {
                         </div>
 
                     </div>
-                    <div class="card-footer bg-transparent border-top d-flex gap-2 px-4 py-3">
+                    <!-- Botonera -->
+                    <div v-if="sesion.rol !== 'Alumno'" class="card-footer bg-transparent border-top d-flex gap-2 px-4 py-3">
                         <button type="submit" class="btn btn-sm px-3" style="background-color:#1a3a5c; color:white;"
                             :disabled="!alumnoSeleccionado || !matricula.carreraId || !matricula.periodoId">
                             <i class="bi bi-save me-1"></i>Guardar
