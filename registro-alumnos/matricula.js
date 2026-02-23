@@ -37,7 +37,7 @@ const matricula = {
         async buscarAlumnos(){
             this.alumnoSeleccionado = null;
             this.matricula.idAlumno = null;
-            this.matricula.nombreAlumno = '';
+            this.matricula._alumnoNombre = '';
             if(this.buscarAlumno.trim().length === 0){
                 this.alumnosEncontrados = [];
                 this.sinAlumnos = false;
@@ -45,9 +45,16 @@ const matricula = {
             }
             this.buscandoAlumno = true;
             const q = this.buscarAlumno.toLowerCase();
-            this.alumnosEncontrados = await db.alumnos.filter(
-                a => a.nombre.toLowerCase().includes(q) || a.carnet.toLowerCase().includes(q)
-            ).toArray();
+            
+            // UNIÓN RELACIONAL
+            const allAlumnos = await db.alumnos.toArray();
+            const allPerfiles = await db.perfiles.toArray();
+            const perMap = allPerfiles.reduce((acc, p) => (acc[p.usuarioId] = p, acc), {});
+
+            this.alumnosEncontrados = allAlumnos
+                .map(a => ({ ...a, nombre: perMap[a.usuarioId]?.nombre || 'Sin nombre' }))
+                .filter(a => a.nombre.toLowerCase().includes(q) || a.carnet.toLowerCase().includes(q));
+
             this.sinAlumnos = this.alumnosEncontrados.length === 0;
             this.buscandoAlumno = false;
         },
@@ -199,8 +206,9 @@ const matricula = {
             
             if (s.rol === 'Alumno' && s.id) {
                 const alumno = await db.alumnos.where('usuarioId').equals(s.id).first();
-                if (alumno) {
-                    this.seleccionarAlumno(alumno);
+                const perfil = await db.perfiles.where('usuarioId').equals(s.id).first();
+                if (alumno && perfil) {
+                    this.seleccionarAlumno({ ...alumno, nombre: perfil.nombre });
                 }
             }
         }

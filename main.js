@@ -109,6 +109,75 @@ db.version(10).stores({
     solicitudes:  '++id, tipo, username, &email, sexo, carreraId, fecha, estado'
 });
 
+// v11: Arquitectura Totalmente Relacional
+// Separa Autenticación (usuarios), Datos Humanos (perfiles) y Académicos (alumnos/docentes)
+db.version(11).stores({
+    usuarios:     '++id, &username, &email, rol, estado',
+    perfiles:     '++id, &usuarioId, nombre, sexo, foto, telefono, direccion, fechaNacimiento',
+    alumnos:      '++idAlumno, &usuarioId, &carnet, carreraId, añoIngreso, estado',
+    docentes:     '++idDocente, &usuarioId, &carnet, especialidad, añoIngreso, estado',
+    carreras:     '++idCarrera, &codigo, nombre, facultad, estado',
+    materias:     '++idMateria, &codigo, nombre, docenteId, carreraId, estado',
+    periodos:     '++idPeriodo, año, ciclo, estado',
+    matricula:    '++idMatricula, &codigo, alumnoId, periodoId, carreraId, estado',
+    inscripciones:'++idInscripcion, matriculaId, materiaId, estado',
+    evaluaciones: '++id, inscripcionId, estado',
+    solicitudes:  '++id, tipo, username, &email, sexo, carreraId, fecha, estado'
+}).upgrade(async tx => {
+    // MIGRACIÓN LÓGICA DE DATOS EXISTENTES
+    console.log('[Migration] Iniciando migración a arquitectura relacional v11...');
+    
+    const alumnos = await tx.table('alumnos').toArray();
+    const docentes = await tx.table('docentes').toArray();
+    
+    // 1. Crear perfiles para alumnos existentes
+    for (const a of alumnos) {
+        if (a.usuarioId) {
+            await tx.table('perfiles').put({
+                usuarioId: a.usuarioId,
+                nombre: a.nombre || '',
+                sexo: a.sexo || '',
+                foto: a.foto || '',
+                telefono: a.telefono || '',
+                direccion: a.direccion || '',
+                fechaNacimiento: a.fechaNacimiento || ''
+            });
+            // Limpiar campos que ahora están en perfiles
+            delete a.nombre; delete a.sexo; delete a.foto; delete a.telefono; delete a.direccion; delete a.fechaNacimiento;
+            await tx.table('alumnos').put(a);
+        }
+    }
+
+    // 2. Crear perfiles para docentes existentes
+    for (const d of docentes) {
+        if (d.usuarioId) {
+            await tx.table('perfiles').put({
+                usuarioId: d.usuarioId,
+                nombre: d.nombre || '',
+                sexo: d.sexo || '',
+                foto: d.foto || '',
+                telefono: d.telefono || '',
+                direccion: d.direccion || '',
+                fechaNacimiento: d.fechaNacimiento || ''
+            });
+            // Limpiar campos que ahora están en perfiles
+            delete d.nombre; delete d.sexo; delete d.foto; delete d.telefono; delete d.direccion; delete d.fechaNacimiento;
+            await tx.table('docentes').put(d);
+        }
+    }
+
+    // 3. Limpiar campo carnet de tabla usuarios (ahora centralizado en perfiles/academicos)
+    const usuarios = await tx.table('usuarios').toArray();
+    for (const u of usuarios) {
+        if (u.carnet) {
+            delete u.carnet;
+            await tx.table('usuarios').put(u);
+        }
+    }
+    
+    console.log('[Migration] Migración v11 completada con éxito.');
+});
+
 // =============================================
 // APERTURA SEGURA DE BD (auto-recover on schema error)
 // =============================================

@@ -10,10 +10,25 @@ const busqueda_alumnos = {
             this.$emit('modificar', alumno);
         },
         async obtenerAlumnos(){
-            this.alumnos = await db.alumnos.filter(
-                alumno => alumno.carnet.toLowerCase().includes(this.buscar.toLowerCase())
-                    || alumno.nombre.toLowerCase().includes(this.buscar.toLowerCase())
-            ).toArray();
+            const search = this.buscar.toLowerCase();
+            
+            // 1. Obtener todos los alumnos y todos los perfiles relacionados
+            const allAlumnos = await db.alumnos.toArray();
+            const allPerfiles = await db.perfiles.toArray();
+            
+            // 2. Mapear para búsqueda rápida por usuarioId
+            const perfilesMap = allPerfiles.reduce((acc, p) => {
+                acc[p.usuarioId] = p;
+                return acc;
+            }, {});
+
+            // 3. Filtrar y Unir
+            this.alumnos = allAlumnos
+                .map(a => ({ ...a, ...(perfilesMap[a.usuarioId] || {}) }))
+                .filter(a => 
+                    a.carnet.toLowerCase().includes(search) || 
+                    (a.nombre && a.nombre.toLowerCase().includes(search))
+                );
         },
         async eliminarAlumno(alumno, e){
             e.stopPropagation();

@@ -52,13 +52,9 @@ const adminDashboard = {
 
                     let existe = false;
                     if (u.rol === 'Alumno') {
-                        const porCarnet = u.carnet ? await db.alumnos.where('carnet').equalsIgnoreCase(u.carnet).count() : 0;
-                        const porNombre = await db.alumnos.where('nombre').equalsIgnoreCase(u.username).count();
-                        existe = (porCarnet > 0 || porNombre > 0);
+                        existe = await db.alumnos.where('usuarioId').equals(u.id).count() > 0;
                     } else if (u.rol === 'Docente') {
-                        const porCarnet = u.carnet ? await db.docentes.where('carnet').equalsIgnoreCase(u.carnet).count() : 0;
-                        const porNombre = await db.docentes.where('nombre').equalsIgnoreCase(u.username).count();
-                        existe = (porCarnet > 0 || porNombre > 0);
+                        existe = await db.docentes.where('usuarioId').equals(u.id).count() > 0;
                     }
 
                     if (!existe) {
@@ -127,28 +123,36 @@ const adminDashboard = {
                         const carnetDoc = 'DOC-2026-001';
                         let docente = await db.docentes.where('carnet').equalsIgnoreCase(carnetDoc).first();
                         if (!docente) {
-                            let userDoc = await db.usuarios.where('carnet').equalsIgnoreCase(carnetDoc).first();
+                            let userDoc = await db.usuarios.where('username').equals('docente.ejemplo').first();
                             if (!userDoc) {
-                                const uid = await db.usuarios.add({ username: 'docente.ejemplo', email:'docente@universidad.edu', hashPwd: await hash('Docente2026!'), rol:'Docente', carnet: carnetDoc, estado:'activo' });
+                                const uid = await db.usuarios.add({ username: 'docente.ejemplo', email:'docente@universidad.edu', hashPwd: await hash('Docente2026!'), rol:'Docente', estado:'activo' });
                                 userDoc = await db.usuarios.get(uid);
                             }
-                            const did = await db.docentes.add({ carnet: carnetDoc, nombre:'Docente Ejemplo', especialidad:'Sistemas Informáticos', sexo: 'Masculino', añoIngreso: 2026, usuarioId: userDoc.id, estado:'activo' });
+                            await db.perfiles.add({
+                                usuarioId: userDoc.id, nombre: 'Docente Ejemplo', email: 'docente@universidad.edu',
+                                sexo: 'Masculino', foto: '', fechaNacimiento: '1985-05-15'
+                            });
+                            const did = await db.docentes.add({ carnet: carnetDoc, especialidad:'Sistemas Informáticos', añoIngreso: 2026, usuarioId: userDoc.id, estado:'activo' });
                             docente = await db.docentes.get(did);
-                            log.push('✅ Docente Ejemplo + cuenta creados');
+                            log.push('✅ Docente Ejemplo + perfil creados');
                         } else { log.push('⏭ Docente Ejemplo ya existe'); }
 
                         // 5. Alumno Ej-001 + cuenta (usuarioId FK + carreraId FK)
                         const carnetAlu = '2026-ISI-00001';
                         let alumno = await db.alumnos.where('carnet').equalsIgnoreCase(carnetAlu).first();
                         if (!alumno) {
-                            let userAlum = await db.usuarios.where('carnet').equalsIgnoreCase(carnetAlu).first();
+                            let userAlum = await db.usuarios.where('username').equals('alumno.ejemplo').first();
                             if (!userAlum) {
-                                const uid = await db.usuarios.add({ username: 'alumno.ejemplo', email:'alumno@universidad.edu', hashPwd: await hash('Alumno2026!'), rol:'Alumno', carnet: carnetAlu, estado:'activo' });
+                                const uid = await db.usuarios.add({ username: 'alumno.ejemplo', email:'alumno@universidad.edu', hashPwd: await hash('Alumno2026!'), rol:'Alumno', estado:'activo' });
                                 userAlum = await db.usuarios.get(uid);
                             }
-                            const aid = await db.alumnos.add({ carnet: carnetAlu, nombre:'Alumno Ejemplo', sexo: 'Masculino', añoIngreso: 2026, usuarioId: userAlum.id, carreraId: carrera.idCarrera, estado:'activo' });
+                            await db.perfiles.add({
+                                usuarioId: userAlum.id, nombre: 'Alumno Ejemplo', email: 'alumno@universidad.edu',
+                                sexo: 'Masculino', foto: '', fechaNacimiento: '2005-10-20'
+                            });
+                            const aid = await db.alumnos.add({ carnet: carnetAlu, carreraId: carrera.idCarrera, añoIngreso: 2026, usuarioId: userAlum.id, estado:'activo' });
                             alumno = await db.alumnos.get(aid);
-                            log.push('✅ Alumno Ejemplo + cuenta creados');
+                            log.push('✅ Alumno Ejemplo + perfil creados');
                         } else { log.push('⏭ Alumno Ejemplo ya existe'); }
 
                         // 6. Materia (docenteId + carreraId FKs)

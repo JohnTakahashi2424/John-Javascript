@@ -31,36 +31,53 @@ const miPerfil = {
             this.cargando = true;
             try {
                 const s = JSON.parse(sessionStorage.getItem('sesionUniversidad') || '{}');
-                const username = s.username || '';
-                const carnet   = s.carnet   || '';
+                const userId = s.id;
+                const rol = s.rol;
 
-                // Cargar usuario
-                const usuario = await db.usuarios.where('username').equals(username).first();
+                if (!userId) {
+                    alertify.error('Sesión no válida.');
+                    return;
+                }
+
+                // 1. Cargar datos básicos de cuenta
+                const usuario = await db.usuarios.get(userId);
                 if (usuario) {
                     this._userId = usuario.id;
                     this.perfil.email = usuario.email || '';
                 }
-                // Cargar perfil alumno
-                let alumno = null;
-                if (carnet) alumno = await db.alumnos.where('carnet').equals(carnet).first();
-                if (!alumno && username) {
-                    const todos = await db.alumnos.toArray();
-                    alumno = todos.find(a =>
-                        (a.nombre || '').toLowerCase().includes(username.toLowerCase()) ||
-                        username.toLowerCase().includes((a.nombre || '').split(' ')[0].toLowerCase())
-                    ) || null;
+
+                // 2. Cargar perfil personal (Relación 1:1 con usuario)
+                const perfil = await db.perfiles.where('usuarioId').equals(userId).first();
+                if (perfil) {
+                    this.perfil.nombre = perfil.nombre || '';
+                    this.perfil.sexo = perfil.sexo || 'Masculino';
+                    this.perfil.foto = perfil.foto || '';
+                    this.perfil.telefono = perfil.telefono || '';
+                    this.perfil.direccion = perfil.direccion || '';
                 }
-                if (alumno) {
-                    this._alumnoId = alumno.idAlumno;
-                    this.perfil.nombre    = alumno.nombre    || '';
-                    this.perfil.telefono  = alumno.telefono  || '';
-                    this.perfil.direccion = alumno.direccion || '';
-                    this.perfil.carnet    = alumno.carnet    || '';
-                    this.perfil.carrera   = alumno.carrera   || '';
-                    this.perfil.sexo      = alumno.sexo      || 'Masculino';
-                    this.perfil.foto      = alumno.foto      || '';
-                    if (!this.perfil.email) this.perfil.email = alumno.email || '';
+
+                // 3. Cargar expediente académico según rol
+                let expediente = null;
+                if (rol === 'Alumno') {
+                    expediente = await db.alumnos.where('usuarioId').equals(userId).first();
+                    if (expediente) {
+                        this._expedienteId = expediente.idAlumno;
+                        this.perfil.carnet = expediente.carnet || '';
+                        // Cargar carrera si existe
+                        const carrera = await db.carreras.get(expediente.carreraId);
+                        this.perfil.carrera = carrera ? carrera.nombre : 'Sin carrera';
+                    }
+                } else if (rol === 'Docente') {
+                    expediente = await db.docentes.where('usuarioId').equals(userId).first();
+                    if (expediente) {
+                        this._expedienteId = expediente.idDocente;
+                        this.perfil.carnet = expediente.carnet || '';
+                        this.perfil.carrera = 'Personal Docente';
+                    }
                 }
+            } catch (e) {
+                console.error(e);
+                alertify.error('Error al cargar perfil.');
             } finally {
                 this.cargando = false;
             }
@@ -100,61 +117,51 @@ const miPerfil = {
         async guardarFotoRecortada() {
             if (!this.cropper) return;
             
-            // Get cropped canvas
-            const canvas = this.cropper.getCroppedCanvas({
-                width: 300,
-                height: 300,
-                fillColor: '#fff'
-            });
-            
+            const canvas = this.cropper.getCroppedCanvas({ width: 300, height: 300, fillColor: '#fff' });
             const fotoBase64 = canvas.toDataURL('image/jpeg', 0.85);
             this.perfil.foto = fotoBase64;
             
-            // Guardar inmediatamente en BD
             try {
-                if (this._alumnoId) {
-                    await db.alumnos.update(this._alumnoId, { foto: fotoBase64 });
-                    
-                    // Actualizar SessionStorage (sin la foto)
-                    const stored = sessionStorage.getItem('sesionUniversidad');
-                    if (stored) {
-                        const s = JSON.parse(stored);
-                        sessionStorage.setItem('sesionUniversidad', JSON.stringify(s));
-                    }
-                    
+                const p = await db.perfiles.where('usuarioId').equals(this._userId).first();
+                if (p) {
+                    await db.perfiles.update(p.id, { foto: fotoBase64 });
                     this.$emit('foto-cambiada', fotoBase64);
-                    
-                    alertify.success('Foto actualizada correctamente.');
+                    alertify.success('Foto de perfil actualizada.');
                     bootstrap.Modal.getInstance(document.getElementById('modalRecorteFoto')).hide();
                 } else {
-                    console.error('No se encontró ID de alumno para actualizar foto.');
-                    alertify.error('Error: No se encuentra el registro del alumno. Recarga la página.');
+                    alertify.error('No se encontró el perfil para guardar la foto.');
                 }
             } catch (e) {
-                console.error(e);
-                alertify.error('Error al guardar la foto en BD: ' + e.message);
+                alertify.error('Error al guardar foto: ' + e.message);
             }
         },
         async guardar() {
             if (!this.perfil.nombre.trim()) { alertify.error('El nombre es obligatorio.'); return; }
             this.guardando = true;
             try {
-                if (this._alumnoId) {
-                    await db.alumnos.update(this._alumnoId, {
-                        nombre:    this.perfil.nombre.trim(),
-                        email:     this.perfil.email.trim(),
-                        telefono:  this.perfil.telefono.trim(),
-                        direccion: this.perfil.direccion.trim(),
-                        sexo:      this.perfil.sexo,
-                        foto:      this.perfil.foto
-                    });
-                }
-                if (this._userId) {
+                await db.transaction('rw', [db.usuarios, db.perfiles], async () => {
+                    // 1. Actualizar Usuario (Email)
                     await db.usuarios.update(this._userId, { email: this.perfil.email.trim() });
-                }
-                // Actualizar sesión
+
+                    // 2. Actualizar Perfil Personal
+                    const p = await db.perfiles.where('usuarioId').equals(this._userId).first();
+                    const datosPerfil = {
+                        nombre: this.perfil.nombre.trim(),
+                        telefono: this.perfil.telefono.trim(),
+                        direccion: this.perfil.direccion.trim(),
+                        sexo: this.perfil.sexo,
+                        foto: this.perfil.foto // La foto también se guarda aquí
+                    };
+                    if (p) await db.perfiles.update(p.id, datosPerfil);
+                    else await db.perfiles.add({ usuarioId: this._userId, ...datosPerfil });
+                });
+
+                // Actualizar UI del Navbar (Nombre si cambió)
                 const s = JSON.parse(sessionStorage.getItem('sesionUniversidad') || '{}');
-                sessionStorage.setItem('sesionUniversidad', JSON.stringify({ ...s }));
+                s.nombre = this.perfil.nombre.trim();
+                sessionStorage.setItem('sesionUniversidad', JSON.stringify(s));
+                this.$emit('perfil-actualizado', s.nombre);
+
                 alertify.success('✅ Perfil actualizado correctamente.');
             } catch(e) {
                 alertify.error('Error al guardar: ' + e.message);

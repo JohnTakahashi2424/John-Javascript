@@ -11,6 +11,14 @@ const alumnosAdmin = {
             cargando: false,
             editando: null,
             guardandoEdit: false,
+            guardandoNuevo: false,
+            nuevoAlumno: {
+                nombre: '',
+                email: '',
+                username: '',
+                fechaNacimiento: '',
+                sexo: 'Masculino'
+            },
             alumnoDetalle: null,
             histMatriculas: [],
             histInscripciones: []
@@ -31,11 +39,33 @@ const alumnosAdmin = {
     methods: {
         async cargar() {
             this.cargando = true;
-            [this.alumnos, this.carreras] = await Promise.all([
-                db.alumnos.orderBy('nombre').toArray(),
-                db.carreras.filter(c => (c.estado||'activa')==='activa').sortBy('nombre')
-            ]);
-            this.cargando = false;
+            try {
+                const [alRaw, carrs] = await Promise.all([
+                    db.alumnos.toArray(),
+                    db.carreras.filter(c => (c.estado||'activa')==='activa').sortBy('nombre')
+                ]);
+                this.carreras = carrs;
+
+                // Join con perfiles (v11+)
+                const ids = alRaw.map(a => a.usuarioId).filter(id => id);
+                const perfs = await db.perfiles.where('usuarioId').anyOf(ids).toArray();
+                const perfsMap = perfs.reduce((acc, p) => { acc[p.usuarioId] = p; return acc; }, {});
+
+                this.alumnos = alRaw.map(a => ({
+                    ...a,
+                    nombre: perfsMap[a.usuarioId]?.nombre || '— Sin nombre —',
+                    sexo:   perfsMap[a.usuarioId]?.sexo   || 'Masculino',
+                    foto:   perfsMap[a.usuarioId]?.foto   || '',
+                    email:  perfsMap[a.usuarioId]?.email  || '',
+                    telefono: perfsMap[a.usuarioId]?.telefono || ''
+                })).sort((a,b) => a.nombre.localeCompare(b.nombre));
+
+            } catch (e) {
+                console.error('Error al cargar alumnos:', e);
+                alertify.error('Error al cargar datos relacionales.');
+            } finally {
+                this.cargando = false;
+            }
         },
         estado(a) { return a.estado || 'activo'; },
         async eliminar(alumno) {
@@ -149,6 +179,61 @@ const alumnosAdmin = {
                 : [];
             this.abrirModal('modalHistorialAlumno');
         },
+        // --- NUEVO REGISTRO ---
+        abrirNuevo() {
+            this.nuevoAlumno = { nombre:'', email:'', username:'', fechaNacimiento:'', sexo:'Masculino' };
+            this.abrirModal('modalNuevoAlumno');
+        },
+        async hashPassword(pwd) {
+            const data = new TextEncoder().encode(pwd);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hashBuffer))
+                .map(b => b.toString(16).padStart(2, '0')).join('');
+        },
+        async guardarNuevo() {
+            const n = this.nuevoAlumno;
+            if (!n.nombre || !n.email || !n.username || !n.fechaNacimiento) {
+                alertify.error('Completa los campos obligatorios.');
+                return;
+            }
+            this.guardandoNuevo = true;
+            try {
+                // 1. Generar Carnet
+                const año = new Date().getFullYear();
+                // Al eliminar carrera del form, usamos un prefijo genérico o buscamos la primera si existe
+                const codCarrera = 'GEN'; 
+                const prefijo = `${año}-${codCarrera}-`;
+                
+                const alumnosAño = await db.alumnos.filter(a => a.carnet && a.carnet.startsWith(prefijo)).toArray();
+                let ultimoNum = 0;
+                alumnosAño.forEach(a => {
+                    const num = parseInt(a.carnet.split('-')[2]);
+                    if (num > ultimoNum) ultimoNum = num;
+                });
+                const nuevoCarnet = `${prefijo}${(ultimoNum + 1).toString().padStart(5, '0')}`;
+
+                // 2. Transacción (Corregido: array de tablas)
+                const hashPwd = await this.hashPassword(n.fechaNacimiento);
+                await db.transaction('rw', [db.usuarios, db.alumnos, db.perfiles], async () => {
+                    const usuarioId = await db.usuarios.add({
+                        username: n.username, email: n.email, hashPwd, rol: 'Alumno', carnet: nuevoCarnet, estado: 'activo'
+                    });
+                    await db.perfiles.add({
+                        usuarioId, nombre: n.nombre, sexo: n.sexo, email: n.email, foto: '',
+                        fechaNacimiento: n.fechaNacimiento
+                    });
+                    await db.alumnos.add({
+                        carnet: nuevoCarnet, usuarioId, carreraId: '',
+                        carrera: 'General', añoIngreso: año, estado: 'activo'
+                    });
+                });
+
+                alertify.success(`Alumno registrado. Carnet: ${nuevoCarnet}. Clave inicial: ${n.fechaNacimiento}`);
+                this.cerrarModal('modalNuevoAlumno');
+                await this.cargar();
+            } catch (e) { alertify.error('Error: ' + e.message); }
+            finally { this.guardandoNuevo = false; }
+        },
         abrirModal(id) { new bootstrap.Modal(document.getElementById(id)).show(); },
         cerrarModal(id) { bootstrap.Modal.getInstance(document.getElementById(id))?.hide(); }
     },
@@ -157,6 +242,9 @@ const alumnosAdmin = {
             <div class="d-flex align-items-center mb-3 border-bottom pb-2">
                 <i class="bi bi-person-badge me-2 fs-5 text-secondary"></i>
                 <h5 class="mb-0 fw-semibold">Gestión de Alumnos</h5>
+                <button class="btn btn-sm btn-primary ms-3 shadow-sm" @click="abrirNuevo">
+                    <i class="bi bi-person-plus-fill me-1"></i> Registrar Alumno
+                </button>
                 <button class="btn btn-sm btn-outline-secondary ms-auto" @click="cargar">
                     <i class="bi bi-arrow-clockwise"></i>
                 </button>
@@ -357,6 +445,56 @@ const alumnosAdmin = {
                     </div>
                 </div>
             </div>
+
+            <!-- Modal Nuevo Alumno -->
+            <div class="modal fade" id="modalNuevoAlumno" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content border-0 shadow bg-body-tertiary">
+                        <div class="modal-header bg-success bg-opacity-75">
+                            <h5 class="modal-title text-white"><i class="bi bi-person-plus me-2"></i>Nuevo Registro Alumno</h5>
+                            <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row g-3">
+                                <div class="col-12 text-center py-2 px-3 mb-2 bg-info bg-opacity-10 border border-info rounded">
+                                    <small class="text-info-emphasis"><i class="bi bi-info-circle me-1"></i>El carnet se generará automáticamente tras guardar.</small>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold text-uppercase text-body-secondary">Nombre Completo *</label>
+                                    <input v-model="nuevoAlumno.nombre" class="form-control form-control-sm bg-transparent" placeholder="Juan Pérez" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold text-uppercase text-body-secondary">Usuario *</label>
+                                    <input v-model="nuevoAlumno.username" class="form-control form-control-sm bg-transparent" placeholder="juan.perez" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold text-uppercase text-body-secondary">Fecha Nacimiento *</label>
+                                    <input v-model="nuevoAlumno.fechaNacimiento" type="date" class="form-control form-control-sm bg-transparent" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold text-uppercase text-body-secondary">Email *</label>
+                                    <input v-model="nuevoAlumno.email" type="email" class="form-control form-control-sm bg-transparent" placeholder="juan@uni.edu" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold text-uppercase text-body-secondary">Género</label>
+                                    <select v-model="nuevoAlumno.sexo" class="form-select form-select-sm bg-transparent">
+                                        <option value="Masculino">Masculino</option>
+                                        <option value="Femenino">Femenino</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top-0">
+                            <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                            <button class="btn btn-success btn-sm fw-bold px-3" @click="guardarNuevo" :disabled="guardandoNuevo">
+                                <span v-if="guardandoNuevo" class="spinner-border spinner-border-sm me-1"></span>
+                                <i v-else class="bi bi-check-lg me-1"></i>Registrar y Generar Carnet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     `
 };

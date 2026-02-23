@@ -11,10 +11,23 @@ const busqueda_docentes = {
             this.$emit('modificar', docente);
         },
         async obtenerDocentes(){
-            this.docentes = await db.docentes.filter(
-                docente => docente.carnet.toLowerCase().includes(this.buscar.toLowerCase())
-                    || docente.nombre.toLowerCase().includes(this.buscar.toLowerCase())
-            ).toArray();
+            const search = this.buscar.toLowerCase();
+            
+            // UNIÓN RELACIONAL v11
+            const allDocentes = await db.docentes.toArray();
+            const allPerfiles = await db.perfiles.toArray();
+            
+            const perfilesMap = allPerfiles.reduce((acc, p) => {
+                acc[p.usuarioId] = p;
+                return acc;
+            }, {});
+
+            this.docentes = allDocentes
+                .map(d => ({ ...d, ...(perfilesMap[d.usuarioId] || {}) }))
+                .filter(d => 
+                    d.carnet.toLowerCase().includes(search) || 
+                    (d.nombre && d.nombre.toLowerCase().includes(search))
+                );
         },
         async eliminarDocente(docente, e){
             e.stopPropagation();

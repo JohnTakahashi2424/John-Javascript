@@ -20,29 +20,18 @@ const docentes = {
         }
     },
     async mounted() {
-        // Cargar sesión y precargar datos
         const stored = sessionStorage.getItem('sesionUniversidad');
         if (stored) {
             const s = JSON.parse(stored);
             this.sesion = s;
             
             if (s.rol === 'Docente' && s.id) {
-                // Buscar docente por usuarioId
-                let docente = await db.docentes.where('usuarioId').equals(s.id).first();
-                // Fallback por carnet
-                if (!docente && s.carnet) {
-                    docente = await db.docentes.where('carnet').equals(s.carnet).first();
-                }
+                // UNIÓN RELACIONAL
+                const perfil = await db.perfiles.where('usuarioId').equals(s.id).first();
+                const expediente = await db.docentes.where('usuarioId').equals(s.id).first();
 
-                if (docente) {
-                    // Mapeo de sexo si viene con nombre completo
-                    if (docente.sexo === 'Masculino') docente.sexo = 'M';
-                    if (docente.sexo === 'Femenino') docente.sexo = 'F';
-                    
-                    // Asegurar que el email del docente sea el de la cuenta
-                    if (s.email) docente.email = s.email;
-
-                    this.modificarDocente(docente);
+                if (perfil && expediente) {
+                    this.modificarDocente({ ...perfil, ...expediente });
                 }
             }
         }
@@ -52,18 +41,19 @@ const docentes = {
         buscarDocente(){
             this.$emit('ir-busqueda');
         },
-        modificarDocente(docente){
+        modificarDocente(datos){
             this.accion = 'modificar';
-            this.idDocente = docente.idDocente;
-            this.docente.carnet = docente.carnet;
-            this.docente.nombre = docente.nombre;
-            this.docente.direccion = docente.direccion;
-            this.docente.email = docente.email;
-            this.docente.telefono = docente.telefono;
-            this.docente.escalafon = docente.escalafon;
-            this.docente.foto = docente.foto || "";
-            this.docente.fechaNacimiento = docente.fechaNacimiento || "";
-            this.docente.sexo = docente.sexo || "";
+            this.idDocente = datos.idDocente;
+            this.docente.carnet = datos.carnet;
+            this.docente.nombre = datos.nombre;
+            this.docente.direccion = datos.direccion;
+            this.docente.email = datos.email || "";
+            this.docente.telefono = datos.telefono;
+            this.docente.escalafon = datos.escalafon;
+            this.docente.foto = datos.foto || "";
+            this.docente.fechaNacimiento = datos.fechaNacimiento || "";
+            this.docente.sexo = datos.sexo || "";
+            this.docente.usuarioId = datos.usuarioId;
         },
         seleccionarFoto(event) {
             const file = event.target.files[0];
@@ -79,27 +69,50 @@ const docentes = {
             reader.readAsDataURL(file);
         },
         async guardarDocente() {
-            let datos = {
-                idDocente: this.accion=='modificar' ? this.idDocente : this.getId(),
-                carnet: this.docente.carnet,
-                nombre: this.docente.nombre,
-                direccion: this.docente.direccion,
-                email: this.docente.email,
-                telefono: this.docente.telefono,
-                escalafon: this.docente.escalafon,
-                foto: this.docente.foto,
-                fechaNacimiento: this.docente.fechaNacimiento,
-                sexo: this.docente.sexo
-            };
-            this.buscar = datos.codigo;
-
-            if(this.data_docentes.length > 0 && this.accion=='nuevo'){
-                alertify.error(`El codigo del docente ya existe, ${this.data_docentes[0].nombre}`);
+            if (!this.docente.usuarioId && this.sesion.rol !== 'Admin') {
+                alertify.error("No se puede guardar sin usuario vinculado.");
                 return;
             }
-            db.docentes.put(datos);
-            this.limpiarFormulario();
-            alertify.success(`${datos.nombre} guardado correctamente`);
+
+            // Perfil humano
+            let datosPerfil = {
+                usuarioId: this.docente.usuarioId || this.sesion.id,
+                nombre: this.docente.nombre,
+                direccion: this.docente.direccion,
+                telefono: this.docente.telefono,
+                fechaNacimiento: this.docente.fechaNacimiento,
+                sexo: this.docente.sexo,
+                foto: this.docente.foto
+            };
+
+            // Perfil técnico
+            let datosAcademicos = {
+                idDocente: this.accion=='modificar' ? this.idDocente : undefined,
+                carnet: this.docente.carnet,
+                usuarioId: this.docente.usuarioId || this.sesion.id,
+                escalafon: this.docente.escalafon,
+                estado: 'activo'
+            };
+
+            try {
+                await db.transaction('rw', [db.perfiles, db.docentes], async () => {
+                    const p = await db.perfiles.where('usuarioId').equals(datosPerfil.usuarioId).first();
+                    if (p) await db.perfiles.update(p.id, datosPerfil);
+                    else await db.perfiles.add(datosPerfil);
+
+                    if (this.accion === 'modificar') {
+                        await db.docentes.update(this.idDocente, datosAcademicos);
+                    } else {
+                        if (this.sesion.rol !== 'Admin') throw new Error("Permisos denegados.");
+                        await db.docentes.add(datosAcademicos);
+                    }
+                });
+
+                this.limpiarFormulario();
+                alertify.success(`${datosPerfil.nombre} guardado correctamente`);
+            } catch (e) {
+                alertify.error("Error: " + e.message);
+            }
         },
         getId(){
             return new Date().getTime();
@@ -194,7 +207,6 @@ const docentes = {
                                     <option value="" disabled>Seleccione...</option>
                                     <option value="M">Masculino</option>
                                     <option value="F">Femenino</option>
-                                    <option value="O">Otro</option>
                                 </select>
                             </div>
                         </div>

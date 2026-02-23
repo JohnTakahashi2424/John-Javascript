@@ -44,15 +44,16 @@ const solicitudesAdmin = {
                         const carrera = this.carrerasMatch[sol.carreraId];
                         const codCarrera = carrera ? carrera.codigo : 'XXX';
                         
-                        // Calcular correlativo
+                        // v12+: Algoritmo de carnet estudiantil: AÑO-CARRERA-CORRELATIVO(5)
                         const prefijo = `${año}-${codCarrera}-`;
-                        const alumnosAño = await db.alumnos
+                        const alumnosCod = await db.alumnos
                             .filter(a => a.carnet && a.carnet.startsWith(prefijo))
                             .toArray();
                         
                         let ultimoNum = 0;
-                        alumnosAño.forEach(a => {
-                            const num = parseInt(a.carnet.split('-')[2]);
+                        alumnosCod.forEach(a => {
+                            const partes = a.carnet.split('-');
+                            const num = parseInt(partes[2]);
                             if (num > ultimoNum) ultimoNum = num;
                         });
 
@@ -60,7 +61,7 @@ const solicitudesAdmin = {
                         nuevoCarnet = `${prefijo}${correlativo}`;
 
                     } else {
-                        // Docente: DOC-AÑO-CORRELATIVO
+                        // v12+: Algoritmo docente: DOC-AÑO-CORRELATIVO(3)
                         const prefijo = `DOC-${año}-`;
                         const docentesAño = await db.docentes
                             .filter(d => d.carnet && d.carnet.startsWith(prefijo))
@@ -68,7 +69,8 @@ const solicitudesAdmin = {
 
                         let ultimoNum = 0;
                         docentesAño.forEach(d => {
-                            const num = parseInt(d.carnet.split('-')[2]);
+                            const partes = d.carnet.split('-');
+                            const num = parseInt(partes[2]);
                             if (num > ultimoNum) ultimoNum = num;
                         });
 
@@ -76,43 +78,84 @@ const solicitudesAdmin = {
                         nuevoCarnet = `${prefijo}${correlativo}`;
                     }
 
-                    // 1. Crear Usuario
-                    const usuarioId = await db.usuarios.add({
-                        username: sol.username,
-                        email: sol.email,
-                        hashPwd: sol.hashPwd,
-                        rol: sol.tipo,
-                        carnet: nuevoCarnet,
-                        estado: 'activo'
-                    });
-
-                    // 2. Crear Perfil (Alumno o Docente)
-                    if (sol.tipo === 'Alumno') {
-                        await db.alumnos.add({
-                            carnet: nuevoCarnet,
-                            nombre: sol.nombre || sol.username,
-                            usuarioId: usuarioId,
-                            carreraId: sol.carreraId || '',
-                            sexo: sol.sexo,
-                            añoIngreso: año,
-                            estado: 'activo'
-                        });
-                    } else {
-                        await db.docentes.add({
-                            carnet: nuevoCarnet,
-                            nombre: sol.nombre || sol.username,
-                            usuarioId: usuarioId,
-                            especialidad: '',
-                            sexo: sol.sexo,
-                            añoIngreso: año,
-                            estado: 'activo'
-                        });
+                    // 1. Validar duplicidad antes de proceder
+                    const existeEmail = await db.usuarios.where('email').equalsIgnoreCase(sol.email).first();
+                    if (existeEmail) {
+                        alertify.error(`El correo ${sol.email} ya está registrado.`);
+                        return;
+                    }
+                    const existeUser = await db.usuarios.where('username').equalsIgnoreCase(sol.username).first();
+                    if (existeUser) {
+                        alertify.error(`El usuario ${sol.username} ya está en uso.`);
+                        return;
                     }
 
-                    // 3. Marcar solicitud como aprobada
-                    await db.solicitudes.update(sol.id, { estado: 'aprobado' });
+                    // 2. Ejecutar aprobación en transacción
+                    await db.transaction('rw', [db.usuarios, db.perfiles, db.alumnos, db.docentes, db.solicitudes], async () => {
+                        // A. Crear Usuario
+                        const usuarioId = await db.usuarios.add({
+                            username: sol.username,
+                            email: sol.email,
+                            hashPwd: sol.hashPwd,
+                            rol: sol.tipo,
+                            estado: 'activo'
+                        });
 
-                    alertify.success(`Registro aprobado. Carnet generado: <b>${nuevoCarnet}</b>`);
+                        // B. Vincular o Crear Perfil
+                        if (sol.perfilId) {
+                            await db.perfiles.update(sol.perfilId, { usuarioId });
+                        } else {
+                            await db.perfiles.add({
+                                usuarioId,
+                                nombre: sol.nombre || sol.username,
+                                sexo: sol.sexo,
+                                email: sol.email,
+                                foto: '', telefono: '', direccion: '', 
+                                fechaNacimiento: sol.fechaNacimiento || ''
+                            });
+                        }
+
+                        // C. Vincular o Crear Registro Académico
+                        if (sol.tipo === 'Alumno') {
+                            if (sol.alumnoId) {
+                                await db.alumnos.update(sol.alumnoId, { 
+                                    usuarioId, 
+                                    carnet: nuevoCarnet, 
+                                    estado: 'activo' 
+                                });
+                            } else {
+                                await db.alumnos.add({
+                                    carnet: nuevoCarnet,
+                                    usuarioId,
+                                    carreraId: String(sol.carreraId || ''),
+                                    carrera: this.carrerasMatch[sol.carreraId]?.nombre || '',
+                                    añoIngreso: año,
+                                    estado: 'activo'
+                                });
+                            }
+                        } else {
+                            if (sol.docenteId) {
+                                await db.docentes.update(sol.docenteId, { 
+                                    usuarioId, 
+                                    carnet: nuevoCarnet, 
+                                    estado: 'activo' 
+                                });
+                            } else {
+                                await db.docentes.add({
+                                    carnet: nuevoCarnet,
+                                    usuarioId,
+                                    especialidad: '',
+                                    añoIngreso: año,
+                                    estado: 'activo'
+                                });
+                            }
+                        }
+
+                        // D. Marcar solicitud como aprobada
+                        await db.solicitudes.update(sol.id, { estado: 'aprobado' });
+                    });
+
+                    alertify.success(`Registro aprobado con éxito. Carnet: <b>${nuevoCarnet}</b>`);
                     await this.cargar();
 
                 } catch (e) {
@@ -155,6 +198,7 @@ const solicitudesAdmin = {
                                 <th class="ps-4">Usuario / Email</th>
                                 <th>Tipo / Rol</th>
                                 <th>Género</th>
+                                <th>F. Nacimiento</th>
                                 <th>Carrera (si aplica)</th>
                                 <th>Fecha Solicitud</th>
                                 <th class="text-end pe-4">Acciones</th>
@@ -172,6 +216,7 @@ const solicitudesAdmin = {
                                     </span>
                                 </td>
                                 <td>{{ sol.sexo }}</td>
+                                <td class="small">{{ sol.fechaNacimiento }}</td>
                                 <td>
                                     <span v-if="sol.tipo==='Alumno'" class="small">
                                         {{ carrerasMatch[sol.carreraId] ? carrerasMatch[sol.carreraId].nombre : 'No especificada' }}

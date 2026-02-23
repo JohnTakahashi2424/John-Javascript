@@ -49,23 +49,23 @@ const inscripciones = {
             const todasMaterias = await db.materias.toArray();
             const habilitadas = todasMaterias.filter(m => (m.estado || 'habilitada') === 'habilitada');
 
-            // Filtrar por carrera del alumno logueado
             try {
                 const sesion = JSON.parse(sessionStorage.getItem('sesionUniversidad') || '{}');
-                const carnet = sesion.carnet || '';
-                const username = sesion.username || '';
-                let alumno = null;
-                const todosAlumnos = await db.alumnos.toArray();
-                if (carnet) alumno = todosAlumnos.find(a => (a.carnet||'').toLowerCase() === carnet.toLowerCase());
-                if (!alumno && username) alumno = todosAlumnos.find(a => (a.nombre||'').toLowerCase().includes(username.toLowerCase()));
-
-                if (alumno && alumno.carrera) {
-                    // Mostrar materias sin carrera asignada (comunes a todos) + materias de la carrera del alumno
-                    this.materiasDisponibles = habilitadas.filter(m => !m.carrera || m.carrera === alumno.carrera);
+                const userId = sesion.id;
+                
+                if (userId) {
+                    const alumno = await db.alumnos.where('usuarioId').equals(userId).first();
+                    if (alumno && (alumno.carreraId || alumno.carrera)) {
+                        const carreraId = alumno.carreraId;
+                        this.materiasDisponibles = habilitadas.filter(m => !m.carreraId || m.carreraId === carreraId);
+                    } else {
+                        this.materiasDisponibles = habilitadas;
+                    }
                 } else {
                     this.materiasDisponibles = habilitadas;
                 }
-            } catch(_) {
+            } catch (e) {
+                console.warn('Error filtrando materias por carrera:', e);
                 this.materiasDisponibles = habilitadas;
             }
             this.sinMaterias = this.materiasDisponibles.length === 0;
@@ -74,8 +74,8 @@ const inscripciones = {
         async onMatriculaChange(){
             const mat = this.matriculasActivas.find(m => m.idMatricula == this.inscripcion.idMatricula);
             if(mat){
-                this.inscripcion.alumno = mat.nombreAlumno;
-                this.inscripcion.ciclo  = mat.ciclo || '';
+                this.inscripcion.alumno = mat._alumnoNombre || 'Desconocido';
+                this.inscripcion.ciclo  = mat._periodoCiclo || '';
             } else {
                 this.inscripcion.alumno = '';
                 this.inscripcion.ciclo  = '';

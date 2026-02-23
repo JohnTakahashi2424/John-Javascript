@@ -13,21 +13,22 @@ const busqueda_matricula = {
             const query = this.buscar.toLowerCase().trim();
             let rawMatriculas = await db.matricula.toArray();
             let rawAlumnos = await db.alumnos.toArray();
-            let usuariosArr = await db.usuarios.where('rol').equals('Alumno').toArray();
+            let rawPerfiles = await db.perfiles.toArray();
             
-            // v11: Join manual para asegurar nombres correctos desde Identidad Centralizada
+            const perMap = rawPerfiles.reduce((acc, p) => (acc[p.usuarioId] = p, acc), {});
+            const aluMap = rawAlumnos.reduce((acc, a) => (acc[a.idAlumno] = a, acc), {});
+
             this.matriculas = rawMatriculas.map(m => {
-                const al = rawAlumnos.find(a => a.idAlumno === m.alumnoId);
-                const u = al ? usuariosArr.find(usr => usr.id === al.usuarioId) : null;
+                const al = aluMap[m.alumnoId];
+                const perfil = al ? perMap[al.usuarioId] : null;
                 return {
                     ...m,
-                    _alumnoNombre: u ? u.nombre : (m._alumnoNombre || al?.nombre || 'Desconocido'),
-                    _carreraNombre: m._carreraNombre || m.carrera || ''
+                    _alumnoNombre: perfil ? perfil.nombre : (m._alumnoNombre || 'Desconocido'),
+                    _carreraNombre: m._carreraNombre || ''
                 };
             }).filter(m => 
                 (m.codigo || '').toLowerCase().includes(query) ||
-                (m._alumnoNombre || '').toLowerCase().includes(query) ||
-                (m._carreraNombre || '').toLowerCase().includes(query)
+                (m._alumnoNombre || '').toLowerCase().includes(query)
             );
         },
         async eliminarMatricula(matricula, e){

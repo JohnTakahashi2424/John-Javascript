@@ -51,6 +51,21 @@ db.version(10).stores({
     solicitudes:  '++id, tipo, username, &email, sexo, carreraId, fecha, estado'
 });
 
+// v11: Arquitectura Totalmente Relacional
+db.version(11).stores({
+    usuarios:     '++id, &username, &email, rol, estado',
+    perfiles:     '++id, &usuarioId, nombre, sexo, foto, telefono, direccion, fechaNacimiento',
+    alumnos:      '++idAlumno, &usuarioId, &carnet, carreraId, añoIngreso, estado',
+    docentes:     '++idDocente, &usuarioId, &carnet, especialidad, añoIngreso, estado',
+    carreras:     '++idCarrera, &codigo, nombre, facultad, estado',
+    materias:     '++idMateria, &codigo, nombre, docenteId, carreraId, estado',
+    periodos:     '++idPeriodo, año, ciclo, estado',
+    matricula:    '++idMatricula, &codigo, alumnoId, periodoId, carreraId, estado',
+    inscripciones:'++idInscripcion, matriculaId, materiaId, estado',
+    evaluaciones: '++id, inscripcionId, estado',
+    solicitudes:  '++id, tipo, username, &email, sexo, carreraId, fecha, estado'
+});
+
 // Auto-recovery: si la BD no puede migrar (cambio de PK), borrar y recargar
 db.open().catch(err => {
     if ((err.message || '').includes('primary key') || err.name === 'VersionError') {
@@ -121,47 +136,38 @@ const adminApp = Vue.createApp({
             window.location.href = '../index.html';
         },
         async sincronizarPerfiles() {
+            // En v11, la sincronización se maneja de forma centralizada o al crear usuarios.
+            // Para evitar errores de inconsistencia, solo nos aseguramos de que existan los registros base.
             try {
                 const usuarios = await db.usuarios.toArray();
                 for (const u of usuarios) {
-                    if (u.rol === 'Alumno') {
-                        // Buscar por usuarioId (FK v9) primero, fallback a carnet (v10)
-                        let perfil = u.id
-                            ? await db.alumnos.where('usuarioId').equals(u.id).first()
-                            : null;
-                        if (!perfil && u.carnet)
-                            perfil = await db.alumnos.where('carnet').equalsIgnoreCase(u.carnet).first();
+                    if (u.rol === 'Admin') continue;
+                    
+                    // 1. Asegurar Perfil
+                    const perfil = await db.perfiles.where('usuarioId').equals(u.id).first();
+                    if (!perfil) {
+                        await db.perfiles.add({
+                            usuarioId: u.id, nombre: u.username, email: u.email || '',
+                            sexo: 'Masculino', foto: '', telefono: '', direccion: '', fechaNacimiento: ''
+                        });
+                    }
 
-                        if (!perfil) {
-                            // Crear perfil faltante y vincularlo
+                    // 2. Asegurar Registro Académico
+                    if (u.rol === 'Alumno') {
+                        const al = await db.alumnos.where('usuarioId').equals(u.id).first();
+                        if (!al) {
                             await db.alumnos.add({
-                                carnet: u.carnet || '', nombre: u.username,
-                                email: u.email || '', carreraId: '',
-                                foto: '', telefono: '', direccion: '',
-                                sexo: 'Masculino', añoIngreso: new Date().getFullYear(),
-                                usuarioId: u.id, estado: 'activo'
+                                carnet: 'SIN-CARNET', usuarioId: u.id, carreraId: '',
+                                añoIngreso: new Date().getFullYear(), estado: 'activo'
                             });
-                        } else if (!perfil.usuarioId) {
-                            // Perfil existe pero sin FK — sellar el vínculo
-                            await db.alumnos.update(perfil.idAlumno, { usuarioId: u.id });
                         }
                     } else if (u.rol === 'Docente') {
-                        let perfil = u.id
-                            ? await db.docentes.where('usuarioId').equals(u.id).first()
-                            : null;
-                        if (!perfil && u.carnet)
-                            perfil = await db.docentes.where('carnet').equalsIgnoreCase(u.carnet).first();
-
-                        if (!perfil) {
+                        const doc = await db.docentes.where('usuarioId').equals(u.id).first();
+                        if (!doc) {
                             await db.docentes.add({
-                                carnet: u.carnet || '', nombre: u.username,
-                                email: u.email || '', especialidad: '',
-                                foto: '', telefono: '',
-                                sexo: 'Masculino', añoIngreso: new Date().getFullYear(),
-                                usuarioId: u.id, estado: 'activo'
+                                carnet: 'SIN-CARNET', usuarioId: u.id, especialidad: '',
+                                añoIngreso: new Date().getFullYear(), estado: 'activo'
                             });
-                        } else if (!perfil.usuarioId) {
-                            await db.docentes.update(perfil.idDocente, { usuarioId: u.id });
                         }
                     }
                 }

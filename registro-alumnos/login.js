@@ -15,10 +15,10 @@ const login = {
             loginForm: { identificador: '', password: '' },
 
             regForm: {
+                nombre: '',
                 username: '',
                 email: '',
-                password: '',
-                confirmar: '',
+                fechaNacimiento: '', // Agregado
                 rol: 'Alumno',
                 sexo: 'Masculino', // Valor por defecto
                 carreraId: ''
@@ -44,7 +44,7 @@ const login = {
             }
             this.cargando = true;
             try {
-                // Buscar únicamente por username o email (El código/carnet ya no se usa para login)
+                // Buscar únicamente por username o email
                 let usuario = await db.usuarios.where('username').equalsIgnoreCase(id).first();
                 if (!usuario) usuario = await db.usuarios.where('email').equalsIgnoreCase(id).first();
 
@@ -59,40 +59,37 @@ const login = {
                     return;
                 }
 
+                // Cargar Perfil Relacional
+                const perfil = await db.perfiles.where('usuarioId').equals(usuario.id).first();
+                if (!perfil && usuario.rol !== 'Admin') {
+                    alertify.alert('Error de Sistema', 'Tu usuario no tiene un perfil asociado. Contacta al administrador.');
+                    return;
+                }
+
                 // Verificar estado del perfil específico (Alumno/Docente)
-                // Esto es necesario porque el Admin desactiva desde el panel de Alumnos/Docentes
+                let carnet = '';
                 if (usuario.rol === 'Alumno') {
-                    // Buscar perfil primero por usuarioId (FK v9), fallback a carnet (v10)
-                    let perfil = usuario.id
-                        ? await db.alumnos.where('usuarioId').equals(usuario.id).first()
-                        : null;
-                    if (!perfil && usuario.carnet)
-                        perfil = await db.alumnos.where('carnet').equalsIgnoreCase(usuario.carnet).first();
-
-                    if (!perfil) {
-                        alertify.alert('Error de Cuenta', 'Tu usuario existe pero no se encontró tu expediente de Alumno. Posiblemente fue eliminado. Contacta al administrador.');
+                    const expediente = await db.alumnos.where('usuarioId').equals(usuario.id).first();
+                    if (!expediente) {
+                        alertify.alert('Error Académico', 'No se encontró tu expediente de Alumno.');
                         return;
                     }
-                    if (perfil.estado === 'inactivo') {
-                        alertify.error('Tu expediente de alumno ha sido desactivado. Contacta a registro académico.');
+                    if (expediente.estado === 'inactivo') {
+                        alertify.error('Tu expediente de alumno ha sido desactivado.');
                         return;
                     }
+                    carnet = expediente.carnet;
                 } else if (usuario.rol === 'Docente') {
-                    // Buscar perfil primero por usuarioId (FK v9), fallback a carnet (v10)
-                    let perfil = usuario.id
-                        ? await db.docentes.where('usuarioId').equals(usuario.id).first()
-                        : null;
-                    if (!perfil && usuario.carnet)
-                        perfil = await db.docentes.where('carnet').equalsIgnoreCase(usuario.carnet).first();
-
-                    if (!perfil) {
-                        alertify.alert('Error de Cuenta', 'Tu usuario existe pero no se encontró tu perfil Docente. Posiblemente fue eliminado. Contacta al administrador.');
+                    const expediente = await db.docentes.where('usuarioId').equals(usuario.id).first();
+                    if (!expediente) {
+                        alertify.alert('Error Académico', 'No se encontró tu perfil Docente.');
                         return;
                     }
-                    if (perfil.estado === 'inactivo') {
-                        alertify.error('Tu perfil docente ha sido desactivado. Contacta a recursos humanos.');
+                    if (expediente.estado === 'inactivo') {
+                        alertify.error('Tu perfil docente ha sido desactivado.');
                         return;
                     }
+                    carnet = expediente.carnet;
                 }
 
                 const hashIngresado = await this.hashPassword(this.loginForm.password);
@@ -101,8 +98,15 @@ const login = {
                     return;
                 }
 
-                // Guardar sesión en sessionStorage
-                const sesionData = { autenticado: true, username: usuario.username, rol: usuario.rol, id: usuario.id, carnet: usuario.carnet || '' };
+                // Guardar sesión en sessionStorage (v11: sin carnet en tabla usuario)
+                const sesionData = { 
+                    autenticado: true, 
+                    username: usuario.username, 
+                    rol: usuario.rol, 
+                    id: usuario.id, 
+                    carnet: carnet,
+                    nombre: perfil ? perfil.nombre : usuario.username
+                };
                 sessionStorage.setItem('sesionUniversidad', JSON.stringify(sesionData));
 
                 alertify.success(`¡Bienvenido, ${usuario.username}!`);
@@ -117,7 +121,7 @@ const login = {
                     return;
                 }
 
-                this.$emit('login-exitoso', { username: usuario.username, rol: usuario.rol, carnet: usuario.carnet || '' });
+                this.$emit('login-exitoso', sesionData);
 
             } catch (e) {
                 alertify.error('Error al iniciar sesión: ' + e.message);
@@ -128,28 +132,20 @@ const login = {
 
         // ── REGISTRO ─────────────────────────────────────────────────
         async registrar() {
-            // Validar que no haya sesión activa
             const sesion = sessionStorage.getItem('sesionUniversidad');
             if (sesion) {
-                alertify.warning('Ya tienes una sesión activa. No es necesario registrarte de nuevo.');
+                alertify.warning('Ya tienes una sesión activa.');
                 return;
             }
 
-            const { username, email, password, confirmar, rol, sexo, codigoAdmin, carreraId } = this.regForm;
+            const { nombre, username, email, fechaNacimiento, rol, sexo, codigoAdmin, carreraId } = this.regForm;
 
-            if (!username || !password || !confirmar || !email) {
-                alertify.error('Completa los campos obligatorios: usuario, correo, contraseña y confirmación.');
-                return;
-            }
-            if (username.length < 4) { alertify.error('El usuario debe tener al menos 4 caracteres.'); return; }
-            if (password.length < 6) { alertify.error('La contraseña debe tener al menos 6 caracteres.'); return; }
-            if (password !== confirmar) { alertify.error('Las contraseñas no coinciden.'); return; }
-            if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
-                alertify.error('El formato del correo no es válido.');
+            if (!nombre || !username || !email || !fechaNacimiento) {
+                alertify.error('Todos los campos son obligatorios.');
                 return;
             }
             
-            // Validar código secreto para Admin (creación directa)
+            // Validar código secreto para Admin
             if (rol === 'Admin' && codigoAdmin !== 'ADMIN-2026') {
                 alertify.error('Código de administrador incorrecto.');
                 return;
@@ -158,43 +154,84 @@ const login = {
             this.cargando = true;
             try {
                 const existeUser = await db.usuarios.where('username').equalsIgnoreCase(username).first();
-                if (existeUser) { alertify.error('Ese nombre de usuario ya está en uso.'); return; }
+                if (existeUser) { alertify.error('Usuario ya en uso.'); return; }
                 
                 const existeEmail = await db.usuarios.where('email').equalsIgnoreCase(email).first();
-                if (existeEmail) { alertify.error('Ese correo ya tiene una cuenta asociada.'); return; }
+                if (existeEmail) { alertify.error('Correo ya en uso.'); return; }
 
                 const existeSolicitud = await db.solicitudes.where('email').equalsIgnoreCase(email).first();
-                if (existeSolicitud) { alertify.error('Ya existe una solicitud pendiente con este correo.'); return; }
+                if (existeSolicitud) { alertify.error('Ya tienes una solicitud pendiente.'); return; }
 
-                // 2. Si es Admin, crear directamente (como antes)
+                // 2. Si es Admin, crear directamente (y su perfil)
                 if (rol === 'Admin') {
-                    const hashPwd = await this.hashPassword(password);
-                    await db.usuarios.add({
-                        username, email, hashPwd, rol, carnet: 'ADMIN', estado: 'activo'
+                    // Para Admin, la clave inicial también será su fecha de nacimiento si se proporciona, o un default.
+                    const hashPwd = await this.hashPassword(fechaNacimiento || 'admin2026');
+                    const usuarioId = await db.usuarios.add({
+                        username, email, hashPwd, rol, estado: 'activo'
+                    });
+                    await db.perfiles.add({
+                        usuarioId, nombre, sexo: 'Otro', fechaNacimiento: fechaNacimiento || ''
                     });
                     alertify.success('¡Administrador creado!');
                     this.cambiarVista('login');
                     return;
                 }
 
-                // 3. Si es Alumno/Docente, crear una SOLICITUD (Pre-registro)
-                // El carnet real lo generará el Admin al aprobar.
-                const hashPwd = await this.hashPassword(password);
-                
+                // 3. Estructura Relacional v12 (Pre-registro)
+                // Se crean los registros base sin usuarioId, sujetos a aprobación.
+
+                // A. Crear Perfil (sin usuarioId por ahora)
+                const perfilId = await db.perfiles.add({
+                    usuarioId: null,
+                    nombre,
+                    sexo,
+                    email,
+                    foto: '',
+                    telefono: '',
+                    direccion: '',
+                    fechaNacimiento
+                });
+
+                // B. Crear Registro Académico (sin usuarioId, carnet PENDIENTE)
+                let alumnoId = null;
+                let docenteId = null;
+
+                if (rol === 'Alumno') {
+                    alumnoId = await db.alumnos.add({
+                        carnet: 'PENDIENTE',
+                        usuarioId: null,
+                        carreraId: String(carreraId || ''),
+                        añoIngreso: new Date().getFullYear(),
+                        estado: 'inactivo' // Se activa al aprobar
+                    });
+                } else if (rol === 'Docente') {
+                    docenteId = await db.docentes.add({
+                        carnet: 'PENDIENTE',
+                        usuarioId: null,
+                        especialidad: '',
+                        añoIngreso: new Date().getFullYear(),
+                        estado: 'inactivo'
+                    });
+                }
+
+                // C. Crear SOLICITUD de Activación vinculada
                 await db.solicitudes.add({
                     tipo: rol,
-                    nombre: username, // Se usará para el perfil
                     username,
                     email,
                     hashPwd,
-                    sexo,
-                    carreraId: rol === 'Alumno' ? (carreraId || '') : '',
+                    fechaNacimiento,
+                    sexo, // Para visualización rápida en Admin
+                    carreraId: rol === 'Alumno' ? (carreraId || '') : '', // Para visualización rápida
+                    perfilId,
+                    alumnoId,
+                    docenteId,
                     fecha: new Date().toLocaleString(),
                     estado: 'pendiente'
                 });
 
-                alertify.alert('Solicitud Enviada', 'Tu solicitud ha sido enviada. El sistema generará tu carnet oficial una vez que el administrador apruebe tu registro.');
-                this.regForm = { username: '', email: '', password: '', confirmar: '', rol: 'Alumno', sexo: 'Masculino', carreraId: '' };
+                alertify.alert('Pre-Registro Exitoso', `Tus datos han sido guardados. Se ha enviado una solicitud de activación al administrador.<br><br><b>Usuario:</b> ${username}<br><b>Contraseña inicial:</b> ${fechaNacimiento}`);
+                this.regForm = { nombre: '', username: '', email: '', fechaNacimiento: '', rol: 'Alumno', sexo: 'Masculino', carreraId: '' };
                 this.cambiarVista('login');
 
             } catch (e) {
@@ -209,7 +246,7 @@ const login = {
         cambiarVista(v) {
             this.vista = v;
             this.loginForm = { identificador: '', password: '' };
-            this.regForm = { username: '', email: '', password: '', confirmar: '', rol: 'Alumno', sexo: 'Masculino', carreraId: '' };
+            this.regForm = { nombre: '', username: '', email: '', fechaNacimiento: '', rol: 'Alumno', sexo: 'Masculino', carreraId: '' };
             this.mostrarPass = false;
             this.mostrarPassReg = false;
             this.mostrarPassConf = false;
@@ -320,6 +357,15 @@ const login = {
                                 </div>
                             </div>
 
+                            <!-- Código Admin -->
+                            <div v-if="regForm.rol === 'Admin'" class="mb-3">
+                                <label class="form-label fw-semibold small text-uppercase text-body-secondary text-danger">Código de Seguridad Admin</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-danger bg-opacity-10 border-end-0"><i class="bi bi-shield-lock text-danger"></i></span>
+                                    <input v-model="regForm.codigoAdmin" type="password" class="form-control border-start-0 bg-transparent" placeholder="Código secreto" required>
+                                </div>
+                            </div>
+
                             <!-- Género -->
                             <div v-if="regForm.rol !== 'Admin'" class="mb-3">
                                 <label class="form-label fw-semibold small text-uppercase text-body-secondary">Sexo</label>
@@ -336,6 +382,14 @@ const login = {
                                 </div>
                             </div>
 
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-uppercase text-body-secondary">Nombre Completo <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-person-vcard text-body-secondary"></i></span>
+                                    <input v-model="regForm.nombre" type="text" class="form-control border-start-0 bg-transparent"
+                                           placeholder="Ej. Juan Pérez" required autocomplete="name">
+                                </div>
+                            </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold small text-uppercase text-body-secondary">Nombre de usuario <span class="text-danger">*</span></label>
@@ -358,19 +412,10 @@ const login = {
 
                             <div class="mb-4">
                                 <div class="row g-2">
-                                    <div class="col-6">
-                                        <label class="form-label fw-semibold small text-uppercase text-body-secondary">Contraseña</label>
-                                        <div class="input-group">
-                                            <input v-model="regForm.password" :type="mostrarPassReg ? 'text' : 'password'"
-                                                   class="form-control bg-transparent" placeholder="Mínimo 6" minlength="6" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <label class="form-label fw-semibold small text-uppercase text-body-secondary">Confirmar</label>
-                                        <div class="input-group">
-                                            <input v-model="regForm.confirmar" :type="mostrarPassReg ? 'text' : 'password'"
-                                                   class="form-control bg-transparent" placeholder="Repite" required>
-                                        </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label small fw-bold">Fecha de Nacimiento <span class="text-danger">*</span></label>
+                                        <input v-model="regForm.fechaNacimiento" type="date" class="form-control" required>
+                                        <div class="form-text small">Se usará como tu contraseña inicial (YYYY-MM-DD).</div>
                                     </div>
                                 </div>
                             </div>

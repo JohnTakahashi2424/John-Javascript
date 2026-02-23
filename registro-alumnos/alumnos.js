@@ -19,29 +19,18 @@ const alumnos = {
         }
     },
     async mounted() {
-        // Cargar sesión y precargar datos
         const stored = sessionStorage.getItem('sesionUniversidad');
         if (stored) {
             const s = JSON.parse(stored);
             this.sesion = s;
             
             if (s.rol === 'Alumno' && s.id) {
-                // Priorizar búsqueda por usuarioId
-                let alumno = await db.alumnos.where('usuarioId').equals(s.id).first();
-                // Fallback por carnet
-                if (!alumno && s.carnet) {
-                    alumno = await db.alumnos.where('carnet').equals(s.carnet).first();
-                }
+                // UNIÓN RELACIONAL: usuario -> perfil -> alumno
+                const perfil = await db.perfiles.where('usuarioId').equals(s.id).first();
+                const expediente = await db.alumnos.where('usuarioId').equals(s.id).first();
 
-                if (alumno) {
-                    // Mapeo de sexo si viene con nombre completo
-                    if (alumno.sexo === 'Masculino') alumno.sexo = 'M';
-                    if (alumno.sexo === 'Femenino') alumno.sexo = 'F';
-                    
-                    // Asegurar que el email del alumno sea el de la cuenta
-                    if (s.email) alumno.email = s.email;
-
-                    this.modificarAlumno(alumno);
+                if (perfil && expediente) {
+                    this.modificarAlumno({ ...perfil, ...expediente });
                 }
             }
         }
@@ -51,37 +40,65 @@ const alumnos = {
             this.forms.busqueda_alumnos.mostrar = !this.forms.busqueda_alumnos.mostrar;
             this.$emit('buscar');
         },
-        modificarAlumno(alumno){
+        modificarAlumno(datos){
             this.accion = 'modificar';
-            this.idAlumno = alumno.idAlumno;
-            this.alumno.carnet = alumno.carnet;
-            this.alumno.nombre = alumno.nombre;
-            this.alumno.direccion = alumno.direccion;
-            this.alumno.email = alumno.email;
-            this.alumno.telefono = alumno.telefono;
-            this.alumno.fechaNacimiento = alumno.fechaNacimiento || "";
-            this.alumno.sexo = alumno.sexo || "";
+            this.idAlumno = datos.idAlumno;
+            this.alumno.carnet = datos.carnet;
+            this.alumno.nombre = datos.nombre;
+            this.alumno.direccion = datos.direccion;
+            this.alumno.email = datos.email || ""; // El email está en la tabla usuarios, pero lo guardamos en el form por conveniencia
+            this.alumno.telefono = datos.telefono;
+            this.alumno.fechaNacimiento = datos.fechaNacimiento || "";
+            this.alumno.sexo = datos.sexo || "";
+            // Guardamos el usuarioId si existe (importante para relacional)
+            this.alumno.usuarioId = datos.usuarioId;
         },
         async guardarAlumno() {
-            let datos = {
-                idAlumno: this.accion=='modificar' ? this.idAlumno : this.getId(),
-                carnet: this.alumno.carnet,
+            if (!this.alumno.usuarioId && this.sesion.rol !== 'Admin') {
+                alertify.error("Error de sesión: No se puede guardar sin usuario vinculado.");
+                return;
+            }
+
+            // Datos para la tabla perfiles
+            let datosPerfil = {
+                usuarioId: this.alumno.usuarioId || this.sesion.id,
                 nombre: this.alumno.nombre,
                 direccion: this.alumno.direccion,
-                email: this.alumno.email,
                 telefono: this.alumno.telefono,
                 fechaNacimiento: this.alumno.fechaNacimiento,
                 sexo: this.alumno.sexo
             };
-            this.buscar = datos.codigo;
 
-            if(this.data_alumnos.length > 0 && this.accion=='nuevo'){
-                alertify.error(`El codigo del alumno ya existe, ${this.data_alumnos[0].nombre}`);
-                return;
+            // Datos para la tabla alumnos (académico)
+            let datosAcademicos = {
+                idAlumno: this.accion=='modificar' ? this.idAlumno : undefined,
+                carnet: this.alumno.carnet,
+                usuarioId: this.alumno.usuarioId || this.sesion.id,
+                estado: 'activo'
+            };
+
+            try {
+                await db.transaction('rw', [db.perfiles, db.alumnos], async () => {
+                    // 1. Actualizar o Crear Perfil
+                    const p = await db.perfiles.where('usuarioId').equals(datosPerfil.usuarioId).first();
+                    if (p) await db.perfiles.update(p.id, datosPerfil);
+                    else await db.perfiles.add(datosPerfil);
+
+                    // 2. Actualizar o Crear Expediente Alumno
+                    if (this.accion === 'modificar') {
+                        await db.alumnos.update(this.idAlumno, datosAcademicos);
+                    } else {
+                        // En arquitectura v11, "nuevo" alumno manual solo debería ocurrir vía Admin
+                        if (this.sesion.rol !== 'Admin') throw new Error("Solo el administrador puede crear perfiles nuevos.");
+                        await db.alumnos.add(datosAcademicos);
+                    }
+                });
+
+                this.limpiarFormulario();
+                alertify.success(`${datosPerfil.nombre} guardado correctamente`);
+            } catch (e) {
+                alertify.error("Error al guardar: " + e.message);
             }
-            db.alumnos.put(datos);
-            this.limpiarFormulario();
-            alertify.success(`${datos.nombre} guardado correctamente`);
         },
         getId(){
             return new Date().getTime();
@@ -159,7 +176,6 @@ const alumnos = {
                                     <option value="" disabled>Seleccione...</option>
                                     <option value="M">Masculino</option>
                                     <option value="F">Femenino</option>
-                                    <option value="O">Otro</option>
                                 </select>
                             </div>
                         </div>
