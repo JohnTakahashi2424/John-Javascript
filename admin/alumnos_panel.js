@@ -359,7 +359,7 @@ const alumnosAdmin = {
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label small fw-semibold text-body-secondary text-uppercase">Carrera</label>
-                                    <select v-model="editando.carrera" class="form-select form-select-sm bg-transparent">
+                                    <select v-model="editando.carrera" class="form-select form-select-sm bg-dark text-white border-secondary" data-bs-theme="dark">
                                         <option value="">— Sin carrera asignada —</option>
                                         <option v-for="c in carreras" :key="c.idCarrera" :value="c.nombre">{{ c.nombre }}</option>
                                     </select>

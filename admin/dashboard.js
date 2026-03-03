@@ -277,7 +277,7 @@ const adminDashboard = {
                         </div>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <div class="card border-0 shadow-sm h-100">
+                        <div class="card border-0 shadow-sm h-100 bg-body-tertiary">
                             <div class="card-body">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="rounded-circle d-flex align-items-center justify-content-center"
