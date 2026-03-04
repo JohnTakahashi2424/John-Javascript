@@ -13,6 +13,10 @@
         [v-cloak] { display: none; }
         .transition-all { transition: all 0.2s; }
         .sidebar { transition: width 0.2s ease-in-out; }
+        .nav-link { border-radius: 12px !important; margin-bottom: 4px; }
+        .navbar { z-index: 1050; }
+        .card { transition: transform 0.2s ease, shadow 0.2s ease; }
+        .transition-all { transition: all 0.3s ease; }
     </style>
 </head>
 <body class="bg-body">
@@ -20,33 +24,36 @@
 <div id="app" v-cloak shadow-sm>
 
     <!-- NAVBAR -->
-    <nav class="navbar border-bottom bg-body-tertiary px-3 shadow-sm sticky-top" style="height:56px;">
+    <nav class="navbar navbar-dark bg-primary px-3 shadow sticky-top" style="height:60px;">
         <div class="container-fluid px-0">
             <div class="navbar-brand d-flex align-items-center gap-2 mb-0" style="padding: 0;">
-                <button class="btn btn-sm btn-outline-secondary me-1 d-md-none" @click="sidebarVisible = !sidebarVisible">
-                    <i class="bi bi-list"></i>
+                <button class="btn btn-sm btn-link text-white me-1 d-md-none" @click="sidebarVisible = !sidebarVisible">
+                    <i class="bi bi-list fs-4"></i>
                 </button>
-                <i class="bi bi-journal-bookmark-fill fs-4 text-primary"></i>
+                <div class="bg-white rounded-circle d-flex align-items-center justify-content-center" style="width:35px; height:35px;">
+                    <i class="bi bi-journal-bookmark-fill fs-5 text-primary"></i>
+                </div>
                 <span>
-                    <span class="fw-bold text-body" style="font-size: 1.1rem; line-height: 1.2;">SISTEMA BIBLIOTECARIO</span>
-                    <small class="d-block text-body-secondary" style="font-size: 0.7rem; letter-spacing: 1px; line-height: 1;">GESTIÓN DE ACERVOS</small>
+                    <span class="fw-bold text-white" style="font-size: 1.1rem; line-height: 1.2; letter-spacing: 0.5px;">SISTEMA BIBLIOTECARIO</span>
+                    <small class="d-block text-white text-opacity-75" style="font-size: 0.7rem; letter-spacing: 1px; line-height: 1;">GESTIÓN DE ACERVOS</small>
                 </span>
             </div>
             <div class="d-flex align-items-center gap-3 ms-auto">
-                <button class="btn btn-sm btn-outline-secondary border-0" @click="toggleDarkMode" title="Alternar Modo Oscuro">
+                <button class="btn btn-sm text-white border-0 opacity-75 hover-opacity-100" @click="toggleDarkMode" title="Alternar Modo Oscuro">
                     <i :class="darkMode ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill'"></i>
                 </button>
-                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary d-flex align-items-center gap-1 px-2 py-1 fw-normal">
+                <div class="vr bg-white opacity-25 d-none d-sm-block" style="height: 20px;"></div>
+                <span class="badge bg-white bg-opacity-25 text-white border border-white border-opacity-50 d-flex align-items-center gap-1 px-2 py-1 fw-normal">
                     <i class="bi bi-shield-check"></i> Bibliotecario
                 </span>
-                <span class="text-body small fw-semibold d-flex align-items-center">
-                    <i class="bi bi-person-badge-fill me-1 text-primary text-opacity-75"></i> Jonathan Guandique
+                <span class="text-white small fw-semibold d-none d-sm-flex align-items-center">
+                    <i class="bi bi-person-badge-fill me-1"></i> Jonathan Guandique
                 </span>
             </div>
         </div>
     </nav>
 
-    <div class="d-flex" style="min-height: calc(100vh - 56px);">
+    <div class="d-flex" style="min-height: calc(100vh - 60px);">
 
         <!-- SIDEBAR -->
         <nav class="bg-body-tertiary border-end flex-shrink-0 sidebar"
@@ -77,172 +84,235 @@
         <!-- MAIN CONTENT -->
         <main class="flex-grow-1 p-4 bg-body-tertiary bg-opacity-50" style="min-width:0;">
             
-            <!-- CONTENIDO DE AUTORES -->
-            <div v-show="currentTab === 'autores'">
-                <h4 class="mb-4 fw-bold">Administración de Autores</h4>
-                <div class="row g-4">
-                    <!-- Formulario -->
-                    <div class="col-12 col-lg-4">
-                        <div class="card shadow-sm border-0 rounded-3 bg-body">
-                            <div class="card-body p-4">
-                                <h6 class="text-uppercase text-muted fw-bold mb-4" style="font-size: 0.75rem;">{{ editModeAutor ? 'Editar Ficha' : 'Nueva Ficha de Autor' }}</h6>
-                                <form @submit.prevent="guardarAutor">
-                                    <div class="mb-3">
-                                        <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">CÓDIGO</label>
-                                        <input type="text" class="form-control border-0 bg-body-secondary shadow-none" v-model="formAutor.codigo" placeholder="Ej. A001" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">NOMBRE</label>
-                                        <input type="text" class="form-control border-0 bg-body-secondary shadow-none" v-model="formAutor.nombre" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">PAÍS</label>
-                                        <input type="text" class="form-control border-0 bg-body-secondary shadow-none" v-model="formAutor.pais" required>
-                                    </div>
-                                    <div class="mb-4">
-                                        <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">TELÉFONO</label>
-                                        <input type="tel" class="form-control border-0 bg-body-secondary shadow-none" v-model="formAutor.telefono" required>
-                                    </div>
-                                    <div class="d-grid gap-2">
-                                        <button type="submit" class="btn btn-primary fw-bold py-2 shadow-sm">{{ editModeAutor ? 'Actualizar Ficha' : 'Guardar Ficha' }}</button>
-                                        <button type="button" class="btn btn-outline-secondary fw-bold py-2 border-0 bg-body-secondary text-body" v-if="editModeAutor" @click="cancelarEdicionAutor">Cancelar</button>
-                                    </div>
-                                </form>
+            <div class="container-xl mx-auto">
+                <!-- CONTENIDO DE AUTORES -->
+                <div v-show="currentTab === 'autores'">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h4 class="mb-0 fw-bold text-primary-emphasis"><i class="bi bi-person-lines-fill me-2"></i>Administración de Autores</h4>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item small"><a href="#" class="text-decoration-none">Catálogos</a></li>
+                                <li class="breadcrumb-item active small" aria-current="page">Autores</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    
+                    <div class="row g-4">
+                        <!-- Formulario -->
+                        <div class="col-12 col-xl-4">
+                            <div class="card shadow-sm border-0 rounded-4 bg-body h-100">
+                                <div class="card-body p-4">
+                                    <h6 class="text-uppercase text-primary fw-bold mb-4 d-flex align-items-center" style="font-size: 0.75rem;">
+                                        <i class="bi bi-plus-circle-fill me-2"></i>{{ editModeAutor ? 'Editar Ficha' : 'Nueva Ficha de Autor' }}
+                                    </h6>
+                                    <form @submit.prevent="guardarAutor">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">CÓDIGO</label>
+                                            <input type="text" class="form-control form-control-lg border-0 bg-body-secondary shadow-none fs-6" v-model="formAutor.codigo" placeholder="Ej. A001" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">NOMBRE COMPLETO</label>
+                                            <input type="text" class="form-control form-control-lg border-0 bg-body-secondary shadow-none fs-6" v-model="formAutor.nombre" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">PAÍS DE ORIGEN</label>
+                                            <input type="text" class="form-control form-control-lg border-0 bg-body-secondary shadow-none fs-6" v-model="formAutor.pais" required>
+                                        </div>
+                                        <div class="mb-4">
+                                            <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">TELÉFONO CONTACTO</label>
+                                            <input type="tel" class="form-control form-control-lg border-0 bg-body-secondary shadow-none fs-6" v-model="formAutor.telefono" required>
+                                        </div>
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-primary fw-bold py-2 shadow-sm rounded-3">
+                                                {{ editModeAutor ? 'Actualizar Ficha' : 'Guardar Ficha' }}
+                                            </button>
+                                            <button type="button" class="btn btn-link text-secondary fw-semibold py-2 text-decoration-none" v-if="editModeAutor" @click="cancelarEdicionAutor">Cancelar</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <!-- Tabla -->
-                    <div class="col-12 col-lg-8">
-                        <div class="card shadow-sm border-0 rounded-3 overflow-hidden bg-body">
-                            <div class="card-header bg-body border-bottom py-3 px-4">
-                                <div class="row align-items-center">
-                                    <div class="col-md-5">
-                                        <h6 class="mb-0 fw-bold">Índice Académico de Autores</h6>
-                                    </div>
-                                    <div class="col-md-7">
-                                        <div class="input-group input-group-sm">
-                                            <span class="input-group-text bg-body-secondary border-0 text-body-secondary"><i class="bi bi-search"></i></span>
-                                            <input type="text" class="form-control bg-body-secondary border-0 shadow-none" placeholder="Buscar por nombre, código o país..." v-model="filtroAutor">
+                        <!-- Tabla -->
+                        <div class="col-12 col-xl-8">
+                            <div class="card shadow-sm border-0 rounded-4 overflow-hidden bg-body h-100">
+                                <div class="card-header bg-body border-bottom py-3 px-4">
+                                    <div class="row align-items-center g-3">
+                                        <div class="col-md-5">
+                                            <h6 class="mb-0 fw-bold"><i class="bi bi-table me-2 text-primary"></i>Índice de Autores</h6>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-body-secondary border-0 text-muted px-3"><i class="bi bi-search"></i></span>
+                                                <input type="text" class="form-control bg-body-secondary border-0 shadow-none ps-0" placeholder="Filtrar por nombre, código o país..." v-model="filtroAutor">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
-                                    <thead class="bg-body-tertiary border-bottom text-muted" style="font-size: 0.75rem;">
-                                        <tr>
-                                            <th class="px-4 py-3">CÓDIGO DE REGISTRO</th>
-                                            <th class="px-4 py-3">DATOS DEL AUTOR</th>
-                                            <th class="px-4 py-3 text-center">GESTIÓN</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody style="font-size: 0.9rem;">
-                                        <tr v-for="autor in autoresFiltrados" :key="autor.idAutor">
-                                            <td class="px-4 py-3 font-monospace text-muted">{{ autor.codigo }}</td>
-                                            <td class="px-4 py-3">
-                                                <div class="fw-bold text-body">{{ autor.nombre }}</div>
-                                                <div class="small text-muted">{{ autor.pais }} · {{ autor.telefono }}</div>
-                                            </td>
-                                            <td class="px-4 py-3 text-center">
-                                                <div class="btn-group">
-                                                    <button class="btn btn-sm btn-outline-secondary border-0" @click="editarAutor(autor)"><i class="bi bi-pencil-square"></i></button>
-                                                    <button class="btn btn-sm btn-outline-primary border-0" @click="eliminarAutor(autor.idAutor)"><i class="bi bi-trash"></i></button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="bg-body-tertiary border-bottom text-muted" style="font-size: 0.7rem;">
+                                            <tr>
+                                                <th class="px-4 py-3 text-uppercase">CÓDIGO</th>
+                                                <th class="px-4 py-3 text-uppercase">DATOS DEL AUTOR</th>
+                                                <th class="px-4 py-3 text-center text-uppercase">GESTIÓN</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="font-size: 0.85rem;">
+                                            <tr v-for="autor in autoresFiltrados" :key="autor.idAutor">
+                                                <td class="px-4 py-3 font-monospace text-primary fw-bold" style="font-size: 0.8rem;">{{ autor.codigo }}</td>
+                                                <td class="px-4 py-3">
+                                                    <div class="fw-bold text-body" style="font-size: 0.95rem;">{{ autor.nombre }}</div>
+                                                    <div class="small text-muted d-flex align-items-center gap-2">
+                                                        <span><i class="bi bi-geo-alt-fill"></i> {{ autor.pais }}</span>
+                                                        <span class="text-opacity-25 text-muted">|</span>
+                                                        <span><i class="bi bi-telephone-fill"></i> {{ autor.telefono }}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button class="btn btn-outline-secondary border-0 rounded-2 me-1" @click="editarAutor(autor)" title="Editar">
+                                                            <i class="bi bi-pencil-square fs-6"></i>
+                                                        </button>
+                                                        <button class="btn btn-outline-danger border-0 rounded-2" @click="eliminarAutor(autor.idAutor)" title="Eliminar">
+                                                            <i class="bi bi-trash fs-6"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr v-if="autoresFiltrados.length === 0">
+                                                <td colspan="3" class="text-center py-5 text-muted">
+                                                    <i class="bi bi-inbox fs-1 d-block mb-2 opacity-25"></i>
+                                                    No se encontraron registros de autores.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- CONTENIDO DE LIBROS -->
-            <div v-show="currentTab === 'libros'">
-                <h4 class="mb-4 fw-bold">Control de Acervo Bibliográfico</h4>
-                <div class="row g-4">
-                    <!-- Formulario Libros -->
-                    <div class="col-12 col-lg-4">
-                        <div class="card shadow-sm border-0 rounded-3 bg-body">
-                            <div class="card-body p-4">
-                                <h6 class="text-uppercase text-muted fw-bold mb-4" style="font-size: 0.75rem;">{{ editModeLibro ? 'Editar Libro' : 'Nueva Alta de Libro' }}</h6>
-                                <form @submit.prevent="guardarLibro">
-                                    <div class="mb-3">
-                                        <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">ISBN / CÓDIGO</label>
-                                        <input type="text" class="form-control border-0 bg-body-secondary shadow-none" v-model="formLibro.isbn" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">TÍTULO DE LA OBRA</label>
-                                        <input type="text" class="form-control border-0 bg-body-secondary shadow-none" v-model="formLibro.titulo" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">AUTOR RESPONSABLE</label>
-                                        <select class="form-select border-0 bg-body-secondary shadow-none" v-model="formLibro.idAutor" required>
-                                            <option value="" disabled>Seleccionar autor corporativo...</option>
-                                            <option v-for="autor in autores" :key="autor.idAutor" :value="autor.idAutor">{{ autor.nombre }}</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">CASA EDITORIAL</label>
-                                        <input type="text" class="form-control border-0 bg-body-secondary shadow-none" v-model="formLibro.editorial" required>
-                                    </div>
-                                    <div class="mb-4">
-                                        <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">EDICIÓN</label>
-                                        <input type="text" class="form-control border-0 bg-body-secondary shadow-none" v-model="formLibro.edicion" required>
-                                    </div>
-                                    <div class="d-grid gap-2">
-                                        <button type="submit" class="btn btn-primary fw-bold py-2 shadow-sm" :disabled="autores.length === 0">{{ editModeLibro ? 'Actualizar Registro' : 'Registrar Obra' }}</button>
-                                        <button type="button" class="btn btn-outline-secondary fw-bold py-2 border-0 bg-body-secondary text-body" v-if="editModeLibro" @click="cancelarEdicionLibro">Cancelar</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+                <!-- CONTENIDO DE LIBROS -->
+                <div v-show="currentTab === 'libros'">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h4 class="mb-0 fw-bold text-primary-emphasis"><i class="bi bi-bookshelf me-2"></i>Acervo Bibliográfico</h4>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item small"><a href="#" class="text-decoration-none">Catálogos</a></li>
+                                <li class="breadcrumb-item active small" aria-current="page">Libros</li>
+                            </ol>
+                        </nav>
                     </div>
-                    <!-- Tabla Libros -->
-                    <div class="col-12 col-lg-8">
-                        <div class="card shadow-sm border-0 rounded-3 overflow-hidden bg-body">
-                            <div class="card-header bg-body border-bottom py-3 px-4">
-                                <div class="row align-items-center">
-                                    <div class="col-md-5">
-                                        <h6 class="mb-0 fw-bold">Catálogo Público de Libros</h6>
-                                    </div>
-                                    <div class="col-md-7">
-                                        <div class="input-group input-group-sm">
-                                            <span class="input-group-text bg-body-secondary border-0 text-body-secondary"><i class="bi bi-search"></i></span>
-                                            <input type="text" class="form-control bg-body-secondary border-0 shadow-none" placeholder="Buscar por título, ISBN o editorial..." v-model="filtroLibro">
+
+                    <div class="row g-4">
+                        <!-- Formulario Libros -->
+                        <div class="col-12 col-xl-4">
+                            <div class="card shadow-sm border-0 rounded-4 bg-body h-100">
+                                <div class="card-body p-4">
+                                    <h6 class="text-uppercase text-primary fw-bold mb-4 d-flex align-items-center" style="font-size: 0.75rem;">
+                                        <i class="bi bi-plus-circle-fill me-2"></i>{{ editModeLibro ? 'Editar Obra' : 'Nueva Alta de Libro' }}
+                                    </h6>
+                                    <form @submit.prevent="guardarLibro">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">ISBN / CÓDIGO BARRAS</label>
+                                            <input type="text" class="form-control form-control-lg border-0 bg-body-secondary shadow-none fs-6" v-model="formLibro.isbn" required>
                                         </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">TÍTULO DE LA OBRA</label>
+                                            <input type="text" class="form-control form-control-lg border-0 bg-body-secondary shadow-none fs-6" v-model="formLibro.titulo" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">AUTORÍA</label>
+                                            <select class="form-select form-select-lg border-0 bg-body-secondary shadow-none fs-6" v-model="formLibro.idAutor" required>
+                                                <option value="" disabled>Seleccionar autor...</option>
+                                                <option v-for="autor in autores" :key="autor.idAutor" :value="autor.idAutor">{{ autor.nombre }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">EDITORIAL</label>
+                                            <input type="text" class="form-control form-control-lg border-0 bg-body-secondary shadow-none fs-6" v-model="formLibro.editorial" required>
+                                        </div>
+                                        <div class="mb-4">
+                                            <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">EDICIÓN</label>
+                                            <input type="text" class="form-control form-control-lg border-0 bg-body-secondary shadow-none fs-6" v-model="formLibro.edicion" required>
+                                        </div>
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-primary fw-bold py-2 shadow-sm rounded-3" :disabled="autores.length === 0">
+                                                {{ editModeLibro ? 'Actualizar Registro' : 'Registrar Obra' }}
+                                            </button>
+                                            <button type="button" class="btn btn-link text-secondary fw-semibold py-2 text-decoration-none" v-if="editModeLibro" @click="cancelarEdicionLibro">Cancelar</button>
+                                        </div>
+                                    </form>
+                                    <div v-if="autores.length === 0" class="alert alert-warning border-0 bg-warning bg-opacity-10 mt-3 p-2 small">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> Debe registrar al menos un autor primero.
                                     </div>
                                 </div>
                             </div>
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
-                                    <thead class="bg-body-tertiary border-bottom text-muted" style="font-size: 0.75rem;">
-                                        <tr>
-                                            <th class="px-4 py-3">ISBN / OBRA</th>
-                                            <th class="px-4 py-3">AUTORÍA / EDITORIAL</th>
-                                            <th class="px-4 py-3 text-center">GESTIÓN</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody style="font-size: 0.9rem;">
-                                        <tr v-for="libro in librosFiltrados" :key="libro.idLibro">
-                                            <td class="px-4 py-3">
-                                                <div class="fw-bold text-body">{{ libro.titulo }}</div>
-                                                <div class="small text-muted font-monospace" style="font-size: 0.8rem;">{{ libro.isbn }}</div>
-                                            </td>
-                                            <td class="px-4 py-3">
-                                                <div class="fw-semibold text-primary border-bottom border-primary border-opacity-25" style="font-size: 0.85rem; display: inline-block;">{{ obtenerNombreAutor(libro.idAutor) }}</div>
-                                                <div class="small text-muted">{{ libro.editorial }} · {{ libro.edicion }}</div>
-                                            </td>
-                                            <td class="px-4 py-3 text-center">
-                                                <div class="btn-group">
-                                                    <button class="btn btn-sm btn-outline-secondary border-0" @click="editarLibro(libro)"><i class="bi bi-pencil-square"></i></button>
-                                                    <button class="btn btn-sm btn-outline-primary border-0" @click="eliminarLibro(libro.idLibro)"><i class="bi bi-trash"></i></button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                        </div>
+                        <!-- Tabla Libros -->
+                        <div class="col-12 col-xl-8">
+                            <div class="card shadow-sm border-0 rounded-4 overflow-hidden bg-body h-100">
+                                <div class="card-header bg-body border-bottom py-3 px-4">
+                                    <div class="row align-items-center g-3">
+                                        <div class="col-md-5">
+                                            <h6 class="mb-0 fw-bold"><i class="bi bi-table me-2 text-primary"></i>Catálogo de Libros</h6>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-body-secondary border-0 text-muted px-3"><i class="bi bi-search"></i></span>
+                                                <input type="text" class="form-control bg-body-secondary border-0 shadow-none ps-0" placeholder="Buscar por título, ISBN o editorial..." v-model="filtroLibro">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="bg-body-tertiary border-bottom text-muted" style="font-size: 0.7rem;">
+                                            <tr>
+                                                <th class="px-4 py-3 text-uppercase">ISBN / OBRA</th>
+                                                <th class="px-4 py-3 text-uppercase">AUTORÍA / EDITORIAL</th>
+                                                <th class="px-4 py-3 text-center text-uppercase">GESTIÓN</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="font-size: 0.85rem;">
+                                            <tr v-for="libro in librosFiltrados" :key="libro.idLibro">
+                                                <td class="px-4 py-3">
+                                                    <div class="fw-bold text-body" style="font-size: 0.95rem;">{{ libro.titulo }}</div>
+                                                    <div class="text-primary font-monospace" style="font-size: 0.75rem;">
+                                                        <span class="badge bg-primary bg-opacity-10 text-primary fw-normal rounded-pill">ISBN: {{ libro.isbn }}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-3">
+                                                    <div class="fw-bold text-primary mb-1 d-flex align-items-center gap-1">
+                                                        <i class="bi bi-person-fill"></i> {{ obtenerNombreAutor(libro.idAutor) }}
+                                                    </div>
+                                                    <div class="small text-muted">
+                                                        <span><i class="bi bi-building"></i> {{ libro.editorial }}</span>
+                                                        <span class="mx-1 opacity-25">·</span>
+                                                        <span><i class="bi bi-bookmark-fill"></i> {{ libro.edicion }}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button class="btn btn-outline-secondary border-0 rounded-2 me-1" @click="editarLibro(libro)" title="Editar">
+                                                            <i class="bi bi-pencil-square fs-6"></i>
+                                                        </button>
+                                                        <button class="btn btn-outline-danger border-0 rounded-2" @click="eliminarLibro(libro.idLibro)" title="Eliminar">
+                                                            <i class="bi bi-trash fs-6"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr v-if="librosFiltrados.length === 0">
+                                                <td colspan="3" class="text-center py-5 text-muted">
+                                                    <i class="bi bi-book fs-1 d-block mb-2 opacity-25"></i>
+                                                    No se encontraron obras registrados.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
