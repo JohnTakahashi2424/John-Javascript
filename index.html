@@ -35,7 +35,7 @@
                 </div>
                 <span>
                     <span class="fw-bold text-white" style="font-size: 1.1rem; line-height: 1.2; letter-spacing: 0.5px;">SISTEMA BIBLIOTECARIO</span>
-                    <small class="d-block text-white text-opacity-75" style="font-size: 0.7rem; letter-spacing: 1px; line-height: 1;">GESTIÓN DE ACERVOS</small>
+                    <small class="d-block text-white text-opacity-75" style="font-size: 0.7rem; letter-spacing: 1px; line-height: 1;">GESTIÓN DE LIBROS</small>
                 </span>
             </div>
             <div class="d-flex align-items-center gap-3 ms-auto">
@@ -75,7 +75,7 @@
                        :class="currentTab === 'libros' ? 'active bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25' : 'text-body-secondary'"
                        href="#" @click.prevent="currentTab = 'libros'">
                         <i class="bi bi-bookshelf" style="width:18px;text-align:center;"></i>
-                        <span>Acervo Bibliográfico</span>
+                        <span>Libros Registrados</span>
                     </a>
                 </li>
             </ul>
@@ -196,7 +196,7 @@
                 <!-- CONTENIDO DE LIBROS -->
                 <div v-show="currentTab === 'libros'">
                     <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h4 class="mb-0 fw-bold text-primary-emphasis"><i class="bi bi-bookshelf me-2"></i>Acervo Bibliográfico</h4>
+                        <h4 class="mb-0 fw-bold text-primary-emphasis"><i class="bi bi-bookshelf me-2"></i>Control de Libros</h4>
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb mb-0">
                                 <li class="breadcrumb-item small"><a href="#" class="text-decoration-none">Catálogos</a></li>
@@ -211,7 +211,7 @@
                             <div class="card shadow-sm border-0 rounded-4 bg-body h-100">
                                 <div class="card-body p-4">
                                     <h6 class="text-uppercase text-primary fw-bold mb-4 d-flex align-items-center" style="font-size: 0.75rem;">
-                                        <i class="bi bi-plus-circle-fill me-2"></i>{{ editModeLibro ? 'Editar Obra' : 'Nueva Alta de Libro' }}
+                                        <i class="bi bi-plus-circle-fill me-2"></i>{{ editModeLibro ? 'Editar Libro' : 'Nuevo Libro' }}
                                     </h6>
                                     <form @submit.prevent="guardarLibro">
                                         <div class="mb-3">
@@ -219,7 +219,7 @@
                                             <input type="text" class="form-control form-control-lg border-0 bg-body-secondary shadow-none fs-6" v-model="formLibro.isbn" required>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">TÍTULO DE LA OBRA</label>
+                                            <label class="form-label small fw-bold text-body-secondary text-uppercase" style="letter-spacing: 0.5px;">TÍTULO DEL LIBRO</label>
                                             <input type="text" class="form-control form-control-lg border-0 bg-body-secondary shadow-none fs-6" v-model="formLibro.titulo" required>
                                         </div>
                                         <div class="mb-3">
@@ -239,7 +239,7 @@
                                         </div>
                                         <div class="d-grid gap-2">
                                             <button type="submit" class="btn btn-primary fw-bold py-2 shadow-sm rounded-3" :disabled="autores.length === 0">
-                                                {{ editModeLibro ? 'Actualizar Registro' : 'Registrar Obra' }}
+                                                {{ editModeLibro ? 'Actualizar Libro' : 'Guardar Libro' }}
                                             </button>
                                             <button type="button" class="btn btn-link text-secondary fw-semibold py-2 text-decoration-none" v-if="editModeLibro" @click="cancelarEdicionLibro">Cancelar</button>
                                         </div>
@@ -270,7 +270,7 @@
                                     <table class="table table-hover align-middle mb-0">
                                         <thead class="bg-body-tertiary border-bottom text-muted" style="font-size: 0.7rem;">
                                             <tr>
-                                                <th class="px-4 py-3 text-uppercase">ISBN / OBRA</th>
+                                                <th class="px-4 py-3 text-uppercase">ISBN / TÍTULO</th>
                                                 <th class="px-4 py-3 text-uppercase">AUTORÍA / EDITORIAL</th>
                                                 <th class="px-4 py-3 text-center text-uppercase">GESTIÓN</th>
                                             </tr>
