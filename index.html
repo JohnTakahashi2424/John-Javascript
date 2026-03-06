@@ -18,7 +18,7 @@
 </head>
 <body class="bg-body">
 
-<div id="app" v-cloak class="shadow-sm vh-100 d-flex flex-column overflow-hidden">
+<div id="app" v-cloak class="shadow-sm min-vh-100 d-flex flex-column">
 
     <nav class="navbar navbar-dark bg-primary px-3 shadow flex-shrink-0" style="height:60px; z-index: 1030;">
         <div class="container-fluid px-0">
@@ -49,7 +49,7 @@
         </div>
     </nav>
 
-    <div class="d-flex flex-grow-1 overflow-hidden" style="background-color: var(--bs-body-bg);">
+    <div class="d-flex flex-grow-1" style="background-color: var(--bs-body-bg);">
 
         <nav class="bg-body-tertiary border-end flex-shrink-0 sidebar overflow-y-auto"
              :style="sidebarVisible || windowWidth >= 768 ? 'width:220px;' : 'width:0;'">
@@ -97,7 +97,7 @@
             </ul>
         </nav>
 
-        <main class="flex-grow-1 p-4 bg-body-tertiary bg-opacity-50 overflow-y-auto" style="min-width:0;">
+        <main class="flex-grow-1 p-4 bg-body-tertiary bg-opacity-50" style="min-width:0;">
             <div class="container-xl mx-auto">
                 <transition name="fade" mode="out-in">
                     <!-- Dashboard -->
