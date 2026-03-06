@@ -297,9 +297,14 @@ const App = {
         };
 
         onMounted(async () => {
-            await cargarAutores();
-            await cargarLibros();
-            await cargarPrestamos();
+            try {
+                await cargarAutores();
+                await cargarLibros();
+                await cargarPrestamos();
+            } catch (error) {
+                console.error("Error al cargar la base de datos IndexedDB:", error);
+                alertify.error("Error al cargar registros. IndexedDB podría estar bloqueado en el navegador.", 5);
+            }
         });
 
         return {
