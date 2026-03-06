@@ -142,6 +142,24 @@ const App = {
             }
         };
 
+        const procesarImagenArchivo = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (file.size > 2 * 1024 * 1024) { // Límite de 2MB
+                alertify.error('La imagen es demasiado grande (máx 2MB)');
+                event.target.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                formLibro.value.portada = e.target.result;
+                alertify.success('Imagen cargada correctamente');
+            };
+            reader.readAsDataURL(file);
+        };
+
         const guardarLibro = async () => {
             isSaving.value = true;
             try {
@@ -314,6 +332,7 @@ const App = {
             buscarLibroISBN,
             isbnError,
             vistaGaleria,
+            procesarImagenArchivo,
             prestamos,
             formPrestamo,
             editModePrestamo,

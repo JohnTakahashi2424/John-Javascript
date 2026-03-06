@@ -314,12 +314,32 @@
 
                     <div class="row g-4">
                         <div class="col-12 col-xl-4">
-                            <div class="card shadow-sm border bg-body h-100">
+                            <div class="card shadow-sm border bg-body sticky-top" style="top: 80px; z-index: 10; height: fit-content;">
                                 <div class="card-body p-4">
                                     <h6 class="text-uppercase text-primary fw-bold mb-4 d-flex align-items-center" style="font-size: 0.75rem;">
                                         <i class="bi bi-plus-circle-fill me-2"></i>{{ editModeLibro ? 'Editar Libro' : 'Nuevo Libro' }}
                                     </h6>
                                     <form @submit.prevent="guardarLibro">
+                                        <!-- Previsualización de Portada -->
+                                        <div class="mb-4 text-center">
+                                            <div class="d-inline-block position-relative">
+                                                <img v-if="formLibro.portada" :src="formLibro.portada" 
+                                                     class="rounded shadow border border-primary border-opacity-25" 
+                                                     style="width: 120px; height: 170px; object-fit: cover; background: var(--bs-body-bg);">
+                                                <div v-else class="bg-body-tertiary rounded d-flex flex-column align-items-center justify-content-center text-muted border border-dashed" 
+                                                     style="width: 120px; height: 170px; border: 2px dashed #dee2e6;">
+                                                    <i class="bi bi-image fs-1 opacity-25"></i>
+                                                    <span class="small mt-1 opacity-50 text-uppercase fw-bold" style="font-size: 0.6rem;">Sin Portada</span>
+                                                </div>
+                                                <button v-if="formLibro.portada" type="button" 
+                                                        class="btn btn-danger btn-sm rounded-circle position-absolute top-0 start-100 translate-middle shadow-sm"
+                                                        @click="formLibro.portada = ''"
+                                                        style="width: 24px; height: 24px; padding: 0;">
+                                                    <i class="bi bi-x small"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
                                         <div class="mb-3">
                                             <label class="form-label small fw-bold text-secondary text-uppercase">ISBN / CÓDIGO BARRAS</label>
                                             <div class="input-group">
@@ -334,6 +354,22 @@
                                                 <i class="bi bi-x-circle-fill me-1"></i> {{ isbnError }}
                                             </div>
                                         </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-secondary text-uppercase">O CARGAR PORTADA MANUALMENTE</label>
+                                            <div class="row g-2">
+                                                <div class="col-8">
+                                                    <input type="text" class="form-control form-control-sm" v-model="formLibro.portada" placeholder="Pegar URL de imagen...">
+                                                </div>
+                                                <div class="col-4">
+                                                    <label class="btn btn-outline-secondary btn-sm w-100 text-truncate">
+                                                        <i class="bi bi-upload"></i> Subir
+                                                        <input type="file" class="d-none" accept="image/*" @change="procesarImagenArchivo">
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div class="mb-3">
                                             <label class="form-label small fw-bold text-secondary text-uppercase">TÍTULO DEL LIBRO</label>
                                             <input type="text" class="form-control" v-model="formLibro.titulo" required>
