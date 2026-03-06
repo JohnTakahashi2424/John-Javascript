@@ -29,13 +29,15 @@ const App = {
             windowWidth.value = window.innerWidth;
         });
 
-        const currentTab = ref('autores');
+        const currentTab = ref('dashboard');
 
         const autores = ref([]);
         const filtroAutor = ref('');
         const editModeAutor = ref(false);
         const formAutor = ref({ idAutor: null, codigo: '', nombre: '', pais: '', telefono: '' });
         const isSaving = ref(false);
+        const isSearching = ref(false);
+        const isbnError = ref('');
 
         const cargarAutores = async () => {
             autores.value = await db.autor.toArray();
@@ -63,7 +65,6 @@ const App = {
             } catch (error) {
                 alertify.error('Error al guardar el autor');
             } finally {
-                // Simulación de animación breve
                 setTimeout(() => {
                     isSaving.value = false;
                 }, 500);
@@ -110,6 +111,32 @@ const App = {
 
         const cargarLibros = async () => {
             libros.value = await db.libros.toArray();
+        };
+
+        const buscarLibroISBN = async () => {
+            if (!formLibro.value.isbn) return;
+            isSearching.value = true;
+            isbnError.value = '';
+            try {
+                const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${formLibro.value.isbn}`);
+                const data = await response.json();
+                
+                if (data.totalItems > 0) {
+                    const info = data.items[0].volumeInfo;
+                    formLibro.value.titulo = info.title || '';
+                    formLibro.value.editorial = info.publisher || '';
+                    formLibro.value.edicion = info.publishedDate || '';
+                    alertify.success('Datos recuperados de Google Books');
+                } else {
+                    isbnError.value = 'No se encontró información para este ISBN';
+                    alertify.warning('Libro no encontrado en la API');
+                }
+            } catch (error) {
+                isbnError.value = 'Error al consultar la API';
+                alertify.error('Error de conexión');
+            } finally {
+                isSearching.value = false;
+            }
         };
 
         const guardarLibro = async () => {
@@ -162,6 +189,7 @@ const App = {
         const cancelarEdicionLibro = () => {
             formLibro.value = { idLibro: null, idAutor: '', isbn: '', titulo: '', editorial: '', edicion: '' };
             editModeLibro.value = false;
+            isbnError.value = '';
         };
 
         const librosFiltrados = computed(() => {
@@ -209,7 +237,10 @@ const App = {
             cancelarEdicionLibro,
             librosFiltrados,
             obtenerNombreAutor,
-            isSaving
+            isSaving,
+            isSearching,
+            buscarLibroISBN,
+            isbnError
         };
     }
 };
