@@ -6,6 +6,9 @@
     <title>Panel Administrativo — Biblioteca Parcial I</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- AlertifyJS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/bootstrap.min.css"/>
     <style>
         [v-cloak] { display: none; }
         .transition-all { transition: all 0.2s; }
@@ -14,6 +17,33 @@
         .navbar { z-index: 1050; }
         .card { transition: transform 0.2s ease, shadow 0.2s ease; }
         .transition-all { transition: all 0.3s ease; }
+
+        /* Custom AlertifyJS Styles */
+        .alertify-notifier .ajs-message.ajs-success {
+            background: rgba(13, 110, 253, 0.9);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .alertify-notifier .ajs-message.ajs-error {
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .ajs-dialog {
+            border-radius: 16px !important;
+            border: none !important;
+        }
+        .ajs-header {
+            background: #0d6efd !important;
+            color: white !important;
+            font-weight: bold !important;
+            border-bottom: none !important;
+        }
+        .ajs-commands {
+            display: none !important;
+        }
     </style>
 </head>
 <body class="bg-body">
@@ -115,8 +145,9 @@
                                             <input type="tel" class="form-control form-control-lg border-0 bg-body-secondary shadow-none fs-6" v-model="formAutor.telefono" required>
                                         </div>
                                         <div class="d-grid gap-2">
-                                            <button type="submit" class="btn btn-primary fw-bold py-2 shadow-sm rounded-3">
-                                                {{ editModeAutor ? 'Actualizar Ficha' : 'Guardar Ficha' }}
+                                            <button type="submit" class="btn btn-primary fw-bold py-2 shadow-sm rounded-3" :disabled="isSaving">
+                                                <span v-if="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                                {{ isSaving ? 'Guardando...' : (editModeAutor ? 'Actualizar Ficha' : 'Guardar Ficha') }}
                                             </button>
                                             <button type="button" class="btn btn-link text-secondary fw-semibold py-2 text-decoration-none" v-if="editModeAutor" @click="cancelarEdicionAutor">Cancelar</button>
                                         </div>
@@ -227,8 +258,9 @@
                                             <input type="text" class="form-control form-control-lg border-0 bg-body-secondary shadow-none fs-6" v-model="formLibro.edicion" required>
                                         </div>
                                         <div class="d-grid gap-2">
-                                            <button type="submit" class="btn btn-primary fw-bold py-2 shadow-sm rounded-3" :disabled="autores.length === 0">
-                                                {{ editModeLibro ? 'Actualizar Libro' : 'Guardar Libro' }}
+                                            <button type="submit" class="btn btn-primary fw-bold py-2 shadow-sm rounded-3" :disabled="autores.length === 0 || isSaving">
+                                                <span v-if="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                                {{ isSaving ? 'Guardando...' : (editModeLibro ? 'Actualizar Libro' : 'Guardar Libro') }}
                                             </button>
                                             <button type="button" class="btn btn-link text-secondary fw-semibold py-2 text-decoration-none" v-if="editModeLibro" @click="cancelarEdicionLibro">Cancelar</button>
                                         </div>
@@ -313,6 +345,7 @@
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
 <script type="module" src="./app.js"></script>
 </body>
 </html>

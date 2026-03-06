@@ -35,20 +35,39 @@ const App = {
         const filtroAutor = ref('');
         const editModeAutor = ref(false);
         const formAutor = ref({ idAutor: null, codigo: '', nombre: '', pais: '', telefono: '' });
+        const isSaving = ref(false);
 
         const cargarAutores = async () => {
             autores.value = await db.autor.toArray();
         };
 
+        // Configuración global de Alertify
+        alertify.set('notifier', 'position', 'bottom-right');
+        alertify.defaults.theme.ok = 'btn btn-primary';
+        alertify.defaults.theme.cancel = 'btn btn-danger';
+        alertify.defaults.theme.input = 'form-control';
+
         const guardarAutor = async () => {
-            const { idAutor, ...data } = formAutor.value;
-            if (editModeAutor.value) {
-                await db.autor.update(idAutor, data);
-            } else {
-                await db.autor.add(data);
+            isSaving.value = true;
+            try {
+                const { idAutor, ...data } = formAutor.value;
+                if (editModeAutor.value) {
+                    await db.autor.update(idAutor, data);
+                    alertify.success('Autor actualizado con éxito');
+                } else {
+                    await db.autor.add(data);
+                    alertify.success('Autor guardado con éxito');
+                }
+                await cargarAutores();
+                cancelarEdicionAutor();
+            } catch (error) {
+                alertify.error('Error al guardar el autor');
+            } finally {
+                // Simulación de animación breve
+                setTimeout(() => {
+                    isSaving.value = false;
+                }, 500);
             }
-            await cargarAutores();
-            cancelarEdicionAutor();
         };
 
         const editarAutor = (autor) => {
@@ -57,10 +76,16 @@ const App = {
         };
 
         const eliminarAutor = async (id) => {
-            if (confirm('¿Estas seguro de eliminar este autor?')) {
-                await db.autor.delete(id);
-                await cargarAutores();
-            }
+            alertify.confirm('Confirmar eliminación', '¿Estás seguro de eliminar este autor?', 
+                async () => {
+                    await db.autor.delete(id);
+                    await cargarAutores();
+                    alertify.success('Autor eliminado correctamente');
+                }, 
+                () => {
+                    alertify.error('Operación cancelada');
+                }
+            ).set('labels', {ok:'Si, eliminar', cancel:'Cancelar'});
         };
 
         const cancelarEdicionAutor = () => {
@@ -88,21 +113,32 @@ const App = {
         };
 
         const guardarLibro = async () => {
-            const data = {
-                idAutor: parseInt(formLibro.value.idAutor, 10),
-                isbn: formLibro.value.isbn,
-                titulo: formLibro.value.titulo,
-                editorial: formLibro.value.editorial,
-                edicion: formLibro.value.edicion
-            };
+            isSaving.value = true;
+            try {
+                const data = {
+                    idAutor: parseInt(formLibro.value.idAutor, 10),
+                    isbn: formLibro.value.isbn,
+                    titulo: formLibro.value.titulo,
+                    editorial: formLibro.value.editorial,
+                    edicion: formLibro.value.edicion
+                };
 
-            if (editModeLibro.value) {
-                await db.libros.update(formLibro.value.idLibro, data);
-            } else {
-                await db.libros.add(data);
+                if (editModeLibro.value) {
+                    await db.libros.update(formLibro.value.idLibro, data);
+                    alertify.success('Libro actualizado correctamente');
+                } else {
+                    await db.libros.add(data);
+                    alertify.success('Libro guardado correctamente');
+                }
+                await cargarLibros();
+                cancelarEdicionLibro();
+            } catch (error) {
+                alertify.error('Error al guardar el libro');
+            } finally {
+                setTimeout(() => {
+                    isSaving.value = false;
+                }, 500);
             }
-            await cargarLibros();
-            cancelarEdicionLibro();
         };
 
         const editarLibro = (libro) => {
@@ -111,10 +147,16 @@ const App = {
         };
 
         const eliminarLibro = async (id) => {
-            if (confirm('¿Estas seguro de eliminar este libro?')) {
-                await db.libros.delete(id);
-                await cargarLibros();
-            }
+            alertify.confirm('Confirmar eliminación', '¿Estás seguro de eliminar este libro?',
+                async () => {
+                    await db.libros.delete(id);
+                    await cargarLibros();
+                    alertify.success('Libro eliminado correctamente');
+                },
+                () => {
+                    alertify.error('Operación cancelada');
+                }
+            ).set('labels', {ok:'Si, eliminar', cancel:'Cancelar'});
         };
 
         const cancelarEdicionLibro = () => {
@@ -166,7 +208,8 @@ const App = {
             eliminarLibro,
             cancelarEdicionLibro,
             librosFiltrados,
-            obtenerNombreAutor
+            obtenerNombreAutor,
+            isSaving
         };
     }
 };
