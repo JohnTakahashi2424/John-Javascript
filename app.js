@@ -3,9 +3,10 @@ import Dexie from 'https://cdn.jsdelivr.net/npm/dexie@3.2.4/dist/dexie.mjs';
 
 const db = new Dexie('db_usss017224_jonathan_guandique');
 
-db.version(1).stores({
+db.version(2).stores({
     autor: '++idAutor, codigo, nombre, pais, telefono',
-    libros: '++idLibro, idAutor, isbn, titulo, editorial, edicion'
+    libros: '++idLibro, idAutor, isbn, titulo, editorial, edicion, portada',
+    prestamos: '++idPrestamo, idLibro, lector, fechaPrestamo, fechaDevolucion, estado'
 });
 
 const App = {
@@ -107,7 +108,8 @@ const App = {
         const libros = ref([]);
         const filtroLibro = ref('');
         const editModeLibro = ref(false);
-        const formLibro = ref({ idLibro: null, idAutor: '', isbn: '', titulo: '', editorial: '', edicion: '' });
+        const formLibro = ref({ idLibro: null, idAutor: '', isbn: '', titulo: '', editorial: '', edicion: '', portada: '' });
+        const vistaGaleria = ref(false);
 
         const cargarLibros = async () => {
             libros.value = await db.libros.toArray();
@@ -126,7 +128,8 @@ const App = {
                     formLibro.value.titulo = info.title || '';
                     formLibro.value.editorial = info.publisher || '';
                     formLibro.value.edicion = info.publishedDate || '';
-                    alertify.success('Datos recuperados de Google Books');
+                    formLibro.value.portada = info.imageLinks?.thumbnail || '';
+                    alertify.success('Datos y portada recuperados');
                 } else {
                     isbnError.value = 'No se encontró información para este ISBN';
                     alertify.warning('Libro no encontrado en la API');
@@ -147,7 +150,8 @@ const App = {
                     isbn: formLibro.value.isbn,
                     titulo: formLibro.value.titulo,
                     editorial: formLibro.value.editorial,
-                    edicion: formLibro.value.edicion
+                    edicion: formLibro.value.edicion,
+                    portada: formLibro.value.portada
                 };
 
                 if (editModeLibro.value) {
@@ -187,9 +191,76 @@ const App = {
         };
 
         const cancelarEdicionLibro = () => {
-            formLibro.value = { idLibro: null, idAutor: '', isbn: '', titulo: '', editorial: '', edicion: '' };
+            formLibro.value = { idLibro: null, idAutor: '', isbn: '', titulo: '', editorial: '', edicion: '', portada: '' };
             editModeLibro.value = false;
             isbnError.value = '';
+        };
+
+        // Lógica de Préstamos
+        const prestamos = ref([]);
+        const editModePrestamo = ref(false);
+        const formPrestamo = ref({ idPrestamo: null, idLibro: '', lector: '', fechaPrestamo: '', fechaDevolucion: '', estado: 'Prestado' });
+
+        const cargarPrestamos = async () => {
+            prestamos.value = await db.prestamos.toArray();
+        };
+
+        const guardarPrestamo = async () => {
+            isSaving.value = true;
+            try {
+                const data = {
+                    idLibro: parseInt(formPrestamo.value.idLibro, 10),
+                    lector: formPrestamo.value.lector,
+                    fechaPrestamo: formPrestamo.value.fechaPrestamo,
+                    fechaDevolucion: formPrestamo.value.fechaDevolucion,
+                    estado: formPrestamo.value.estado
+                };
+
+                if (editModePrestamo.value) {
+                    await db.prestamos.update(formPrestamo.value.idPrestamo, data);
+                    alertify.success('Préstamo actualizado');
+                } else {
+                    await db.prestamos.add(data);
+                    alertify.success('Préstamo registrado');
+                }
+                await cargarPrestamos();
+                cancelarEdicionPrestamo();
+            } catch (error) {
+                alertify.error('Error al guardar préstamo');
+            } finally {
+                setTimeout(() => isSaving.value = false, 500);
+            }
+        };
+
+        const editarPrestamo = (p) => {
+            formPrestamo.value = { ...p };
+            editModePrestamo.value = true;
+        };
+
+        const eliminarPrestamo = async (id) => {
+            alertify.confirm('Eliminar Préstamo', '¿Borrar este registro?', 
+                async () => {
+                    await db.prestamos.delete(id);
+                    await cargarPrestamos();
+                    alertify.success('Eliminado');
+                }, null
+            );
+        };
+
+        const devolverLibro = async (id) => {
+            await db.prestamos.update(id, { estado: 'Devuelto' });
+            await cargarPrestamos();
+            alertify.success('Libro marcado como devuelto');
+        };
+
+        const cancelarEdicionPrestamo = () => {
+            formPrestamo.value = { idPrestamo: null, idLibro: '', lector: '', fechaPrestamo: '', fechaDevolucion: '', estado: 'Prestado' };
+            editModePrestamo.value = false;
+        };
+
+        const obtenerTituloLibro = (idLibro) => {
+            const libro = libros.value.find(l => l.idLibro === idLibro);
+            return libro ? libro.titulo : 'Libro no encontrado';
         };
 
         const librosFiltrados = computed(() => {
@@ -210,6 +281,7 @@ const App = {
         onMounted(async () => {
             await cargarAutores();
             await cargarLibros();
+            await cargarPrestamos();
         });
 
         return {
@@ -240,7 +312,17 @@ const App = {
             isSaving,
             isSearching,
             buscarLibroISBN,
-            isbnError
+            isbnError,
+            vistaGaleria,
+            prestamos,
+            formPrestamo,
+            editModePrestamo,
+            guardarPrestamo,
+            editarPrestamo,
+            eliminarPrestamo,
+            devolverLibro,
+            cancelarEdicionPrestamo,
+            obtenerTituloLibro
         };
     }
 };
