@@ -37,6 +37,11 @@ const inscripciones = {
                 fecha: this.inscripcion.fecha
             };
             db.inscripciones.put(datos);
+            fetch(`private/modulos/inscripciones/inscripcion.php?accion=${this.accion}&inscripciones=${JSON.stringify(datos)}`)
+                .then(response=>response.json())
+                .then(data=>{
+                    if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                });
             this.limpiarFormulario();
             alertify.success(`Inscripción guardada correctamente`);
         },

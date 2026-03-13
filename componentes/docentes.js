@@ -49,6 +49,11 @@ const docentes = {
                 return; //Termina la ejecucion de la funcion
             }
             db.docentes.put(datos);
+            fetch(`private/modulos/docentes/docente.php?accion=${this.accion}&docentes=${JSON.stringify(datos)}`)
+                .then(response=>response.json())
+                .then(data=>{
+                    if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                });
             this.limpiarFormulario();
             alertify.success(`${datos.nombre} guardado correctamente`);
             //this.obtenerDocentes();

@@ -36,6 +36,11 @@ const matriculas = {
                 pago: this.matricula.pago
             };
             db.matriculas.put(datos);
+            fetch(`private/modulos/matriculas/matricula.php?accion=${this.accion}&matriculas=${JSON.stringify(datos)}`)
+                .then(response=>response.json())
+                .then(data=>{
+                    if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                });
             this.limpiarFormulario();
             alertify.success(`Matrícula guardada correctamente`);
         },

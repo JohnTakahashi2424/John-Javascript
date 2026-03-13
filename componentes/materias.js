@@ -40,6 +40,11 @@ const materias = {
                 return; //Termina la ejecucion de la funcion
             }
             db.materias.put(datos);
+            fetch(`private/modulos/materias/materia.php?accion=${this.accion}&materias=${JSON.stringify(datos)}`)
+                .then(response=>response.json())
+                .then(data=>{
+                    if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                });
             this.limpiarFormulario();
             //this.obtenerMaterias();
             alertify.success(`Materia ${datos.nombre} guardada correctamente`);
