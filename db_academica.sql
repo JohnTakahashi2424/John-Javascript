@@ -61,11 +61,12 @@ CREATE TABLE `docentes` (
 --
 
 CREATE TABLE `materias` (
+  `id` int(10) NOT NULL,
   `idMateria` char(36) NOT NULL,
   `codigo` char(6) NOT NULL,
   `nombre` char(100) NOT NULL,
   `uv` int(2) NOT NULL
-)ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
 
 
 -- --------------------------------------------------------
