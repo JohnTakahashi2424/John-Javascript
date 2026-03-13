@@ -73,8 +73,8 @@ const alumnos = {
         <div class="row">
             <div class="col-6">
                 <form id="frmAlumnos" @submit.prevent="guardarAlumno" @reset.prevent="limpiarFormulario">
-                    <div class="card text-bg-dark mb-3" style="max-width: 36rem;">
-                        <div class="card-header">REGISTRO DE ALUMNOS</div>
+                    <div class="card mb-3 shadow-sm" style="max-width: 36rem;">
+                        <div class="card-header fw-bold">REGISTRO DE ALUMNOS</div>
                         <div class="card-body">
                             <div class="row p-1">
                                 <div class="col-3">
