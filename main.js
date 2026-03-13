@@ -44,6 +44,8 @@ createApp({
     },
     data() {
         return {
+            darkMode: false,
+            sesion: { autenticado: true, username: 'John Takahashi', rol: 'Administrador', foto: '' },
             forms: {
                 alumnos: { mostrar: true },
                 busqueda_alumnos: { mostrar: false },
@@ -59,6 +61,10 @@ createApp({
         }
     },
     methods: {
+        toggleDarkMode() {
+            this.darkMode = !this.darkMode;
+            document.documentElement.setAttribute('data-bs-theme', this.darkMode ? 'dark' : 'light');
+        },
         buscar(ventana, metodo) {
             this.$refs[ventana][metodo]();
         },
