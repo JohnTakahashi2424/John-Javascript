@@ -1,16 +1,30 @@
-const { createApp } = Vue,
-    Dexie = window.Dexie,
-    db = new Dexie("db_academica"),
-    sha256 = CryptoJS.SHA256;
+const { createApp } = Vue;
+
+// Verificación de dependencias de forma segura (sin destructuración estricta que rompa el script)
+let Dexie = window.Dexie;
+let CryptoJS = window.CryptoJS;
+
+if (!Dexie) {
+    console.error("Error: Dexie no está cargado. Verifique la conexión al CDN.");
+    if(typeof alertify !== 'undefined') alertify.error("Error crítico: No se pudo cargar la base de datos local (Dexie).");
+}
+if (!CryptoJS) {
+    console.error("Error: CryptoJS no está cargado. Verifique la conexión al CDN.");
+}
+
+const db = Dexie ? new Dexie("db_academica") : null;
+const sha256 = CryptoJS ? CryptoJS.SHA256 : null;
 
 try {
-    db.version(2).stores({
-        "alumnos": "idAlumno, codigo, nombre, direccion, email, telefono",
-        "materias": "idMateria, codigo, nombre, uv",
-        "docentes": "idDocente, codigo, nombre, direccion, email, telefono, escalafon",
-        "matriculas": "idMatricula, idAlumno, ciclo, fecha, pago",
-        "inscripciones": "idInscripcion, idAlumno, idMateria, ciclo, fecha"
-    });
+    if (db) {
+        db.version(2).stores({
+            "alumnos": "idAlumno, codigo, nombre, direccion, email, telefono",
+            "materias": "idMateria, codigo, nombre, uv",
+            "docentes": "idDocente, codigo, nombre, direccion, email, telefono, escalafon",
+            "matriculas": "idMatricula, idAlumno, ciclo, fecha, pago",
+            "inscripciones": "idInscripcion, idAlumno, idMateria, ciclo, fecha"
+        });
+    }
 } catch (e) {
     console.error("Dexie error:", e);
 }
@@ -49,6 +63,12 @@ createApp({
             this.$refs[ventana][metodo]();
         },
         abrirVentana(ventana) {
+            // Ocultar todos los formularios antes de mostrar el seleccionado
+            Object.keys(this.forms).forEach(key => {
+                if (key !== ventana) {
+                    this.forms[key].mostrar = false;
+                }
+            });
             this.forms[ventana].mostrar = !this.forms[ventana].mostrar;
         },
         modificar(ventana, metodo, data) {
