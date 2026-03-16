@@ -60,6 +60,15 @@
         .transition-all { transition: all 0.3s ease; }
         .cursor-pointer { cursor: pointer; }
         
+        /* Animación de giro para el botón de recarga */
+        .spinning {
+            animation: spin 0.8s ease-in-out;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .app-main { margin-left: 0; }
@@ -77,7 +86,7 @@
                 </a>
                 <div class="ms-auto d-flex align-items-center gap-4">
                     <button class="btn btn-sm btn-link p-0 opacity-70 hover-opacity-100 transition-all border-0 shadow-none text-body" title="Recargar App" @click="recargarApp">
-                        <i class="bi bi-arrow-clockwise fs-5"></i>
+                        <i class="bi bi-arrow-clockwise fs-5 d-inline-block" :class="{ 'spinning': isRefreshing }"></i>
                     </button>
                     <button class="btn btn-sm btn-link p-0 opacity-70 hover-opacity-100 transition-all border-0 shadow-none text-body" title="Cambiar Tema" @click="toggleDarkMode">
                         <i :class="darkMode?'bi-sun-fill text-warning':'bi-moon-stars-fill'" class="bi fs-5"></i>

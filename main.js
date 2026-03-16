@@ -45,6 +45,7 @@ createApp({
     data() {
         return {
             darkMode: false,
+            isRefreshing: false,
             sesion: { autenticado: true, username: 'John Takahashi', rol: 'Administrador', foto: '' },
             forms: {
                 alumnos: { mostrar: true },
@@ -66,7 +67,10 @@ createApp({
             document.documentElement.setAttribute('data-bs-theme', this.darkMode ? 'dark' : 'light');
         },
         recargarApp() {
-            location.reload();
+            this.isRefreshing = true;
+            setTimeout(() => {
+                location.reload();
+            }, 500); // 500ms para que se vea el giro antes de recargar
         },
         buscar(ventana, metodo) {
             this.$refs[ventana][metodo]();
