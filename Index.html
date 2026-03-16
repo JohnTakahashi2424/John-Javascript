@@ -128,15 +128,15 @@
                 
                 <div class="forms-container">
                     <alumnos v-show="forms.alumnos.mostrar" @buscar='buscar("busqueda_alumnos","obtenerAlumnos")' :forms="forms" ref="alumnos"></alumnos>
-                    <busqueda_alumnos v-show="forms.busqueda_alumnos.mostrar" @modificar='modificar("alumnos","modificarAlumno", $event)' ref="busqueda_alumnos"></busqueda_alumnos>
+                    <busqueda_alumnos v-show="forms.busqueda_alumnos.mostrar" @regresar="irAVentana($event)" @modificar='modificar("alumnos","modificarAlumno", $event)' ref="busqueda_alumnos"></busqueda_alumnos>
                     <materias v-show="forms.materias.mostrar" @buscar='buscar("busqueda_materias","obtenerMaterias")' :forms="forms" ref="materias"></materias>
-                    <busqueda_materias v-show="forms.busqueda_materias.mostrar" @modificar='modificar("materias","modificarMateria", $event)' ref="busqueda_materias"></busqueda_materias>
+                    <busqueda_materias v-show="forms.busqueda_materias.mostrar" @regresar="irAVentana($event)" @modificar='modificar("materias","modificarMateria", $event)' ref="busqueda_materias"></busqueda_materias>
                     <docentes v-show="forms.docentes.mostrar" @buscar='buscar("busqueda_docentes","obtenerDocentes")' :forms="forms" ref="docentes"></docentes>
-                    <busqueda_docentes v-show="forms.busqueda_docentes.mostrar" @modificar='modificar("docentes","modificarDocente", $event)' ref="busqueda_docentes"></busqueda_docentes>
+                    <busqueda_docentes v-show="forms.busqueda_docentes.mostrar" @regresar="irAVentana($event)" @modificar='modificar("docentes","modificarDocente", $event)' ref="busqueda_docentes"></busqueda_docentes>
                     <matriculas v-show="forms.matriculas.mostrar" @buscar='buscar("busqueda_matriculas","obtenerMatriculas")' :forms="forms" ref="matriculas"></matriculas>
-                    <busqueda_matriculas v-show="forms.busqueda_matriculas.mostrar" @modificar='modificar("matriculas","modificarMatricula", $event)' ref="busqueda_matriculas"></busqueda_matriculas>
+                    <busqueda_matriculas v-show="forms.busqueda_matriculas.mostrar" @regresar="irAVentana($event)" @modificar='modificar("matriculas","modificarMatricula", $event)' ref="busqueda_matriculas"></busqueda_matriculas>
                     <inscripciones v-show="forms.inscripciones.mostrar" @buscar='buscar("busqueda_inscripciones","obtenerInscripciones")' :forms="forms" ref="inscripciones"></inscripciones>
-                    <busqueda_inscripciones v-show="forms.busqueda_inscripciones.mostrar" @modificar='modificar("inscripciones","modificarInscripcion", $event)' ref="busqueda_inscripciones"></busqueda_inscripciones>
+                    <busqueda_inscripciones v-show="forms.busqueda_inscripciones.mostrar" @regresar="irAVentana($event)" @modificar='modificar("inscripciones","modificarInscripcion", $event)' ref="busqueda_inscripciones"></busqueda_inscripciones>
                 </div>
             </main>
         </div>
@@ -148,16 +148,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dexie/4.2.0/dexie.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
     
-    <script src="componentes/alumnos.js?v=13"></script>
-    <script src="componentes/busqueda_alumnos.js?v=13"></script>
-    <script src="componentes/materias.js?v=13"></script>
-    <script src="componentes/busqueda_materias.js?v=13"></script>
-    <script src="componentes/docentes.js?v=13"></script>
-    <script src="componentes/busqueda_docentes.js?v=13"></script>
-    <script src="componentes/matriculas.js?v=13"></script>
-    <script src="componentes/busqueda_matriculas.js?v=13"></script>
-    <script src="componentes/inscripciones.js?v=13"></script>
-    <script src="componentes/busqueda_inscripciones.js?v=13"></script>
-    <script src="main.js?v=13"></script>
+    <script src="componentes/alumnos.js?v=14"></script>
+    <script src="componentes/busqueda_alumnos.js?v=14"></script>
+    <script src="componentes/materias.js?v=14"></script>
+    <script src="componentes/busqueda_materias.js?v=14"></script>
+    <script src="componentes/docentes.js?v=14"></script>
+    <script src="componentes/busqueda_docentes.js?v=14"></script>
+    <script src="componentes/matriculas.js?v=14"></script>
+    <script src="componentes/busqueda_matriculas.js?v=14"></script>
+    <script src="componentes/inscripciones.js?v=14"></script>
+    <script src="componentes/busqueda_inscripciones.js?v=14"></script>
+    <script src="main.js?v=15"></script>
 </body>
 </html>
