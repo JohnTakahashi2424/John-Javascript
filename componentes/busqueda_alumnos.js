@@ -63,7 +63,7 @@ const busqueda_alumnos = {
                                         <th class="py-2 border-bottom-0 text-secondary fw-semibold">DIRECCIÓN</th>
                                         <th class="py-2 border-bottom-0 text-secondary fw-semibold">EMAIL</th>
                                         <th class="py-2 border-bottom-0 text-secondary fw-semibold">TELÉFONO</th>
-                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold text-center">ELIMINAR</th>
+                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold text-center">ACCIONES</th>
                                     </tr>
                                 </thead>
                                 <tbody class="border-top-0">
@@ -74,9 +74,14 @@ const busqueda_alumnos = {
                                         <td>{{ alumno.email }}</td>
                                         <td>{{ alumno.telefono }}</td>
                                         <td class="text-center">
-                                            <button @click.stop="eliminarAlumno(alumno)" class="btn btn-danger btn-sm rounded-pill shadow-sm px-2">
-                                                <i class="bi bi-trash-fill"></i>
-                                            </button>
+                                            <div class="btn-group">
+                                                <button @click.stop="modificarAlumno(alumno)" class="btn btn-outline-info btn-sm rounded-pill shadow-sm px-2 me-1">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </button>
+                                                <button @click.stop="eliminarAlumno(alumno)" class="btn btn-outline-danger btn-sm rounded-pill shadow-sm px-2">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr v-if="alumnos.length == 0">

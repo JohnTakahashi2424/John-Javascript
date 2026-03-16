@@ -57,7 +57,7 @@ const busqueda_materias = {
                                         <th class="py-2 border-bottom-0 text-secondary fw-semibold">CÓDIGO</th>
                                         <th class="py-2 border-bottom-0 text-secondary fw-semibold">NOMBRE</th>
                                         <th class="py-2 border-bottom-0 text-secondary fw-semibold">UV</th>
-                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold text-center">ELIMINAR</th>
+                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold text-center">ACCIONES</th>
                                     </tr>
                                 </thead>
                                 <tbody class="border-top-0">
@@ -66,9 +66,14 @@ const busqueda_materias = {
                                         <td class="fw-semibold">{{ materia.nombre }}</td>
                                         <td>{{ materia.uv }}</td>
                                         <td class="text-center">
-                                            <button @click.stop="eliminarMateria(materia)" class="btn btn-danger btn-sm rounded-pill shadow-sm px-2">
-                                                <i class="bi bi-trash-fill"></i>
-                                            </button>
+                                            <div class="btn-group">
+                                                <button @click.stop="modificarMateria(materia)" class="btn btn-outline-info btn-sm rounded-pill shadow-sm px-2 me-1">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </button>
+                                                <button @click.stop="eliminarMateria(materia)" class="btn btn-outline-danger btn-sm rounded-pill shadow-sm px-2">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr v-if="materias.length == 0">

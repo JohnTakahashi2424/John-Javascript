@@ -71,7 +71,7 @@ const busqueda_inscripciones = {
                                         <th class="py-2 border-bottom-0 text-secondary fw-semibold">MATERIA</th>
                                         <th class="py-2 border-bottom-0 text-secondary fw-semibold">CICLO</th>
                                         <th class="py-2 border-bottom-0 text-secondary fw-semibold">FECHA</th>
-                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold text-center">ELIMINAR</th>
+                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold text-center">ACCIONES</th>
                                     </tr>
                                 </thead>
                                 <tbody class="border-top-0">
@@ -81,9 +81,14 @@ const busqueda_inscripciones = {
                                         <td><span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 fs-6 rounded-pill px-3">{{ inscripcion.ciclo }}</span></td>
                                         <td>{{ inscripcion.fecha }}</td>
                                         <td class="text-center">
-                                            <button @click.stop="eliminarInscripcion(inscripcion, $event)" class="btn btn-danger btn-sm rounded-pill shadow-sm px-2">
-                                                <i class="bi bi-trash-fill"></i>
-                                            </button>
+                                            <div class="btn-group">
+                                                <button @click.stop="modificarInscripcion(inscripcion)" class="btn btn-outline-info btn-sm rounded-pill shadow-sm px-2 me-1">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </button>
+                                                <button @click.stop="eliminarInscripcion(inscripcion, $event)" class="btn btn-outline-danger btn-sm rounded-pill shadow-sm px-2">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr v-if="inscripciones.length == 0">
