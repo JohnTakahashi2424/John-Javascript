@@ -86,6 +86,31 @@ createApp({
         },
         modificar(ventana, metodo, data) {
             this.$refs[ventana][metodo](data);
+            this.irAVentana(ventana); // Asegurar que el formulario sea visible al editar
+        },
+        irAVentana(ventana) {
+            // Identificar el módulo base (ej: si es 'busqueda_alumnos' o 'alumnos', el base es 'alumnos')
+            const moduloBase = ventana.replace('busqueda_', '');
+            
+            // Ocultar solo los formularios que NO pertenecen al módulo actual
+            Object.keys(this.forms).forEach(key => {
+                const keyBase = key.replace('busqueda_', '');
+                if (keyBase !== moduloBase) {
+                    this.forms[key].mostrar = false;
+                }
+            });
+
+            // Mostrar la ventana solicitada
+            this.forms[ventana].mostrar = true;
+            
+            // Forzar el scroll al inicio para ver el formulario
+            this.$nextTick(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                setTimeout(() => {
+                    document.documentElement.scrollTop = 0;
+                    document.body.scrollTop = 0;
+                }, 50);
+            });
         }
     }
 }).mount("#app");
