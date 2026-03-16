@@ -34,6 +34,9 @@ const busqueda_docentes = {
                 //No hacer nada
             });
         },
+        mostrarFormulario(ventana){
+            this.$emit('regresar', ventana);
+        }
     },
     mounted() {
         this.obtenerDocentes();

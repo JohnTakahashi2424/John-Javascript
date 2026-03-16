@@ -43,6 +43,9 @@ const busqueda_matriculas = {
                 alertify.success(`Matrícula eliminada correctamente`);
             }, () => { });
         },
+        mostrarFormulario(ventana){
+            this.$emit('regresar', ventana);
+        }
     },
     mounted() {
         this.obtenerMatriculas();

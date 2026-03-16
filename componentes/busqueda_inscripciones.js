@@ -46,6 +46,9 @@ const busqueda_inscripciones = {
                 this.obtenerInscripciones();
                 alertify.success(`Inscripción eliminada correctamente`);
             }, () => { });
+        },
+        mostrarFormulario(ventana){
+            this.$emit('regresar', ventana);
         }
     },
     mounted() {

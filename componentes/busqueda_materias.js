@@ -34,6 +34,9 @@ const busqueda_materias = {
                 //No hacer nada
             });
         },
+        mostrarFormulario(ventana){
+            this.$emit('regresar', ventana);
+        }
     },
     mounted() {
         this.obtenerMaterias();

@@ -38,6 +38,9 @@ const busqueda_alumnos = {
                 //No hacer nada
             });
         },
+        mostrarFormulario(ventana){
+            this.$emit('regresar', ventana);
+        }
     },
     mounted() {
         this.obtenerAlumnos();
