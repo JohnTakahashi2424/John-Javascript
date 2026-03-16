@@ -65,6 +65,9 @@ createApp({
             this.darkMode = !this.darkMode;
             document.documentElement.setAttribute('data-bs-theme', this.darkMode ? 'dark' : 'light');
         },
+        recargarApp() {
+            location.reload();
+        },
         buscar(ventana, metodo) {
             this.$refs[ventana][metodo]();
         },
