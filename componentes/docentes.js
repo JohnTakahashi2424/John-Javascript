@@ -48,7 +48,7 @@ const docentes = {
                 alertify.error(`El codigo del docente ya existe, ${this.data_docentes[0].nombre}`);
                 return; //Termina la ejecucion de la funcion
             }
-            db.docentes.put(datos);
+            await db.docentes.put(datos);
             fetch(`private/modulos/docentes/docente.php?accion=${this.accion}&docentes=${JSON.stringify(datos)}`)
                 .then(response=>response.json())
                 .then(data=>{
@@ -56,7 +56,7 @@ const docentes = {
                 });
             this.limpiarFormulario();
             alertify.success(`${datos.nombre} guardado correctamente`);
-            //this.obtenerDocentes();
+            this.$emit('buscar');
         },
         getId(){
             return new Date().getTime();

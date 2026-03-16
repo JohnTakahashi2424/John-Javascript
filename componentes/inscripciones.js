@@ -36,7 +36,7 @@ const inscripciones = {
                 ciclo: this.inscripcion.ciclo,
                 fecha: this.inscripcion.fecha
             };
-            db.inscripciones.put(datos);
+            await db.inscripciones.put(datos);
             fetch(`private/modulos/inscripciones/inscripcion.php?accion=${this.accion}&inscripciones=${JSON.stringify(datos)}`)
                 .then(response=>response.json())
                 .then(data=>{
@@ -44,6 +44,7 @@ const inscripciones = {
                 });
             this.limpiarFormulario();
             alertify.success(`Inscripción guardada correctamente`);
+            this.$emit('buscar');
         },
         getId() {
             return new Date().getTime();

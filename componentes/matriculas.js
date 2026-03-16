@@ -35,7 +35,7 @@ const matriculas = {
                 fecha: this.matricula.fecha,
                 pago: this.matricula.pago
             };
-            db.matriculas.put(datos);
+            await db.matriculas.put(datos);
             fetch(`private/modulos/matriculas/matricula.php?accion=${this.accion}&matriculas=${JSON.stringify(datos)}`)
                 .then(response=>response.json())
                 .then(data=>{
@@ -43,6 +43,7 @@ const matriculas = {
                 });
             this.limpiarFormulario();
             alertify.success(`Matrícula guardada correctamente`);
+            this.$emit('buscar');
         },
         getId() {
             return new Date().getTime();
