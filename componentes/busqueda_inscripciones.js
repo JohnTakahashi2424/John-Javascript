@@ -10,41 +10,47 @@ const busqueda_inscripciones = {
             this.$emit('modificar', inscripcion);
         },
         async obtenerInscripciones() {
-            const allInscripciones = await db.inscripciones.toArray();
-            const allAlumnos = await db.alumnos.toArray();
-            const allMaterias = await db.materias.toArray();
+            try {
+                let busqueda = `%${this.buscar}%`;
+                const sql = `
+                    SELECT i.*, 
+                           a.nombre as nombreAlumno,
+                           m.nombre as nombreMateria
+                    FROM inscripciones i
+                    LEFT JOIN alumnos a ON i.idAlumno = a.idAlumno
+                    LEFT JOIN materias m ON i.idMateria = m.idMateria
+                    WHERE LOWER(a.nombre) LIKE LOWER(?) 
+                       OR LOWER(m.nombre) LIKE LOWER(?) 
+                       OR LOWER(i.ciclo) LIKE LOWER(?)
+                    ORDER BY i.fecha DESC
+                `;
+                this.inscripciones = await Database.query(sql, [busqueda, busqueda, busqueda]);
 
-            this.inscripciones = allInscripciones.filter(i => {
-                const alumno = allAlumnos.find(a => a.idAlumno == i.idAlumno);
-                const materia = allMaterias.find(m => m.idMateria == i.idMateria);
-                const nombreAlumno = alumno ? alumno.nombre.toLowerCase() : "";
-                const nombreMateria = materia ? materia.nombre.toLowerCase() : "";
-                return nombreAlumno.includes(this.buscar.toLowerCase()) || nombreMateria.includes(this.buscar.toLowerCase()) || i.ciclo.toLowerCase().includes(this.buscar.toLowerCase());
-            }).map(i => {
-                const alumno = allAlumnos.find(a => a.idAlumno == i.idAlumno);
-                const materia = allMaterias.find(m => m.idMateria == i.idMateria);
-                return {
-                    ...i,
-                    nombreAlumno: alumno ? alumno.nombre : "Desconocido",
-                    nombreMateria: materia ? materia.nombre : "Desconocida"
-                };
-            });
-            
-            if(allInscripciones.length < 1 && this.buscar.length <= 0) {
-                fetch(`private/modulos/inscripciones/inscripcion.php?accion=consultar`)
-                    .then(response => response.json())
-                    .then(data => {
-                        db.inscripciones.bulkAdd(data);
-                        this.obtenerInscripciones(); // Re-render once data is added to IndexedDB
-                    });
+                if(this.inscripciones.length < 1 && this.buscar.length <= 0) {
+                    fetch(`private/modulos/inscripciones/inscripcion.php?accion=consultar`)
+                        .then(response => response.json())
+                        .then(async data => {
+                            for (let reg of data) {
+                                await Database.query(`INSERT OR IGNORE INTO inscripciones (idInscripcion, idAlumno, idMateria, ciclo, fecha) VALUES (?, ?, ?, ?, ?)`,
+                                    [reg.idInscripcion, reg.idAlumno, reg.idMateria, reg.ciclo, reg.fecha]);
+                            }
+                            this.obtenerInscripciones();
+                        });
+                }
+            } catch (error) {
+                console.error("Error obteniendo inscripciones:", error);
             }
         },
         async eliminarInscripcion(inscripcion, e) {
             e.stopPropagation();
-            alertify.confirm('Eliminar Inscripcion', `¿Está seguro de eliminar esta inscripción?`, async e => {
-                await db.inscripciones.delete(inscripcion.idInscripcion);
-                this.obtenerInscripciones();
-                alertify.success(`Inscripción eliminada correctamente`);
+            alertify.confirm('Eliminar Inscripcion', `¿Está seguro de eliminar esta inscripción?`, async () => {
+                try {
+                    await Database.query(`DELETE FROM inscripciones WHERE idInscripcion=?`, [inscripcion.idInscripcion]);
+                    this.obtenerInscripciones();
+                    alertify.success(`Inscripción eliminada correctamente`);
+                } catch (error) {
+                    alertify.error(`Error BD: ${error.message}`);
+                }
             }, () => { });
         },
         mostrarFormulario(ventana){

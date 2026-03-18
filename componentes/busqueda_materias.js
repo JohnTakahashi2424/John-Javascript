@@ -10,26 +10,38 @@ const busqueda_materias = {
             this.$emit('modificar', materia);
         },
         async obtenerMaterias(){
-            this.materias = await db.materias.orderBy('codigo').filter(
-                materia => materia.codigo.toLowerCase().includes(this.buscar.toLowerCase()) 
-                    || materia.nombre.toLowerCase().includes(this.buscar.toLowerCase())
-            ).toArray();
-            
-            if(this.materias.length < 1 && this.buscar.length <= 0) {
-                fetch(`private/modulos/materias/materia.php?accion=consultar`)
-                    .then(response => response.json())
-                    .then(data => {
-                        this.materias = data;
-                        db.materias.bulkAdd(data);
-                    });
+            try {
+                let busqueda = `%${this.buscar}%`;
+                this.materias = await Database.query(
+                    `SELECT * FROM materias WHERE LOWER(codigo) LIKE LOWER(?) OR LOWER(nombre) LIKE LOWER(?) ORDER BY codigo`, 
+                    [busqueda, busqueda]
+                );
+                
+                if(this.materias.length < 1 && this.buscar.length <= 0) {
+                    fetch(`private/modulos/materias/materia.php?accion=consultar`)
+                        .then(response => response.json())
+                        .then(async data => {
+                            this.materias = data;
+                            for (let reg of data) {
+                                await Database.query(`INSERT OR IGNORE INTO materias (idMateria, codigo, nombre, uv) VALUES (?, ?, ?, ?)`,
+                                    [reg.idMateria, reg.codigo, reg.nombre, reg.uv]);
+                            }
+                        });
+                }
+            } catch (error) {
+                console.error("Error obteniendo materias:", error);
             }
         },
         async eliminarMateria(materia, e){
             e.stopPropagation();
-            alertify.confirm('Eliminar materias', `¿Está seguro de eliminar el materia ${materia.nombre}?`, async e=>{
-                await db.materias.delete(materia.idMateria);
-                this.obtenerMaterias();
-                alertify.success(`Materia ${materia.nombre} eliminada correctamente`);
+            alertify.confirm('Eliminar materias', `¿Está seguro de eliminar el materia ${materia.nombre}?`, async () => {
+                try {
+                    await Database.query(`DELETE FROM materias WHERE idMateria=?`, [materia.idMateria]);
+                    this.obtenerMaterias();
+                    alertify.success(`Materia ${materia.nombre} eliminada correctamente`);
+                } catch (error) {
+                    alertify.error(`Error BD: ${error.message}`);
+                }
             }, () => {
                 //No hacer nada
             });

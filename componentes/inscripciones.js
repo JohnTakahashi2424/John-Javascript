@@ -36,7 +36,18 @@ const inscripciones = {
                 ciclo: this.inscripcion.ciclo,
                 fecha: this.inscripcion.fecha
             };
-            await db.inscripciones.put(datos);
+            try {
+                if (this.accion === 'nuevo') {
+                    await Database.query(`INSERT INTO inscripciones (idInscripcion, idAlumno, idMateria, ciclo, fecha) VALUES (?, ?, ?, ?, ?)`, 
+                        [datos.idInscripcion, datos.idAlumno, datos.idMateria, datos.ciclo, datos.fecha]);
+                } else {
+                    await Database.query(`UPDATE inscripciones SET idAlumno=?, idMateria=?, ciclo=?, fecha=? WHERE idInscripcion=?`, 
+                        [datos.idAlumno, datos.idMateria, datos.ciclo, datos.fecha, datos.idInscripcion]);
+                }
+            } catch (error) {
+                alertify.error(`Error BD: ${error.message}`);
+                return;
+            }
             fetch(`private/modulos/inscripciones/inscripcion.php?accion=${this.accion}&inscripciones=${JSON.stringify(datos)}`)
                 .then(response=>response.json())
                 .then(data=>{
@@ -58,8 +69,12 @@ const inscripciones = {
             this.inscripcion.fecha = '';
         },
         async cargarDatos() {
-            this.alumnos = await db.alumnos.toArray();
-            this.materias = await db.materias.toArray();
+            try {
+                this.alumnos = await Database.query(`SELECT idAlumno, nombre FROM alumnos ORDER BY nombre`);
+                this.materias = await Database.query(`SELECT idMateria, nombre FROM materias ORDER BY nombre`);
+            } catch (e) {
+                console.error("Error cargando catálogos de inscripción:", e);
+            }
         }
     },
     mounted() {

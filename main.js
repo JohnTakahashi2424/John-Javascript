@@ -1,33 +1,31 @@
 const { createApp } = Vue;
 
-// Verificación de dependencias de forma segura (sin destructuración estricta que rompa el script)
-let Dexie = window.Dexie;
 let CryptoJS = window.CryptoJS;
 
-if (!Dexie) {
-    console.error("Error: Dexie no está cargado. Verifique la conexión al CDN.");
-    if(typeof alertify !== 'undefined') alertify.error("Error crítico: No se pudo cargar la base de datos local (Dexie).");
-}
 if (!CryptoJS) {
     console.error("Error: CryptoJS no está cargado. Verifique la conexión al CDN.");
 }
 
-const db = Dexie ? new Dexie("db_academica") : null;
 const sha256 = CryptoJS ? CryptoJS.SHA256 : null;
 
-try {
-    if (db) {
-        db.version(2).stores({
-            "alumnos": "idAlumno, codigo, nombre, direccion, email, telefono",
-            "materias": "idMateria, codigo, nombre, uv",
-            "docentes": "idDocente, codigo, nombre, direccion, email, telefono, escalafon",
-            "matriculas": "idMatricula, idAlumno, ciclo, fecha, pago",
-            "inscripciones": "idInscripcion, idAlumno, idMateria, ciclo, fecha"
-        });
-    }
-} catch (e) {
-    console.error("Dexie error:", e);
+// Fuerza de Aniquilación de IndexedDB ("Cero Rastro")
+if (window.indexedDB) {
+    try {
+        console.log("Eliminando cualquier IndexedDB heredada...");
+        window.indexedDB.deleteDatabase('db_academica');
+        window.indexedDB.deleteDatabase('db_academica_vue');
+    } catch(e) { /* ignore */ }
 }
+
+// Inicializamos la base de datos de forma asíncrona
+Database.iniciar().then(() => {
+    console.log("Sistema BBDD (SQLite WASM) preparado.");
+}).catch(err => {
+    if(typeof alertify !== 'undefined') {
+        alertify.error(`Error crítico SQLite: ${err.message}`);
+    }
+    console.error("Detalle del error SQLite:", err);
+});
 
 createApp({
     components: {

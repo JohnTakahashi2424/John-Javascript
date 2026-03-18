@@ -42,13 +42,26 @@ const docentes = {
                 escalafon: this.docente.escalafon
             };
             this.buscar = datos.codigo;
-            //await this.obtenerDocentes();
+            this.buscar = datos.codigo;
 
-            if(this.data_docentes.length > 0 && this.accion=='nuevo'){
-                alertify.error(`El codigo del docente ya existe, ${this.data_docentes[0].nombre}`);
-                return; //Termina la ejecucion de la funcion
+            try {
+                if (this.accion === 'nuevo') {
+                    let existe = await Database.query(`SELECT nombre FROM docentes WHERE codigo=?`, [datos.codigo]);
+                    if (existe.length > 0) {
+                        alertify.error(`El codigo del docente ya existe, ${existe[0].nombre}`);
+                        return;
+                    }
+                    await Database.query(`INSERT INTO docentes (idDocente, codigo, nombre, direccion, email, telefono, escalafon) VALUES (?, ?, ?, ?, ?, ?, ?)`, 
+                        [datos.idDocente, datos.codigo, datos.nombre, datos.direccion, datos.email, datos.telefono, datos.escalafon]);
+                } else {
+                    await Database.query(`UPDATE docentes SET codigo=?, nombre=?, direccion=?, email=?, telefono=?, escalafon=? WHERE idDocente=?`, 
+                        [datos.codigo, datos.nombre, datos.direccion, datos.email, datos.telefono, datos.escalafon, datos.idDocente]);
+                }
+            } catch (error) {
+                alertify.error(`Error BD: ${error.message}`);
+                return;
             }
-            await db.docentes.put(datos);
+
             fetch(`private/modulos/docentes/docente.php?accion=${this.accion}&docentes=${JSON.stringify(datos)}`)
                 .then(response=>response.json())
                 .then(data=>{

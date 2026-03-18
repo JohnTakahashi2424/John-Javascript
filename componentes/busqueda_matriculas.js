@@ -11,36 +11,44 @@ const busqueda_matriculas = {
             this.$emit('modificar', matricula);
         },
         async obtenerMatriculas() {
-            const allMatriculas = await db.matriculas.toArray();
-            const allAlumnos = await db.alumnos.toArray();
+            try {
+                let busqueda = `%${this.buscar}%`;
+                
+                // JOIN con alumnos para obtener el nombre
+                const sql = `
+                    SELECT m.*, a.nombre as nombreAlumno 
+                    FROM matriculas m 
+                    LEFT JOIN alumnos a ON m.idAlumno = a.idAlumno
+                    WHERE LOWER(a.nombre) LIKE LOWER(?) OR LOWER(m.ciclo) LIKE LOWER(?)
+                    ORDER BY m.fecha DESC
+                `;
+                this.matriculas = await Database.query(sql, [busqueda, busqueda]);
 
-            this.matriculas = allMatriculas.filter(m => {
-                const alumno = allAlumnos.find(a => a.idAlumno == m.idAlumno);
-                const nombreAlumno = alumno ? alumno.nombre.toLowerCase() : "";
-                return nombreAlumno.includes(this.buscar.toLowerCase()) || m.ciclo.toLowerCase().includes(this.buscar.toLowerCase());
-            }).map(m => {
-                const alumno = allAlumnos.find(a => a.idAlumno == m.idAlumno);
-                return {
-                    ...m,
-                    nombreAlumno: alumno ? alumno.nombre : "Desconocido"
-                };
-            });
-            
-            if(allMatriculas.length < 1 && this.buscar.length <= 0) {
-                fetch(`private/modulos/matriculas/matricula.php?accion=consultar`)
-                    .then(response => response.json())
-                    .then(data => {
-                        db.matriculas.bulkAdd(data);
-                        this.obtenerMatriculas(); // Re-render once data is added to IndexedDB
-                    });
+                if(this.matriculas.length < 1 && this.buscar.length <= 0) {
+                    fetch(`private/modulos/matriculas/matricula.php?accion=consultar`)
+                        .then(response => response.json())
+                        .then(async data => {
+                            for (let reg of data) {
+                                await Database.query(`INSERT OR IGNORE INTO matriculas (idMatricula, idAlumno, ciclo, fecha, pago) VALUES (?, ?, ?, ?, ?)`,
+                                    [reg.idMatricula, reg.idAlumno, reg.ciclo, reg.fecha, reg.pago]);
+                            }
+                            this.obtenerMatriculas();
+                        });
+                }
+            } catch (error) {
+                console.error("Error obteniendo matrículas:", error);
             }
         },
         async eliminarMatricula(matricula, e) {
             e.stopPropagation();
-            alertify.confirm('Eliminar Matricula', `¿Está seguro de eliminar esta matrícula?`, async e => {
-                await db.matriculas.delete(matricula.idMatricula);
-                this.obtenerMatriculas();
-                alertify.success(`Matrícula eliminada correctamente`);
+            alertify.confirm('Eliminar Matricula', `¿Está seguro de eliminar esta matrícula?`, async () => {
+                try {
+                    await Database.query(`DELETE FROM matriculas WHERE idMatricula=?`, [matricula.idMatricula]);
+                    this.obtenerMatriculas();
+                    alertify.success(`Matrícula eliminada correctamente`);
+                } catch (error) {
+                    alertify.error(`Error BD: ${error.message}`);
+                }
             }, () => { });
         },
         mostrarFormulario(ventana){

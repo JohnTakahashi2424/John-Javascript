@@ -40,13 +40,25 @@ const alumnos = {
             };
             datos.hash = sha256(JSON.stringify(datos));
             this.buscar = datos.codigo;
-            //await this.obtenerAlumnos();
 
-            if(this.data_alumnos.length > 0 && this.accion=='nuevo'){
-                alertify.error(`El codigo del alumno ya existe, ${this.data_alumnos[0].nombre}`);
-                return; //Termina la ejecucion de la funcion
+            try {
+                if (this.accion === 'nuevo') {
+                    let existe = await Database.query(`SELECT nombre FROM alumnos WHERE codigo=?`, [datos.codigo]);
+                    if (existe.length > 0) {
+                        alertify.error(`El codigo del alumno ya existe, ${existe[0].nombre}`);
+                        return;
+                    }
+                    await Database.query(`INSERT INTO alumnos (idAlumno, codigo, nombre, direccion, email, telefono) VALUES (?, ?, ?, ?, ?, ?)`, 
+                        [datos.idAlumno, datos.codigo, datos.nombre, datos.direccion, datos.email, datos.telefono]);
+                } else {
+                    await Database.query(`UPDATE alumnos SET codigo=?, nombre=?, direccion=?, email=?, telefono=? WHERE idAlumno=?`, 
+                        [datos.codigo, datos.nombre, datos.direccion, datos.email, datos.telefono, datos.idAlumno]);
+                }
+            } catch (error) {
+                alertify.error(`Error BD: ${error.message}`);
+                return;
             }
-            await db.alumnos.put(datos);
+
             fetch(`private/modulos/alumnos/alumno.php?accion=${this.accion}&alumnos=${JSON.stringify(datos)}`)
                 .then(response=>response.json())
                 .then(data=>{

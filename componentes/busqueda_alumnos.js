@@ -10,28 +10,44 @@ const busqueda_alumnos = {
             this.$emit('modificar', alumno);
         },
         async obtenerAlumnos(){
-            this.alumnos = await db.alumnos.filter(
-                alumno => alumno.codigo.toLowerCase().includes(this.buscar.toLowerCase()) 
-                    || alumno.nombre.toLowerCase().includes(this.buscar.toLowerCase())
-            ).toArray();
-            if( this.alumnos.length<1 && this.buscar.length<=0){
-                fetch(`private/modulos/alumnos/alumno.php?accion=consultar`)
-                    .then(response=>response.json())
-                    .then(data=>{
-                        this.alumnos = data;
-                        db.alumnos.bulkAdd(data);
-                    });
+            try {
+                let busqueda = `%${this.buscar}%`;
+                this.alumnos = await Database.query(
+                    `SELECT * FROM alumnos WHERE LOWER(codigo) LIKE LOWER(?) OR LOWER(nombre) LIKE LOWER(?)`, 
+                    [busqueda, busqueda]
+                );
+
+                if(this.alumnos.length < 1 && this.buscar.length <= 0) {
+                    fetch(`private/modulos/alumnos/alumno.php?accion=consultar`)
+                        .then(response=>response.json())
+                        .then(async data => {
+                            this.alumnos = data;
+                            for (let reg of data) {
+                                await Database.query(`INSERT OR IGNORE INTO alumnos (idAlumno, codigo, nombre, direccion, email, telefono) VALUES (?, ?, ?, ?, ?, ?)`,
+                                    [reg.idAlumno, reg.codigo, reg.nombre, reg.direccion, reg.email, reg.telefono]);
+                            }
+                        });
+                }
+            } catch (error) {
+                console.error("Error obteniendo alumnos:", error);
             }
         },
         async eliminarAlumno(alumno, e){
             e.stopPropagation();
-            alertify.confirm('Elimanar alumnos', `¿Está seguro de eliminar el alumno ${alumno.nombre}?`, async e=>{
-                await db.alumnos.delete(alumno.idAlumno);
-                fetch(`private/modulos/alumnos/alumno.php?accion=eliminar&alumnos=${JSON.stringify(alumno)}`)
-                    .then(response=>response.json())
-                    .then(data=>{
-                        if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
-                    });
+            alertify.confirm('Eliminar alumno', `¿Está seguro de eliminar el alumno ${alumno.nombre}?`, async () => {
+                try {
+                    await Database.query(`DELETE FROM alumnos WHERE idAlumno=?`, [alumno.idAlumno]);
+                    
+                    fetch(`private/modulos/alumnos/alumno.php?accion=eliminar&alumnos=${JSON.stringify(alumno)}`)
+                        .then(response=>response.json())
+                        .then(data=>{
+                            if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                        });
+                    this.obtenerAlumnos();
+                    alertify.success(`Alumno ${alumno.nombre} eliminado correctamente`);
+                } catch (error) {
+                    alertify.error(`Error BD: ${error.message}`);
+                }
                 this.obtenerAlumnos();
                 alertify.success(`Alumno ${alumno.nombre} eliminado correctamente`);
             }, () => {

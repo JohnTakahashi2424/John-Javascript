@@ -33,13 +33,26 @@ const materias = {
                 uv: this.materia.uv,
             };
             this.buscar = datos.codigo;
-            //await this.obtenerMaterias();
+            this.buscar = datos.codigo;
 
-            if(this.data_materias.length > 0 && this.accion=='nuevo'){
-                alertify.error(`El codigo del materia ya existe, ${this.data_materias[0].nombre}`);
-                return; //Termina la ejecucion de la funcion
+            try {
+                if (this.accion === 'nuevo') {
+                    let existe = await Database.query(`SELECT nombre FROM materias WHERE codigo=?`, [datos.codigo]);
+                    if (existe.length > 0) {
+                        alertify.error(`El codigo de la materia ya existe, ${existe[0].nombre}`);
+                        return;
+                    }
+                    await Database.query(`INSERT INTO materias (idMateria, codigo, nombre, uv) VALUES (?, ?, ?, ?)`, 
+                        [datos.idMateria, datos.codigo, datos.nombre, datos.uv]);
+                } else {
+                    await Database.query(`UPDATE materias SET codigo=?, nombre=?, uv=? WHERE idMateria=?`, 
+                        [datos.codigo, datos.nombre, datos.uv, datos.idMateria]);
+                }
+            } catch (error) {
+                alertify.error(`Error BD: ${error.message}`);
+                return;
             }
-            await db.materias.put(datos);
+
             fetch(`private/modulos/materias/materia.php?accion=${this.accion}&materias=${JSON.stringify(datos)}`)
                 .then(response=>response.json())
                 .then(data=>{

@@ -35,7 +35,18 @@ const matriculas = {
                 fecha: this.matricula.fecha,
                 pago: this.matricula.pago
             };
-            await db.matriculas.put(datos);
+            try {
+                if (this.accion === 'nuevo') {
+                    await Database.query(`INSERT INTO matriculas (idMatricula, idAlumno, ciclo, fecha, pago) VALUES (?, ?, ?, ?, ?)`, 
+                        [datos.idMatricula, datos.idAlumno, datos.ciclo, datos.fecha, datos.pago]);
+                } else {
+                    await Database.query(`UPDATE matriculas SET idAlumno=?, ciclo=?, fecha=?, pago=? WHERE idMatricula=?`, 
+                        [datos.idAlumno, datos.ciclo, datos.fecha, datos.pago, datos.idMatricula]);
+                }
+            } catch (error) {
+                alertify.error(`Error BD: ${error.message}`);
+                return;
+            }
             fetch(`private/modulos/matriculas/matricula.php?accion=${this.accion}&matriculas=${JSON.stringify(datos)}`)
                 .then(response=>response.json())
                 .then(data=>{
@@ -57,7 +68,11 @@ const matriculas = {
             this.matricula.pago = 'No';
         },
         async obtenerAlumnos() {
-            this.alumnos = await db.alumnos.toArray();
+            try {
+                this.alumnos = await Database.query(`SELECT idAlumno, nombre FROM alumnos ORDER BY nombre`);
+            } catch(e) {
+                console.error("Error cargando alumnos:", e);
+            }
         }
     },
     mounted() {

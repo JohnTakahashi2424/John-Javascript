@@ -10,26 +10,38 @@ const busqueda_docentes = {
             this.$emit('modificar', docente);
         },
         async obtenerDocentes(){
-            this.docentes = await db.docentes.filter(
-                docente => docente.codigo.toLowerCase().includes(this.buscar.toLowerCase()) 
-                    || docente.nombre.toLowerCase().includes(this.buscar.toLowerCase())
-            ).toArray();
-            
-            if(this.docentes.length < 1 && this.buscar.length <= 0) {
-                fetch(`private/modulos/docentes/docente.php?accion=consultar`)
-                    .then(response => response.json())
-                    .then(data => {
-                        this.docentes = data;
-                        db.docentes.bulkAdd(data);
-                    });
+            try {
+                let busqueda = `%${this.buscar}%`;
+                this.docentes = await Database.query(
+                    `SELECT * FROM docentes WHERE LOWER(codigo) LIKE LOWER(?) OR LOWER(nombre) LIKE LOWER(?) ORDER BY codigo`, 
+                    [busqueda, busqueda]
+                );
+                
+                if(this.docentes.length < 1 && this.buscar.length <= 0) {
+                    fetch(`private/modulos/docentes/docente.php?accion=consultar`)
+                        .then(response => response.json())
+                        .then(async data => {
+                            this.docentes = data;
+                            for (let reg of data) {
+                                await Database.query(`INSERT OR IGNORE INTO docentes (idDocente, codigo, nombre, direccion, email, telefono, escalafon) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                                    [reg.idDocente, reg.codigo, reg.nombre, reg.direccion, reg.email, reg.telefono, reg.escalafon]);
+                            }
+                        });
+                }
+            } catch (error) {
+                console.error("Error obteniendo docentes:", error);
             }
         },
         async eliminarDocente(docente, e){
             e.stopPropagation();
-            alertify.confirm('Elimanar docentes', `¿Está seguro de eliminar el docente ${docente.nombre}?`, async e=>{
-                await db.docentes.delete(docente.idDocente);
-                this.obtenerDocentes();
-                alertify.success(`Docente ${docente.nombre} eliminado correctamente`);
+            alertify.confirm('Eliminar docentes', `¿Está seguro de eliminar el docente ${docente.nombre}?`, async () => {
+                try {
+                    await Database.query(`DELETE FROM docentes WHERE idDocente=?`, [docente.idDocente]);
+                    this.obtenerDocentes();
+                    alertify.success(`Docente ${docente.nombre} eliminado correctamente`);
+                } catch (error) {
+                    alertify.error(`Error BD: ${error.message}`);
+                }
             }, () => {
                 //No hacer nada
             });
