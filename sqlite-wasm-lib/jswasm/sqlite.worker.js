@@ -19,16 +19,36 @@ async function inicializarBaseDeDatos() {
 
         console.log(`[Worker] SQLite WASM cargado a la perfección. Versión: ${sqlite3.version.libVersion}`);
 
-        // Verificamos estricto soporte OPFS (Origin Private File System)
-        if ('opfs' in sqlite3.oo1.OpfsDb.prototype) {
-            console.log("[Worker] OPFS VFS Soportado. Procediendo a montar bbdd persistente.");
-            
-            // Abrimos (o creamos) la base de datos permanentemente en OPFS
-            db = new sqlite3.oo1.OpfsDb('/db_academica.sqlite3');
-            console.log("[Worker] Base de datos OPFS '/db_academica.sqlite3' montada exitosamente.");
+        // Intentar habilitar el High-Performance SAHPool VFS (No requiere SharedArrayBuffer ni COOP/COEP)
+        if (sqlite3.installOpfsSAHPoolVfs) {
+            try {
+                // Instala el VFS y lo hace el predeterminado para oo1.DB
+                await sqlite3.installOpfsSAHPoolVfs({
+                    clearOnInit: false
+                });
+                console.log("[Worker] OPFS SAHPool VFS activado. Procediendo a montar bbdd persistente.");
+                
+                // Abrimos (o creamos) la base de datos permanentemente a través de SAHPool.
+                // NOTA: SAHPool rechaza los nombres con '/' inicial, debe ser nombre plano.
+                db = new sqlite3.oo1.DB('db_academica.sqlite3', 'c');
+                console.log("[Worker] Base de datos persistente registrada exitosamente.");
+            } catch (e) {
+                console.warn("[Worker] ADVERTENCIA: Entorno restrictivo para SAHPool. Intentando KVVFS (LocalStorage)...", e);
+                try {
+                    db = new sqlite3.oo1.DB('local', 'c', 'kvvfs');
+                    console.log("[Worker] KVVFS (LocalStorage) montado con éxito.");
+                } catch(e2) {
+                    console.warn("[Worker] KVVFS falló. Usando memoria RAM temporal.", e2);
+                    db = new sqlite3.oo1.DB(':memory:', 'c');
+                }
+            }
         } else {
-            console.warn("[Worker] ADVERTENCIA CRÍTICA: OPFS No soportado en este entorno. Se usará memoria RAM (efímera).");
-            db = new sqlite3.oo1.DB('/db_academica.sqlite3', 'c');
+            console.warn("[Worker] ADVERTENCIA CRÍTICA: Funciones OPFS ausentes en la build. Se usará LocalStorage (KVVFS) temporal.");
+            try {
+                db = new sqlite3.oo1.DB('local', 'c', 'kvvfs');
+            } catch(e3) {
+                db = new sqlite3.oo1.DB(':memory:', 'c');
+            }
         }
 
         crearEstructuraTablasBase();

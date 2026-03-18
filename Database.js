@@ -67,7 +67,9 @@ class DatabaseService {
      * @param {Array} parametros Parámetros bindeados p/ seguridad [valor1, valor2].
      * @returns {Promise<Array>} El array de resultados u objetos insertados.
      */
-    query(sql, parametros = []) {
+    async query(sql, parametros = []) {
+        await this.initPromise; // ESPERAR a que la base de datos se inicialice
+
         return new Promise((resolve, reject) => {
             const id = `req_${++this.messageIdCounter}`;
             this.callbacks.set(id, { resolve, reject });
