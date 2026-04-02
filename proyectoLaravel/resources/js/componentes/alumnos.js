@@ -75,8 +75,8 @@ export default {
         },
     },
     template: `
-        <div class="row w-100 m-0">
-            <div class="col-12 col-xl-10 mx-auto">
+        <div class="row w-100 m-0 mb-4">
+            <div class="col-12 col-xl-11 mx-auto">
                 <form id="frmAlumnos" @submit.prevent="guardarAlumno" @reset.prevent="limpiarFormulario" class="bg-white rounded-4 shadow-sm border border-light p-4 p-md-5">
                     <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
                         <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-2 me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">

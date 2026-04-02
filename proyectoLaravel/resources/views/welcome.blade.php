@@ -139,7 +139,7 @@
                     </a>
                 </div>
                 
-                <p class="text-uppercase text-muted fw-semibold mt-4" style="font-size: 0.75rem; letter-spacing: 0.05em; margin: 0 1.5rem 0.5rem 1.5rem;">Administración</p>
+                <p class="text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.05em; margin: 1.5rem 1.5rem 0.5rem 1.5rem;">Administración</p>
                 <div class="navbar-nav w-100 flex-column">
                     <a class="nav-link nav-link-custom" href="#" @click.prevent="abrirVentana('matriculas')">
                         <i class="bi bi-layout-text-sidebar-reverse fs-5 me-3"></i> <span>Matrículas</span>
