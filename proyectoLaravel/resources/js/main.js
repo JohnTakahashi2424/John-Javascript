@@ -1,5 +1,16 @@
-const { createApp } = Vue,
-    sha256 = CryptoJS.SHA256;
+import alumnos from './componentes/alumnos.js';
+import busqueda_alumnos from './componentes/busqueda_alumnos.js';
+import materias from './componentes/materias.js';
+import busqueda_materias from './componentes/busqueda_materias.js';
+import docentes from './componentes/docentes.js';
+import busqueda_docentes from './componentes/busqueda_docentes.js';
+import matriculas from './componentes/matriculas.js';
+import busqueda_matriculas from './componentes/busqueda_matriculas.js';
+import inscripciones from './componentes/inscripciones.js';
+import busqueda_inscripciones from './componentes/busqueda_inscripciones.js';
+
+const { createApp } = Vue;
+window.sha256 = CryptoJS.SHA256;
 
 
 createApp({

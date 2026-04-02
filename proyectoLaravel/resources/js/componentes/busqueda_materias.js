@@ -1,4 +1,4 @@
-const busqueda_materias = {
+export default {
     data(){
         return{
             buscar:'',
@@ -10,7 +10,7 @@ const busqueda_materias = {
             this.$emit('modificar', materia);
         },
         async obtenerMaterias(){
-            fetch(`private/modulos/materias/materia.php?accion=consultar&buscar=${this.buscar}`)
+            fetch(`/api/materias?buscar=${this.buscar}`)
                 .then(response=>response.json())
                 .then(data=>{
                     this.materias = data;
@@ -19,7 +19,7 @@ const busqueda_materias = {
         async eliminarMateria(materia, e){
             e.stopPropagation();
             alertify.confirm('Eliminar materias', `¿Está seguro de eliminar el materia ${materia.nombre}?`, async e=>{
-                fetch(`private/modulos/materias/materia.php?accion=eliminar&materias=${JSON.stringify(materia)}`)
+                fetch(`/api/materias/${materia.idMateria}`, { method: 'DELETE' })
                     .then(response=>response.json())
                     .then(data=>{
                         if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);

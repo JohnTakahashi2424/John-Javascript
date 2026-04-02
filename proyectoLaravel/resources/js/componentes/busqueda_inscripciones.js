@@ -1,4 +1,4 @@
-const busqueda_inscripciones = {
+export default {
     data() {
         return {
             buscar: '',
@@ -10,7 +10,7 @@ const busqueda_inscripciones = {
             this.$emit('modificar', inscripcion);
         },
         async obtenerInscripciones() {
-            fetch(`private/modulos/inscripciones/inscripcion.php?accion=consultar&buscar=${this.buscar}`)
+            fetch(`/api/inscripciones?buscar=${this.buscar}`)
                 .then(response => response.json())
                 .then(data => {
                     this.inscripciones = data;
@@ -19,7 +19,7 @@ const busqueda_inscripciones = {
         async eliminarInscripcion(inscripcion, e) {
             e.stopPropagation();
             alertify.confirm('Eliminar Inscripcion', `¿Está seguro de eliminar esta inscripción?`, async () => {
-                fetch(`private/modulos/inscripciones/inscripcion.php?accion=eliminar&inscripciones=${JSON.stringify(inscripcion)}`)
+                fetch(`/api/inscripciones/${inscripcion.idInscripcion}`, { method: 'DELETE' })
                     .then(response => response.json())
                     .then(data => {
                         if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);

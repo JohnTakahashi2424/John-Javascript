@@ -1,4 +1,4 @@
-const busqueda_alumnos = {
+export default {
     data(){
         return{
             buscar:'',
@@ -10,7 +10,7 @@ const busqueda_alumnos = {
             this.$emit('modificar', alumno);
         },
         async obtenerAlumnos(){
-            fetch(`private/modulos/alumnos/alumno.php?accion=consultar&buscar=${this.buscar}`)
+            fetch(`/api/alumnos?buscar=${this.buscar}`)
                 .then(response=>response.json())
                 .then(data=>{
                     this.alumnos = data;
@@ -19,7 +19,7 @@ const busqueda_alumnos = {
         async eliminarAlumno(alumno, e){
             e.stopPropagation();
             alertify.confirm('Elimanar alumnos', `¿Está seguro de eliminar el alumno ${alumno.nombre}?`, async e=>{
-                fetch(`private/modulos/alumnos/alumno.php?accion=eliminar&alumnos=${JSON.stringify(alumno)}`)
+                fetch(`/api/alumnos/${alumno.idAlumno}`, { method: 'DELETE' })
                     .then(response=>response.json())
                     .then(data=>{
                         if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);

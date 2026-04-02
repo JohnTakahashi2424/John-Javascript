@@ -1,4 +1,4 @@
-const docentes = {
+export default {
     props:['forms'],
     data(){
         return{
@@ -48,7 +48,13 @@ const docentes = {
                 alertify.error(`El codigo del docente ya existe, ${this.data_docentes[0].nombre}`);
                 return; //Termina la ejecucion de la funcion
             }
-            fetch(`private/modulos/docentes/docente.php?accion=${this.accion}&docentes=${JSON.stringify(datos)}`)
+            const method = this.accion === 'nuevo' ? 'POST' : 'PUT';
+            const url = this.accion === 'nuevo' ? '/api/docentes' : '/api/docentes/' + this.idDocente;
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            })
                 .then(response=>response.json())
                 .then(data=>{
                     if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);

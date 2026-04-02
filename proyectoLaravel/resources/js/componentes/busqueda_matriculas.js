@@ -1,4 +1,4 @@
-const busqueda_matriculas = {
+export default {
     data() {
         return {
             buscar: '',
@@ -11,7 +11,7 @@ const busqueda_matriculas = {
             this.$emit('modificar', matricula);
         },
         async obtenerMatriculas() {
-            fetch(`private/modulos/matriculas/matricula.php?accion=consultar&buscar=${this.buscar}`)
+            fetch(`/api/matriculas?buscar=${this.buscar}`)
                 .then(response => response.json())
                 .then(data => {
                     this.matriculas = data;
@@ -20,7 +20,7 @@ const busqueda_matriculas = {
         async eliminarMatricula(matricula, e) {
             e.stopPropagation();
             alertify.confirm('Eliminar Matricula', `¿Está seguro de eliminar esta matrícula?`, async () => {
-                fetch(`private/modulos/matriculas/matricula.php?accion=eliminar&matriculas=${JSON.stringify(matricula)}`)
+                fetch(`/api/matriculas/${matricula.idMatricula}`, { method: 'DELETE' })
                     .then(response => response.json())
                     .then(data => {
                         if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);

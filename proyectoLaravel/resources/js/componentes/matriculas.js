@@ -1,4 +1,4 @@
-const matriculas = {
+export default {
     props: ['forms'],
     data() {
         return {
@@ -35,7 +35,13 @@ const matriculas = {
                 fecha: this.matricula.fecha,
                 pago: this.matricula.pago
             };
-            fetch(`private/modulos/matriculas/matricula.php?accion=${this.accion}&matriculas=${JSON.stringify(datos)}`)
+            const method = this.accion === 'nuevo' ? 'POST' : 'PUT';
+            const url = this.accion === 'nuevo' ? '/api/matriculas' : '/api/matriculas/' + this.idMatricula;
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            })
                 .then(response=>response.json())
                 .then(data=>{
                     if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
@@ -56,7 +62,7 @@ const matriculas = {
             this.matricula.pago = 'No';
         },
         async obtenerAlumnos() {
-            fetch(`private/modulos/alumnos/alumno.php?accion=consultar`)
+            fetch(`/api/alumnos`)
                 .then(response=>response.json())
                 .then(data=>{
                     this.alumnos = data;

@@ -1,4 +1,4 @@
-const materias = {
+export default {
     props:['forms'],
     data(){
         return{
@@ -39,7 +39,13 @@ const materias = {
                 alertify.error(`El codigo del materia ya existe, ${this.data_materias[0].nombre}`);
                 return; //Termina la ejecucion de la funcion
             }
-            fetch(`private/modulos/materias/materia.php?accion=${this.accion}&materias=${JSON.stringify(datos)}`)
+            const method = this.accion === 'nuevo' ? 'POST' : 'PUT';
+            const url = this.accion === 'nuevo' ? '/api/materias' : '/api/materias/' + this.idMateria;
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            })
                 .then(response=>response.json())
                 .then(data=>{
                     if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);

@@ -1,4 +1,4 @@
-const inscripciones = {
+export default {
     props: ['forms'],
     data() {
         return {
@@ -36,7 +36,13 @@ const inscripciones = {
                 ciclo: this.inscripcion.ciclo,
                 fecha: this.inscripcion.fecha
             };
-            fetch(`private/modulos/inscripciones/inscripcion.php?accion=${this.accion}&inscripciones=${JSON.stringify(datos)}`)
+            const method = this.accion === 'nuevo' ? 'POST' : 'PUT';
+            const url = this.accion === 'nuevo' ? '/api/inscripciones' : '/api/inscripciones/' + this.idInscripcion;
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            })
                 .then(response=>response.json())
                 .then(data=>{
                     if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
@@ -57,12 +63,12 @@ const inscripciones = {
             this.inscripcion.fecha = '';
         },
         async cargarDatos() {
-            fetch(`private/modulos/alumnos/alumno.php?accion=consultar`)
+            fetch(`/api/alumnos`)
                 .then(response=>response.json())
                 .then(data=>{
                     this.alumnos = data;
                 });
-            fetch(`private/modulos/materias/materia.php?accion=consultar`)
+            fetch(`/api/materias`)
                 .then(response=>response.json())
                 .then(data=>{
                     this.materias = data;
