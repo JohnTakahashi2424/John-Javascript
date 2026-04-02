@@ -42,6 +42,11 @@ createApp({
             }
         }
     },
+    computed: {
+        anyFormActive() {
+            return Object.values(this.forms).some(f => f.mostrar);
+        }
+    },
     methods:{
         buscar(ventana, metodo){
             this.$refs[ventana][metodo]();

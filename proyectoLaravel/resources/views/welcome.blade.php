@@ -112,6 +112,53 @@
         /* General Utils */
         .cursor-pointer { cursor: pointer; }
         .transition-all { transition: all 0.3s ease-in-out; }
+        /* Welcome Screen Styles */
+        .welcome-hero {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 1.5rem;
+            color: white;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .welcome-hero::after {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .welcome-illustration {
+            max-width: 450px;
+            filter: drop-shadow(0 20px 30px rgba(0,0,0,0.2));
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
     </style>
 </head>
 <body>
@@ -175,6 +222,67 @@
 
             <!-- App Container -->
             <div id="appSistema" class="container-fluid p-4 p-md-5 overflow-auto">
+                <!-- Welcome Home Screen -->
+                <div v-if="!anyFormActive" class="fade-in">
+                    <div class="welcome-hero mb-5">
+                        <div class="row align-items-center">
+                            <div class="col-lg-7">
+                                <h4 class="text-primary-emphasis fw-bold mb-2 tracking-tight" style="color: #60a5fa !important;">Panel de Control</h4>
+                                <h1 class="display-4 fw-extrabold mb-4">¡Bienvenido de nuevo, Administrador!</h1>
+                                <p class="lead text-slate-300 mb-5" style="color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">
+                                    Tu centro de mando académico está listo. Gestiona alumnos, docentes y trámites institucionales con eficiencia y estilo desde un solo lugar.
+                                </p>
+                                <div class="d-flex gap-3 flex-wrap">
+                                    <div class="stat-card">
+                                        <div class="text-muted small mb-1 uppercase tracking-wider">Fecha de Hoy</div>
+                                        <div class="fs-5 fw-bold text-white">@{{ new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="text-muted small mb-1 uppercase tracking-wider">Estado Sistema</div>
+                                        <div class="fs-5 fw-bold text-success d-flex align-items-center">
+                                            <span class="p-1 px-2 me-2 rounded-pill bg-success bg-opacity-20 fs-6">Activo</span>
+                                            MySQL Conectado
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-5 d-none d-lg-block text-center">
+                                <img src="{{ asset('welcome_illustration.png') }}" alt="Illustration" class="welcome-illustration img-fluid">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="bg-white p-4 rounded-4 shadow-sm border border-light h-100 transition-all hover-shadow-md cursor-pointer" @click="abrirVentana('alumnos')">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3 d-inline-block mb-3">
+                                    <i class="bi bi-people fs-3"></i>
+                                </div>
+                                <h5 class="fw-bold">Gestión de Alumnos</h5>
+                                <p class="text-muted small">Registra nuevos ingresos, busca expedientes y actualiza información de contacto.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="bg-white p-4 rounded-4 shadow-sm border border-light h-100 transition-all hover-shadow-md cursor-pointer" @click="abrirVentana('matriculas')">
+                                <div class="bg-success bg-opacity-10 text-success rounded-3 p-3 d-inline-block mb-3">
+                                    <i class="bi bi-layout-text-sidebar-reverse fs-3"></i>
+                                </div>
+                                <h5 class="fw-bold">Trámites de Matrícula</h5>
+                                <p class="text-muted small">Controla el proceso de matriculación anual y el estado de pagos de los estudiantes.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="bg-white p-4 rounded-4 shadow-sm border border-light h-100 transition-all hover-shadow-md cursor-pointer" @click="abrirVentana('docentes')">
+                                <div class="bg-warning bg-opacity-10 text-warning rounded-3 p-3 d-inline-block mb-3">
+                                    <i class="bi bi-person-workspace fs-3"></i>
+                                </div>
+                                <h5 class="fw-bold">Directorio Docente</h5>
+                                <p class="text-muted small">Administra la planta académica, sus especialidades y registros contractuales.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <alumnos @buscar='buscar("busqueda_alumnos","obtenerAlumnos")' :forms="forms" ref="alumnos" v-show="forms.alumnos.mostrar"></alumnos>
                 <busqueda_alumnos @modificar='modificar("alumnos","modificarAlumno", $event)' ref="busqueda_alumnos" v-show="forms.busqueda_alumnos.mostrar"></busqueda_alumnos>
 
