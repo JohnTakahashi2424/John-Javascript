@@ -201,18 +201,8 @@
         <!-- Main Content -->
         <main class="main-content">
             <!-- Topbar -->
-            <header class="topbar">
-                <div class="search-bar-top">
-                    <i class="bi bi-search text-muted"></i>
-                    <input type="text" placeholder="Búsqueda global (Cmd+K)">
-                </div>
+            <header class="topbar" style="justify-content: flex-end;">
                 <div class="d-flex align-items-center gap-4">
-                    <div class="position-relative cursor-pointer">
-                        <i class="bi bi-bell fs-5 text-secondary transition-all hover-primary"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
-                            <span class="visually-hidden">Nuevas notificaciones</span>
-                        </span>
-                    </div>
                     <div class="d-flex align-items-center cursor-pointer">
                         <span class="me-2 fw-semibold text-secondary d-none d-md-block" style="font-size:0.9rem;">Admin</span>
                         <img src="https://ui-avatars.com/api/?name=Admin&background=eff6ff&color=1d4ed8&rounded=true" alt="User Avatar" class="rounded-circle shadow-sm" width="36" height="36">
