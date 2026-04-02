@@ -30,41 +30,67 @@ export default {
                 //No hacer nada
             });
         },
+        mostrarFormulario(ventana){
+            this.$parent.abrirVentana(ventana);
+        }
     },
     template: `
-        <div class="row">
-            <div class="col-6">
-                <table class="table table-striped table-hover" id="tblDocentes">
-                    <thead>
-                        <tr>
-                            <th colspan="6">
-                                <input autocomplete="off" type="search" @keyup="obtenerDocentes()" v-model="buscar" placeholder="Buscar docente" class="form-control">
-                            </th>
-                        </tr>
-                        <tr>
-                            <th>CODIGO</th>
-                            <th>NOMBRE</th>
-                            <th>DIRECCION</th>
-                            <th>EMAIL</th>
-                            <th>TELEFONO</th>
-                            <th>ESCALAFON</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="docente in docentes" :key="docente.idDocente" @click="modificarDocente(docente)">
-                            <td>{{ docente.codigo }}</td>
-                            <td>{{ docente.nombre }}</td>
-                            <td>{{ docente.direccion }}</td>
-                            <td>{{ docente.email }}</td>
-                            <td>{{ docente.telefono }}</td>
-                            <td>{{ docente.escalafon }}</td>
-                            <td>
-                                <button class="btn btn-danger" @click="eliminarDocente(docente, $event)">DEL</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="row mt-4">
+            <div class="col-12 col-md-11 col-lg-10 col-xl-9 mx-auto">
+                <div class="card shadow-sm border-0 rounded-4 mb-4 bg-body">
+                    <div class="card-header bg-success text-white text-center py-2 rounded-top-4 border-0">
+                        <h5 class="mb-0 fw-bold fs-6"><i class="bi bi-search me-2"></i> BÚSQUEDA DE DOCENTES</h5>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="input-group input-group-sm mb-3 shadow-sm rounded-pill overflow-hidden">
+                            <span class="input-group-text bg-body-tertiary border-0 text-secondary px-3"><i class="bi bi-search"></i></span>
+                            <input autocomplete="off" type="search" @keyup="obtenerDocentes()" v-model="buscar" placeholder="Buscar por código, nombre o correo..." class="form-control bg-body-tertiary border-0 px-3 text-body shadow-none py-1">
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm fs-6 table-hover align-middle mb-0" id="tblDocentes">
+                                <thead>
+                                    <tr>
+                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold">CÓDIGO</th>
+                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold">NOMBRE</th>
+                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold">DIRECCIÓN</th>
+                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold">EMAIL</th>
+                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold">TELÉFONO</th>
+                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold">ESCALAFÓN</th>
+                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold text-center">ACCIONES</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="border-top-0">
+                                    <tr v-for="docente in docentes" :key="docente.idDocente" @click="modificarDocente(docente)" class="cursor-pointer transition-all">
+                                        <td><span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 fs-6 rounded-pill px-3">{{ docente.codigo }}</span></td>
+                                        <td class="fw-semibold">{{ docente.nombre }}</td>
+                                        <td>{{ docente.direccion }}</td>
+                                        <td>{{ docente.email }}</td>
+                                        <td>{{ docente.telefono }}</td>
+                                        <td class="text-capitalize"><span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 fs-6 rounded-pill px-3">{{ docente.escalafon }}</span></td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <button @click.stop="modificarDocente(docente)" class="btn btn-outline-info btn-sm rounded-pill shadow-sm px-2 me-1">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </button>
+                                                <button @click.stop="eliminarDocente(docente, $event)" class="btn btn-outline-danger btn-sm rounded-pill shadow-sm px-2">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr v-if="docentes.length == 0">
+                                        <td colspan="7" class="text-center text-muted py-3">No se encontraron docentes...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 text-center pb-4">
+                        <button type="button" @click="mostrarFormulario('docentes')" class="btn btn-outline-secondary rounded-pill px-4 shadow-sm">
+                            <i class="bi bi-arrow-left-circle me-1"></i> Volver a Registro
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     `
