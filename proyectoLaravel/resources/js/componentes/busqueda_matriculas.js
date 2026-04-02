@@ -37,60 +37,85 @@ export default {
         this.obtenerMatriculas();
     },
     template: `
-        <div class="row mt-4">
-            <div class="col-12 col-md-10 col-lg-8 col-xl-7 mx-auto">
-                <div class="card shadow-sm border-0 rounded-4 mb-4 bg-body">
-                    <div class="card-header bg-success text-white text-center py-2 rounded-top-4 border-0">
-                        <h5 class="mb-0 fw-bold fs-6"><i class="bi bi-search me-2"></i> BÚSQUEDA DE MATRÍCULAS</h5>
-                    </div>
-                    <div class="card-body p-3">
-                        <div class="input-group input-group-sm mb-3 shadow-sm rounded-pill overflow-hidden">
-                            <span class="input-group-text bg-body-tertiary border-0 text-secondary px-3"><i class="bi bi-search"></i></span>
-                            <input autocomplete="off" type="search" @keyup="obtenerMatriculas()" v-model="buscar" placeholder="Buscar por alumno o ciclo..." class="form-control bg-body-tertiary border-0 px-3 text-body shadow-none py-1">
+        <div class="row w-100 m-0">
+            <div class="col-12 col-xl-11 mx-auto">
+                <div class="bg-white rounded-4 shadow-sm border border-light p-4 p-md-5">
+                    <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-success bg-opacity-10 text-success rounded-3 p-2 me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                <i class="bi bi-search fs-4"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-1 fw-bold text-dark">Archivo de Matrículas</h4>
+                                <p class="mb-0 text-muted small">Consulta rápida de inscripciones por ciclo</p>
+                            </div>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-sm fs-6 table-hover align-middle mb-0" id="tblMatriculas">
-                                <thead>
-                                    <tr>
-                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold">ALUMNO</th>
-                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold">CICLO</th>
-                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold">FECHA</th>
-                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold">PAGADO</th>
-                                        <th class="py-2 border-bottom-0 text-secondary fw-semibold text-center">ACCIONES</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="border-top-0">
-                                    <tr v-for="matricula in matriculas" :key="matricula.idMatricula" @click="modificarMatricula(matricula)" class="cursor-pointer transition-all">
-                                        <td class="fw-semibold">{{ matricula.nombreAlumno }}</td>
-                                        <td><span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 fs-6 rounded-pill px-3">{{ matricula.ciclo }}</span></td>
-                                        <td>{{ matricula.fecha }}</td>
-                                        <td>
-                                            <span :class="matricula.pago === 'Si' ? 'bg-success text-success' : 'bg-danger text-danger'" class="badge bg-opacity-10 border border-opacity-25 fs-6 rounded-pill px-3">
-                                                {{ matricula.pago === 'Si' ? 'Sí' : 'No' }}
-                                            </span>
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="btn-group">
-                                                <button @click.stop="modificarMatricula(matricula)" class="btn btn-outline-info btn-sm rounded-pill shadow-sm px-2 me-1">
-                                                    <i class="bi bi-pencil-fill"></i>
-                                                </button>
-                                                <button @click.stop="eliminarMatricula(matricula, $event)" class="btn btn-outline-danger btn-sm rounded-pill shadow-sm px-2">
-                                                    <i class="bi bi-trash-fill"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr v-if="matriculas.length == 0">
-                                        <td colspan="5" class="text-center text-muted py-3">No se encontraron matrículas...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-transparent border-0 text-center pb-4">
-                        <button type="button" @click="mostrarFormulario('matriculas')" class="btn btn-outline-secondary rounded-pill px-4 shadow-sm">
-                            <i class="bi bi-arrow-left-circle me-1"></i> Volver a Registro
+                        <button type="button" @click="mostrarFormulario('matriculas')" class="btn btn-light text-muted fw-semibold rounded-pill px-4 shadow-sm border transition-all">
+                            <i class="bi bi-arrow-left me-2"></i> Nuevo Registro
                         </button>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border">
+                            <span class="input-group-text bg-white border-end-0 pe-1 text-muted ps-4"><i class="bi bi-search"></i></span>
+                            <input autocomplete="off" type="search" @keyup="obtenerMatriculas()" v-model="buscar" placeholder="Busca por nombre del alumno o ciclo..." class="form-control border-start-0 ps-2 bg-white fs-6" style="outline: none; box-shadow: none;">
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive rounded-3 border border-light shadow-sm">
+                        <table class="table table-hover align-middle mb-0 bg-white">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="py-3 px-4 text-muted fw-semibold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">Estudiante</th>
+                                    <th class="py-3 px-4 text-muted fw-semibold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">Ciclo</th>
+                                    <th class="py-3 px-4 text-muted fw-semibold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">Fecha de Registro</th>
+                                    <th class="py-3 px-4 text-muted fw-semibold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">Estado Financiero</th>
+                                    <th class="py-3 px-4 text-end text-muted fw-semibold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="matricula in matriculas" :key="matricula.idMatricula" @click="modificarMatricula(matricula)" class="cursor-pointer transition-all">
+                                    <td class="py-3 px-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 36px; height: 36px;">
+                                                <i class="bi bi-person-fill"></i>
+                                            </div>
+                                            <span class="fw-semibold text-dark">{{ matricula.nombreAlumno }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-3 py-1 rounded font-monospace">{{ matricula.ciclo }}</span>
+                                    </td>
+                                    <td class="py-3 px-4 text-muted small"><i class="bi bi-calendar-event me-2"></i>{{ matricula.fecha }}</td>
+                                    <td class="py-3 px-4">
+                                        <span v-if="matricula.pago === 'Si'" class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded d-inline-flex align-items-center gap-1">
+                                            <i class="bi bi-check-circle-fill" style="font-size: 0.7rem;"></i> Solvente
+                                        </span>
+                                        <span v-else class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 rounded d-inline-flex align-items-center gap-1">
+                                            <i class="bi bi-exclamation-circle-fill" style="font-size: 0.7rem;"></i> Pendiente
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4 text-end">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <button @click.stop="modificarMatricula(matricula)" class="btn btn-light btn-sm text-primary p-2 border-0 shadow-none transition-all rounded-circle" title="Modificar">
+                                                <i class="bi bi-pencil-square fs-5"></i>
+                                            </button>
+                                            <button @click.stop="eliminarMatricula(matricula, $event)" class="btn btn-light btn-sm text-danger p-2 border-0 shadow-none transition-all rounded-circle" title="Anular">
+                                                <i class="bi bi-trash fs-5"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr v-if="matriculas.length == 0">
+                                    <td colspan="5" class="text-center py-5">
+                                        <div class="d-flex flex-column align-items-center text-muted">
+                                            <i class="bi bi-inbox fs-1 mb-3 opacity-50"></i>
+                                            <p class="mb-0 fw-medium">No hay registros de matrículas almacenadas.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
