@@ -34,6 +34,9 @@ export default {
             this.$parent.abrirVentana(ventana);
         }
     },
+    mounted(){
+        this.obtenerAlumnos();
+    },
     template: `
         <div class="row w-100 m-0">
             <div class="col-12 col-xl-11 mx-auto">
