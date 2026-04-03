@@ -19,12 +19,13 @@ export default {
                 });
         },
         filtrarAlumnos() {
-            const termino = this.buscar.toLowerCase();
-            this.alumnos = this.alumnos_cache.filter(a => 
-                a.codigo.toLowerCase().includes(termino) || 
-                a.nombre.toLowerCase().includes(termino) || 
-                a.email.toLowerCase().includes(termino)
-            );
+            const normalizar = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            const terminos = normalizar(this.buscar).split(' ').filter(t => t.length > 0);
+            
+            this.alumnos = this.alumnos_cache.filter(a => {
+                const dataString = normalizar(`${a.codigo} ${a.nombre} ${a.email} ${a.direccion} ${a.telefono}`);
+                return terminos.every(t => dataString.includes(t));
+            });
         },
         async eliminarAlumno(alumno, e){
             e.stopPropagation();

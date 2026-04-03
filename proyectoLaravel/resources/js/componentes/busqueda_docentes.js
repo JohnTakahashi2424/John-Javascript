@@ -19,13 +19,13 @@ export default {
                 });
         },
         filtrarDocentes() {
-            const termino = this.buscar.toLowerCase();
-            this.docentes = this.docentes_cache.filter(d => 
-                d.codigo.toLowerCase().includes(termino) || 
-                d.nombre.toLowerCase().includes(termino) || 
-                d.email.toLowerCase().includes(termino) ||
-                d.escalafon.toLowerCase().includes(termino)
-            );
+            const normalizar = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            const terminos = normalizar(this.buscar).split(' ').filter(t => t.length > 0);
+            
+            this.docentes = this.docentes_cache.filter(d => {
+                const dataString = normalizar(`${d.codigo} ${d.nombre} ${d.email} ${d.direccion} ${d.telefono} ${d.escalafon}`);
+                return terminos.every(t => dataString.includes(t));
+            });
         },
         async eliminarDocente(docente, e){
             e.stopPropagation();

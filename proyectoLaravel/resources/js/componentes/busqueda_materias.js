@@ -19,11 +19,13 @@ export default {
                 });
         },
         filtrarMaterias() {
-            const termino = this.buscar.toLowerCase();
-            this.materias = this.materias_cache.filter(m => 
-                m.codigo.toLowerCase().includes(termino) || 
-                m.nombre.toLowerCase().includes(termino)
-            );
+            const normalizar = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            const terminos = normalizar(this.buscar).split(' ').filter(t => t.length > 0);
+            
+            this.materias = this.materias_cache.filter(m => {
+                const dataString = normalizar(`${m.codigo} ${m.nombre} ${m.uv}`);
+                return terminos.every(t => dataString.includes(t));
+            });
         },
         async eliminarMateria(materia, e){
             e.stopPropagation();

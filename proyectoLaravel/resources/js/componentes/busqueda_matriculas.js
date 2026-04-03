@@ -20,11 +20,13 @@ export default {
                 });
         },
         filtrarMatriculas() {
-            const termino = this.buscar.toLowerCase();
-            this.matriculas = this.matriculas_cache.filter(m => 
-                (m.nombreAlumno && m.nombreAlumno.toLowerCase().includes(termino)) || 
-                (m.ciclo && m.ciclo.toLowerCase().includes(termino))
-            );
+            const normalizar = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            const terminos = normalizar(this.buscar).split(' ').filter(t => t.length > 0);
+            
+            this.matriculas = this.matriculas_cache.filter(m => {
+                const dataString = normalizar(`${m.nombreAlumno} ${m.ciclo} ${m.fecha} ${m.pago}`);
+                return terminos.every(t => dataString.includes(t));
+            });
         },
         async eliminarMatricula(matricula, e) {
             e.stopPropagation();

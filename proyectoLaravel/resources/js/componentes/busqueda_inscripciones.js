@@ -19,12 +19,13 @@ export default {
                 });
         },
         filtrarInscripciones() {
-            const termino = this.buscar.toLowerCase();
-            this.inscripciones = this.inscripciones_cache.filter(i => 
-                (i.nombreAlumno && i.nombreAlumno.toLowerCase().includes(termino)) || 
-                (i.nombreMateria && i.nombreMateria.toLowerCase().includes(termino)) ||
-                (i.ciclo && i.ciclo.toLowerCase().includes(termino))
-            );
+            const normalizar = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            const terminos = normalizar(this.buscar).split(' ').filter(t => t.length > 0);
+            
+            this.inscripciones = this.inscripciones_cache.filter(i => {
+                const dataString = normalizar(`${i.nombreAlumno} ${i.nombreMateria} ${i.ciclo} ${i.fecha}`);
+                return terminos.every(t => dataString.includes(t));
+            });
         },
         async eliminarInscripcion(inscripcion, e) {
             e.stopPropagation();
