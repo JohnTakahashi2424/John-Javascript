@@ -50,8 +50,24 @@ export default {
                 .then(data=>{
                     if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
                 });
+            
+            // Actualización Instantánea Optimista
+            const refBusqueda = this.$parent.$refs.busqueda_materias;
+            if (refBusqueda) {
+                if (this.accion === 'nuevo') {
+                    refBusqueda.materias.unshift({...datos}); 
+                } else {
+                    const index = refBusqueda.materias.findIndex(x => x.idMateria === this.idMateria);
+                    if (index !== -1) {
+                        refBusqueda.materias[index] = {...datos};
+                    }
+                }
+            }
+            
             this.limpiarFormulario();
             alertify.success(`Materia ${datos.nombre} guardada correctamente`);
+            // Cambiar automáticamente a la vista de búsqueda
+            this.buscarMateria();
         },
         getId(){
             return new Date().getTime();

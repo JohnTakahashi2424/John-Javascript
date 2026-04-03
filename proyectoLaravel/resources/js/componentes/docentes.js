@@ -59,8 +59,24 @@ export default {
                 .then(data=>{
                     if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
                 });
+            
+            // Actualización Instantánea Optimista
+            const refBusqueda = this.$parent.$refs.busqueda_docentes;
+            if (refBusqueda) {
+                if (this.accion === 'nuevo') {
+                    refBusqueda.docentes.unshift({...datos}); 
+                } else {
+                    const index = refBusqueda.docentes.findIndex(x => x.idDocente === this.idDocente);
+                    if (index !== -1) {
+                        refBusqueda.docentes[index] = {...datos};
+                    }
+                }
+            }
+            
             this.limpiarFormulario();
             alertify.success(`${datos.nombre} guardado correctamente`);
+            // Cambiar automáticamente a la vista de búsqueda
+            this.buscarDocente();
         },
         getId(){
             return new Date().getTime();

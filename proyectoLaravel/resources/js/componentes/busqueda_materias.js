@@ -18,12 +18,19 @@ export default {
         },
         async eliminarMateria(materia, e){
             e.stopPropagation();
-            alertify.confirm('Eliminar materias', `¿Está seguro de eliminar el materia ${materia.nombre}?`, async e=>{
+            alertify.confirm('Eliminar materias', `¿Está seguro de eliminar la materia ${materia.nombre}?`, async e=>{
+                // Borrado Optimista (Inmediato)
+                const index = this.materias.findIndex(x => x.idMateria === materia.idMateria);
+                if (index !== -1) this.materias.splice(index, 1);
+                
+                // Petición en segundo plano
                 fetch(`/api/materias/${materia.idMateria}`, { method: 'DELETE' })
                     .then(response=>response.json())
                     .then(data=>{
-                        if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
-                        this.obtenerMaterias();
+                        if(data!=true) {
+                            alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                            this.obtenerMaterias();
+                        }
                     });
                 alertify.success(`Materia ${materia.nombre} eliminada correctamente`);
             }, () => {

@@ -47,9 +47,31 @@ export default {
                 .then(data=>{
                     if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
                 });
+            
+            // Actualización Instantánea Optimista
+            const refBusqueda = this.$parent.$refs.busqueda_inscripciones;
+            if (refBusqueda) {
+                const alumnoSelect = this.alumnos.find(a => a.idAlumno === datos.idAlumno);
+                const materiaSelect = this.materias.find(m => m.idMateria === datos.idMateria);
+                const objParaTabla = {
+                    ...datos,
+                    nombreAlumno: alumnoSelect ? alumnoSelect.nombre : 'Desconocido',
+                    nombreMateria: materiaSelect ? materiaSelect.nombre : 'Desconocida'
+                };
+                
+                if (this.accion === 'nuevo') {
+                    refBusqueda.inscripciones.unshift(objParaTabla); 
+                } else {
+                    const index = refBusqueda.inscripciones.findIndex(x => x.idInscripcion === this.idInscripcion);
+                    if (index !== -1) {
+                        refBusqueda.inscripciones[index] = objParaTabla;
+                    }
+                }
+            }
+            
             this.limpiarFormulario();
             alertify.success(`Inscripción guardada correctamente`);
-            this.$emit('buscar');
+            this.buscarInscripcion(); // Cambiar automáticamente a la vista de búsqueda
         },
         getId() {
             return new Date().getTime();

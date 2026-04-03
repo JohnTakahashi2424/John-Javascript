@@ -19,11 +19,18 @@ export default {
         async eliminarInscripcion(inscripcion, e) {
             e.stopPropagation();
             alertify.confirm('Eliminar Inscripcion', `¿Está seguro de eliminar esta inscripción?`, async () => {
+                // Borrado Optimista (Inmediato)
+                const index = this.inscripciones.findIndex(x => x.idInscripcion === inscripcion.idInscripcion);
+                if (index !== -1) this.inscripciones.splice(index, 1);
+                
+                // Transacción en segundo plano
                 fetch(`/api/inscripciones/${inscripcion.idInscripcion}`, { method: 'DELETE' })
                     .then(response => response.json())
                     .then(data => {
-                        if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
-                        this.obtenerInscripciones();
+                        if(data!=true) {
+                            alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                            this.obtenerInscripciones();
+                        }
                     });
                 alertify.success(`Inscripción eliminada correctamente`);
             }, () => { });

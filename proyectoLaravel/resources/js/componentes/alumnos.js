@@ -57,9 +57,24 @@ export default {
                 .then(data=>{
                     if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
                 });
+            
+            // Actualización Instantánea Optimista
+            const refBusqueda = this.$parent.$refs.busqueda_alumnos;
+            if (refBusqueda) {
+                if (this.accion === 'nuevo') {
+                    refBusqueda.alumnos.unshift({...datos}); 
+                } else {
+                    const index = refBusqueda.alumnos.findIndex(x => x.idAlumno === this.idAlumno);
+                    if (index !== -1) {
+                        refBusqueda.alumnos[index] = {...datos};
+                    }
+                }
+            }
+            
             this.limpiarFormulario();
             alertify.success(`${datos.nombre} guardado correctamente`);
-            //this.obtenerAlumnos();
+            // Cambiar automáticamente a la vista de búsqueda
+            this.buscarAlumno();
         },
         getId(){
             return new Date().getTime();

@@ -18,13 +18,20 @@ export default {
         },
         async eliminarAlumno(alumno, e){
             e.stopPropagation();
-            alertify.confirm('Elimanar alumnos', `¿Está seguro de eliminar el alumno ${alumno.nombre}?`, async e=>{
+            alertify.confirm('Eliminar alumnos', `¿Está seguro de eliminar el alumno ${alumno.nombre}?`, async e=>{
+                // 1. Borrado Optimista (Inmediato)
+                const index = this.alumnos.findIndex(x => x.idAlumno === alumno.idAlumno);
+                if (index !== -1) this.alumnos.splice(index, 1);
+                
+                // 2. Transacción de fondo
                 fetch(`/api/alumnos/${alumno.idAlumno}`, { method: 'DELETE' })
                     .then(response=>response.json())
                     .then(data=>{
-                        if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                        if(data!=true) {
+                            alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                            this.obtenerAlumnos(); // Revertir visualmente si falló
+                        }
                     });
-                this.obtenerAlumnos();
                 alertify.success(`Alumno ${alumno.nombre} eliminado correctamente`);
             }, () => {
                 //No hacer nada

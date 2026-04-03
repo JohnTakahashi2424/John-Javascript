@@ -46,9 +46,30 @@ export default {
                 .then(data=>{
                     if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
                 });
+            
+            // Actualización Instantánea Optimista
+            const refBusqueda = this.$parent.$refs.busqueda_matriculas;
+            if (refBusqueda) {
+                // Resolver el nombre del alumno para la tabla
+                const alumnoSelect = this.alumnos.find(a => a.idAlumno === datos.idAlumno);
+                const objParaTabla = {
+                    ...datos,
+                    nombreAlumno: alumnoSelect ? alumnoSelect.nombre : 'Desconocido'
+                };
+                
+                if (this.accion === 'nuevo') {
+                    refBusqueda.matriculas.unshift(objParaTabla); 
+                } else {
+                    const index = refBusqueda.matriculas.findIndex(x => x.idMatricula === this.idMatricula);
+                    if (index !== -1) {
+                        refBusqueda.matriculas[index] = objParaTabla;
+                    }
+                }
+            }
+            
             this.limpiarFormulario();
             alertify.success(`Matrícula guardada correctamente`);
-            this.$emit('buscar');
+            this.buscarMatricula(); // Cambiar automáticamente a la vista de búsqueda
         },
         getId() {
             return new Date().getTime();

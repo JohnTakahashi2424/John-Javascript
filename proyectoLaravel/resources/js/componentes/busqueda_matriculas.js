@@ -20,11 +20,18 @@ export default {
         async eliminarMatricula(matricula, e) {
             e.stopPropagation();
             alertify.confirm('Eliminar Matricula', `¿Está seguro de eliminar esta matrícula?`, async () => {
+                // Borrado Optimista (Inmediato)
+                const index = this.matriculas.findIndex(x => x.idMatricula === matricula.idMatricula);
+                if (index !== -1) this.matriculas.splice(index, 1);
+                
+                // Transacción en segundo plano
                 fetch(`/api/matriculas/${matricula.idMatricula}`, { method: 'DELETE' })
                     .then(response => response.json())
                     .then(data => {
-                        if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
-                        this.obtenerMatriculas();
+                        if(data!=true) {
+                            alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                            this.obtenerMatriculas();
+                        }
                     });
                 alertify.success(`Matrícula eliminada correctamente`);
             }, () => { });
