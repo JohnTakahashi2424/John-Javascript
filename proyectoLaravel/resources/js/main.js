@@ -102,6 +102,14 @@ document.addEventListener('click', function(e) {
             }
         }
     }
+
+    // === BOTÓN DE OCULTAR/MOSTRAR SIDEBAR ===
+    const btnSidebar = e.target.closest('#sidebarToggle');
+    if (btnSidebar) {
+        e.preventDefault();
+        console.log('[Sidebar] Alternando visibilidad (Colapso)');
+        document.body.classList.toggle('sidebar-collapsed');
+    }
 });
 
 

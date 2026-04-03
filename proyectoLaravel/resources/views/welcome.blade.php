@@ -122,6 +122,7 @@
         /* Sidebar Styles */
         .sidebar {
             width: 260px;
+            min-width: 260px;
             background: var(--sidebar-bg);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
@@ -129,13 +130,29 @@
             flex-shrink: 0;
             box-shadow: 4px 0 15px rgba(0,0,0,0.05);
             z-index: 1000;
-            transition: background-color 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             height: 100vh;
             position: sticky;
             top: 0;
             border-right: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        /* Estado Colapsado Profesional */
+        .sidebar-collapsed .sidebar {
+            width: 0 !important;
+            min-width: 0 !important;
+            margin-left: 0;
+            opacity: 0;
+            border-right: 0;
+            pointer-events: none;
+        }
+        
+        .sidebar-collapsed .main-content {
+            width: 100%;
+            flex: 1;
         }
         
         .sidebar-brand {
@@ -331,7 +348,27 @@
 
         <!-- Main Content -->
         <main class="main-content">
+            <!-- Topbar con Botón de Toggle -->
+            <header class="topbar">
+                <div class="d-flex align-items-center">
+                    <button id="sidebarToggle" class="btn btn-light rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                        <i class="bi bi-list fs-4"></i>
+                    </button>
+                    <div class="search-bar-top d-none d-md-flex">
+                        <i class="bi bi-search text-muted"></i>
+                        <input type="text" placeholder="Buscar funciones o expedientes...">
+                    </div>
+                </div>
 
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-none d-lg-block text-end me-2">
+                        <div class="fw-bold small text-dark">Portal Académico</div>
+                        <div class="text-success small d-flex align-items-center justify-content-end" style="font-size: 0.7rem;">
+                            <span class="p-1 me-1 rounded-circle bg-success" style="width: 6px; height: 6px;"></span> En línea
+                        </div>
+                    </div>
+                </div>
+            </header>
 
             <!-- App Container -->
             <div id="appSistema" class="container-fluid p-4 p-md-5 overflow-auto">
