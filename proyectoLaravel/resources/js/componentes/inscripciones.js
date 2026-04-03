@@ -60,13 +60,14 @@ export default {
                 };
                 
                 if (this.accion === 'nuevo') {
-                    refBusqueda.inscripciones.unshift(objParaTabla); 
+                    refBusqueda.inscripciones_cache.unshift(objParaTabla); 
                 } else {
-                    const index = refBusqueda.inscripciones.findIndex(x => x.idInscripcion === this.idInscripcion);
+                    const index = refBusqueda.inscripciones_cache.findIndex(x => x.idInscripcion === this.idInscripcion);
                     if (index !== -1) {
-                        refBusqueda.inscripciones[index] = objParaTabla;
+                        refBusqueda.inscripciones_cache[index] = objParaTabla;
                     }
                 }
+                refBusqueda.filtrarInscripciones();
             }
             
             this.limpiarFormulario();

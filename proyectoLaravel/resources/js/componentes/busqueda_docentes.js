@@ -2,6 +2,7 @@ export default {
     data(){
         return{
             buscar:'',
+            docentes_cache: [],
             docentes:[]
         }
     },
@@ -10,18 +11,31 @@ export default {
             this.$emit('modificar', docente);
         },
         async obtenerDocentes(){
-            fetch(`/api/docentes?buscar=${this.buscar}`)
+            fetch(`/api/docentes`) // Carga total silenciosa
                 .then(response=>response.json())
                 .then(data=>{
-                    this.docentes = data;
+                    this.docentes_cache = data;
+                    this.filtrarDocentes();
                 });
+        },
+        filtrarDocentes() {
+            const termino = this.buscar.toLowerCase();
+            this.docentes = this.docentes_cache.filter(d => 
+                d.codigo.toLowerCase().includes(termino) || 
+                d.nombre.toLowerCase().includes(termino) || 
+                d.email.toLowerCase().includes(termino) ||
+                d.escalafon.toLowerCase().includes(termino)
+            );
         },
         async eliminarDocente(docente, e){
             e.stopPropagation();
             alertify.confirm('Eliminar docentes', `¿Está seguro de eliminar el docente ${docente.nombre}?`, async e=>{
                 // Borrado Optimista (Inmediato)
-                const index = this.docentes.findIndex(x => x.idDocente === docente.idDocente);
-                if (index !== -1) this.docentes.splice(index, 1);
+                const index = this.docentes_cache.findIndex(x => x.idDocente === docente.idDocente);
+                if (index !== -1) {
+                    this.docentes_cache.splice(index, 1);
+                    this.filtrarDocentes();
+                }
                 
                 // Petición en segundo plano
                 fetch(`/api/docentes/${docente.idDocente}`, { method: 'DELETE' })
@@ -66,7 +80,7 @@ export default {
                     <div class="mb-4">
                         <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border">
                             <span class="input-group-text bg-white border-end-0 pe-1 text-muted ps-4"><i class="bi bi-search"></i></span>
-                            <input autocomplete="off" type="search" @keyup="obtenerDocentes()" v-model="buscar" placeholder="Ingresa código, nombre o email para buscar en el directorio..." class="form-control border-start-0 ps-2 bg-white fs-6" style="outline: none; box-shadow: none;">
+                            <input autocomplete="off" type="search" @keyup="filtrarDocentes()" v-model="buscar" placeholder="Ingresa código, nombre o email para buscar en el directorio..." class="form-control border-start-0 ps-2 bg-white fs-6" style="outline: none; box-shadow: none;">
                         </div>
                     </div>
                     

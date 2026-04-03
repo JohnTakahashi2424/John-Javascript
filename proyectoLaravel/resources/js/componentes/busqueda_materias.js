@@ -2,6 +2,7 @@ export default {
     data(){
         return{
             buscar:'',
+            materias_cache: [],
             materias:[]
         }
     },
@@ -10,18 +11,29 @@ export default {
             this.$emit('modificar', materia);
         },
         async obtenerMaterias(){
-            fetch(`/api/materias?buscar=${this.buscar}`)
+            fetch(`/api/materias`)
                 .then(response=>response.json())
                 .then(data=>{
-                    this.materias = data;
+                    this.materias_cache = data;
+                    this.filtrarMaterias();
                 });
+        },
+        filtrarMaterias() {
+            const termino = this.buscar.toLowerCase();
+            this.materias = this.materias_cache.filter(m => 
+                m.codigo.toLowerCase().includes(termino) || 
+                m.nombre.toLowerCase().includes(termino)
+            );
         },
         async eliminarMateria(materia, e){
             e.stopPropagation();
             alertify.confirm('Eliminar materias', `¿Está seguro de eliminar la materia ${materia.nombre}?`, async e=>{
                 // Borrado Optimista (Inmediato)
-                const index = this.materias.findIndex(x => x.idMateria === materia.idMateria);
-                if (index !== -1) this.materias.splice(index, 1);
+                const index = this.materias_cache.findIndex(x => x.idMateria === materia.idMateria);
+                if (index !== -1) {
+                    this.materias_cache.splice(index, 1);
+                    this.filtrarMaterias();
+                }
                 
                 // Petición en segundo plano
                 fetch(`/api/materias/${materia.idMateria}`, { method: 'DELETE' })
@@ -66,7 +78,7 @@ export default {
                     <div class="mb-4">
                         <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border">
                             <span class="input-group-text bg-white border-end-0 pe-1 text-muted ps-4"><i class="bi bi-search"></i></span>
-                            <input autocomplete="off" type="search" @keyup="obtenerMaterias()" v-model="buscar" placeholder="Ingresa código o nombre de la materia para buscar..." class="form-control border-start-0 ps-2 bg-white fs-6" style="outline: none; box-shadow: none;">
+                            <input autocomplete="off" type="search" @keyup="filtrarMaterias()" v-model="buscar" placeholder="Ingresa código o nombre de la materia para buscar..." class="form-control border-start-0 ps-2 bg-white fs-6" style="outline: none; box-shadow: none;">
                         </div>
                     </div>
                     

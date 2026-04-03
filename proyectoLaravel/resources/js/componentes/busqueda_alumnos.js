@@ -2,6 +2,7 @@ export default {
     data(){
         return{
             buscar:'',
+            alumnos_cache: [],
             alumnos:[]
         }
     },
@@ -10,18 +11,30 @@ export default {
             this.$emit('modificar', alumno);
         },
         async obtenerAlumnos(){
-            fetch(`/api/alumnos?buscar=${this.buscar}`)
+            fetch(`/api/alumnos`) // Carga total silenciosa
                 .then(response=>response.json())
                 .then(data=>{
-                    this.alumnos = data;
+                    this.alumnos_cache = data;
+                    this.filtrarAlumnos();
                 });
+        },
+        filtrarAlumnos() {
+            const termino = this.buscar.toLowerCase();
+            this.alumnos = this.alumnos_cache.filter(a => 
+                a.codigo.toLowerCase().includes(termino) || 
+                a.nombre.toLowerCase().includes(termino) || 
+                a.email.toLowerCase().includes(termino)
+            );
         },
         async eliminarAlumno(alumno, e){
             e.stopPropagation();
             alertify.confirm('Eliminar alumnos', `¿Está seguro de eliminar el alumno ${alumno.nombre}?`, async e=>{
                 // 1. Borrado Optimista (Inmediato)
-                const index = this.alumnos.findIndex(x => x.idAlumno === alumno.idAlumno);
-                if (index !== -1) this.alumnos.splice(index, 1);
+                const index = this.alumnos_cache.findIndex(x => x.idAlumno === alumno.idAlumno);
+                if (index !== -1) {
+                    this.alumnos_cache.splice(index, 1);
+                    this.filtrarAlumnos();
+                }
                 
                 // 2. Transacción de fondo
                 fetch(`/api/alumnos/${alumno.idAlumno}`, { method: 'DELETE' })
@@ -66,7 +79,7 @@ export default {
                     <div class="mb-4">
                         <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border">
                             <span class="input-group-text bg-white border-end-0 pe-1 text-muted ps-4"><i class="bi bi-search"></i></span>
-                            <input autocomplete="off" type="search" @keyup="obtenerAlumnos()" v-model="buscar" placeholder="Ingresa código, nombre o email para buscar en la base de datos..." class="form-control border-start-0 ps-2 bg-white fs-6" style="outline: none; box-shadow: none;">
+                            <input autocomplete="off" type="search" @keyup="filtrarAlumnos()" v-model="buscar" placeholder="Ingresa código, nombre o email para buscar en la base de datos..." class="form-control border-start-0 ps-2 bg-white fs-6" style="outline: none; box-shadow: none;">
                         </div>
                     </div>
                     

@@ -2,6 +2,7 @@ export default {
     data() {
         return {
             buscar: '',
+            matriculas_cache: [],
             matriculas: [],
             alumnos: []
         }
@@ -11,18 +12,29 @@ export default {
             this.$emit('modificar', matricula);
         },
         async obtenerMatriculas() {
-            fetch(`/api/matriculas?buscar=${this.buscar}`)
+            fetch(`/api/matriculas`)
                 .then(response => response.json())
                 .then(data => {
-                    this.matriculas = data;
+                    this.matriculas_cache = data;
+                    this.filtrarMatriculas();
                 });
+        },
+        filtrarMatriculas() {
+            const termino = this.buscar.toLowerCase();
+            this.matriculas = this.matriculas_cache.filter(m => 
+                (m.nombreAlumno && m.nombreAlumno.toLowerCase().includes(termino)) || 
+                (m.ciclo && m.ciclo.toLowerCase().includes(termino))
+            );
         },
         async eliminarMatricula(matricula, e) {
             e.stopPropagation();
             alertify.confirm('Eliminar Matricula', `¿Está seguro de eliminar esta matrícula?`, async () => {
                 // Borrado Optimista (Inmediato)
-                const index = this.matriculas.findIndex(x => x.idMatricula === matricula.idMatricula);
-                if (index !== -1) this.matriculas.splice(index, 1);
+                const index = this.matriculas_cache.findIndex(x => x.idMatricula === matricula.idMatricula);
+                if (index !== -1) {
+                    this.matriculas_cache.splice(index, 1);
+                    this.filtrarMatriculas();
+                }
                 
                 // Transacción en segundo plano
                 fetch(`/api/matriculas/${matricula.idMatricula}`, { method: 'DELETE' })
@@ -65,7 +77,7 @@ export default {
                     <div class="mb-4">
                         <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border">
                             <span class="input-group-text bg-white border-end-0 pe-1 text-muted ps-4"><i class="bi bi-search"></i></span>
-                            <input autocomplete="off" type="search" @keyup="obtenerMatriculas()" v-model="buscar" placeholder="Busca por nombre del alumno o ciclo..." class="form-control border-start-0 ps-2 bg-white fs-6" style="outline: none; box-shadow: none;">
+                            <input autocomplete="off" type="search" @keyup="filtrarMatriculas()" v-model="buscar" placeholder="Busca por nombre del alumno o ciclo..." class="form-control border-start-0 ps-2 bg-white fs-6" style="outline: none; box-shadow: none;">
                         </div>
                     </div>
                     

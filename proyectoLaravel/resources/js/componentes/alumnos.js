@@ -62,13 +62,14 @@ export default {
             const refBusqueda = this.$parent.$refs.busqueda_alumnos;
             if (refBusqueda) {
                 if (this.accion === 'nuevo') {
-                    refBusqueda.alumnos.unshift({...datos}); 
+                    refBusqueda.alumnos_cache.unshift({...datos}); 
                 } else {
-                    const index = refBusqueda.alumnos.findIndex(x => x.idAlumno === this.idAlumno);
+                    const index = refBusqueda.alumnos_cache.findIndex(x => x.idAlumno === this.idAlumno);
                     if (index !== -1) {
-                        refBusqueda.alumnos[index] = {...datos};
+                        refBusqueda.alumnos_cache[index] = {...datos};
                     }
                 }
+                refBusqueda.filtrarAlumnos();
             }
             
             this.limpiarFormulario();

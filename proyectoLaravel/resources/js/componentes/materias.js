@@ -55,13 +55,14 @@ export default {
             const refBusqueda = this.$parent.$refs.busqueda_materias;
             if (refBusqueda) {
                 if (this.accion === 'nuevo') {
-                    refBusqueda.materias.unshift({...datos}); 
+                    refBusqueda.materias_cache.unshift({...datos}); 
                 } else {
-                    const index = refBusqueda.materias.findIndex(x => x.idMateria === this.idMateria);
+                    const index = refBusqueda.materias_cache.findIndex(x => x.idMateria === this.idMateria);
                     if (index !== -1) {
-                        refBusqueda.materias[index] = {...datos};
+                        refBusqueda.materias_cache[index] = {...datos};
                     }
                 }
+                refBusqueda.filtrarMaterias();
             }
             
             this.limpiarFormulario();

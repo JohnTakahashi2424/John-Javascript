@@ -2,6 +2,7 @@ export default {
     data() {
         return {
             buscar: '',
+            inscripciones_cache: [],
             inscripciones: []
         }
     },
@@ -10,18 +11,30 @@ export default {
             this.$emit('modificar', inscripcion);
         },
         async obtenerInscripciones() {
-            fetch(`/api/inscripciones?buscar=${this.buscar}`)
+            fetch(`/api/inscripciones`)
                 .then(response => response.json())
                 .then(data => {
-                    this.inscripciones = data;
+                    this.inscripciones_cache = data;
+                    this.filtrarInscripciones();
                 });
+        },
+        filtrarInscripciones() {
+            const termino = this.buscar.toLowerCase();
+            this.inscripciones = this.inscripciones_cache.filter(i => 
+                (i.nombreAlumno && i.nombreAlumno.toLowerCase().includes(termino)) || 
+                (i.nombreMateria && i.nombreMateria.toLowerCase().includes(termino)) ||
+                (i.ciclo && i.ciclo.toLowerCase().includes(termino))
+            );
         },
         async eliminarInscripcion(inscripcion, e) {
             e.stopPropagation();
             alertify.confirm('Eliminar Inscripcion', `¿Está seguro de eliminar esta inscripción?`, async () => {
                 // Borrado Optimista (Inmediato)
-                const index = this.inscripciones.findIndex(x => x.idInscripcion === inscripcion.idInscripcion);
-                if (index !== -1) this.inscripciones.splice(index, 1);
+                const index = this.inscripciones_cache.findIndex(x => x.idInscripcion === inscripcion.idInscripcion);
+                if (index !== -1) {
+                    this.inscripciones_cache.splice(index, 1);
+                    this.filtrarInscripciones();
+                }
                 
                 // Transacción en segundo plano
                 fetch(`/api/inscripciones/${inscripcion.idInscripcion}`, { method: 'DELETE' })
@@ -64,7 +77,7 @@ export default {
                     <div class="mb-4">
                         <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden border">
                             <span class="input-group-text bg-white border-end-0 pe-1 text-muted ps-4"><i class="bi bi-search"></i></span>
-                            <input autocomplete="off" type="search" @keyup="obtenerInscripciones()" v-model="buscar" placeholder="Busca por alumno, materia o ciclo académico..." class="form-control border-start-0 ps-2 bg-white fs-6" style="outline: none; box-shadow: none;">
+                            <input autocomplete="off" type="search" @keyup="filtrarInscripciones()" v-model="buscar" placeholder="Busca por alumno, materia o ciclo académico..." class="form-control border-start-0 ps-2 bg-white fs-6" style="outline: none; box-shadow: none;">
                         </div>
                     </div>
                     

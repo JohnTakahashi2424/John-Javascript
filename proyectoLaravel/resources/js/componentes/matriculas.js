@@ -58,13 +58,14 @@ export default {
                 };
                 
                 if (this.accion === 'nuevo') {
-                    refBusqueda.matriculas.unshift(objParaTabla); 
+                    refBusqueda.matriculas_cache.unshift(objParaTabla); 
                 } else {
-                    const index = refBusqueda.matriculas.findIndex(x => x.idMatricula === this.idMatricula);
+                    const index = refBusqueda.matriculas_cache.findIndex(x => x.idMatricula === this.idMatricula);
                     if (index !== -1) {
-                        refBusqueda.matriculas[index] = objParaTabla;
+                        refBusqueda.matriculas_cache[index] = objParaTabla;
                     }
                 }
+                refBusqueda.filtrarMatriculas();
             }
             
             this.limpiarFormulario();
