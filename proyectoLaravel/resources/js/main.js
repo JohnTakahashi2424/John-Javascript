@@ -12,6 +12,41 @@ import busqueda_inscripciones from './componentes/busqueda_inscripciones.js';
 const { createApp } = Vue;
 window.sha256 = CryptoJS.SHA256;
 
+document.addEventListener('DOMContentLoaded', () => {
+    // === 1. LÓGICA DE MODO OSCURO ===
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const htmlElement = document.documentElement;
+    
+    // Cargar preferencia guardada
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    if(savedTheme === 'dark') {
+        htmlElement.setAttribute('data-theme', 'dark');
+        themeIcon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
+        themeIcon.classList.add('text-warning');
+    }
+
+    if(themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            let newTheme = 'light';
+            
+            if(currentTheme === 'dark') {
+                htmlElement.removeAttribute('data-theme');
+                themeIcon.classList.replace('bi-sun-fill', 'bi-moon-stars-fill');
+                themeIcon.classList.remove('text-warning');
+            } else {
+                htmlElement.setAttribute('data-theme', 'dark');
+                newTheme = 'dark';
+                themeIcon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
+                themeIcon.classList.add('text-warning');
+            }
+            
+            localStorage.setItem('theme', newTheme);
+        });
+    }
+});
+
 
 createApp({
     components:{
@@ -52,7 +87,18 @@ createApp({
             this.$refs[ventana][metodo]();
         },
         abrirVentana(ventana){
-            this.forms[ventana].mostrar = !this.forms[ventana].mostrar;
+            // Comportamiento SPA: Ocultar todas las ventanas primero
+            for (const key in this.forms) {
+                this.forms[key].mostrar = false;
+            }
+            // Mostrar únicamente el módulo solicitado
+            this.forms[ventana].mostrar = true;
+        },
+        volverInicio() {
+            // Ocultar todos los formularios para volver a ver el Dashboard (Inicio)
+            for (const key in this.forms) {
+                this.forms[key].mostrar = false;
+            }
         },
         modificar(ventana, metodo, data){
             this.$refs[ventana][metodo](data);

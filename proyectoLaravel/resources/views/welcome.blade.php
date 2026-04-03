@@ -15,12 +15,33 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
+        :root {
+            --bg-body: #f1f5f9;
+            --bg-surface: #ffffff;
+            --text-primary: #334155;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            --sidebar-bg: #0f172a;
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #080f1e;
+            --bg-surface: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --card-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);
+            --sidebar-bg: #0a0f18;
+        }
+
         body {
-            background-color: #f1f5f9; /* Slate 100 */
+            background-color: var(--bg-body);
+            color: var(--text-primary);
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            color: #334155;
             margin: 0;
             overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
         #app {
@@ -31,11 +52,12 @@
         /* Sidebar Styles */
         .sidebar {
             width: 260px;
-            background: #0f172a; /* Slate 900 */
+            background: var(--sidebar-bg);
             color: #f8fafc;
             flex-shrink: 0;
             box-shadow: 4px 0 15px rgba(0,0,0,0.05);
             z-index: 1000;
+            transition: background-color 0.3s ease;
         }
         
         .sidebar-brand {
@@ -43,7 +65,7 @@
             display: flex;
             align-items: center;
             padding: 0 1.5rem;
-            border-bottom: 1px solid #1e293b;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         
         .nav-link-custom {
@@ -73,14 +95,33 @@
         
         .topbar {
             height: 70px;
-            background: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 2rem;
             box-shadow: 0 1px 2px 0 rgba(0,0,0,0.02);
             z-index: 900;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        .surface-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease-in-out;
+            color: var(--text-primary);
+        }
+        .surface-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+        .text-theme-secondary {
+            color: var(--text-secondary);
+        }
+        [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, [data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6 {
+            color: var(--text-primary);
         }
         
         .search-bar-top {
@@ -165,7 +206,7 @@
     <div id="app">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-brand">
+            <div class="sidebar-brand cursor-pointer" @click="volverInicio" title="Ir al Inicio">
                 <div class="bg-primary text-white rounded p-1 me-2 d-flex justify-content-center align-items-center" style="width: 32px; height: 32px;">
                     <i class="bi bi-mortarboard-fill fs-5"></i>
                 </div>
@@ -175,23 +216,23 @@
             <div class="mt-4">
                 <p class="text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.05em; margin: 0 1.5rem 0.5rem 1.5rem;">Gestión</p>
                 <div class="navbar-nav w-100 flex-column">
-                    <a class="nav-link nav-link-custom" href="#" @click.prevent="abrirVentana('alumnos')">
+                    <a class="nav-link nav-link-custom" :class="{ 'active': forms.alumnos.mostrar || forms.busqueda_alumnos.mostrar }" href="#" @click.prevent="abrirVentana('alumnos')">
                         <i class="bi bi-people fs-5 me-3"></i> <span>Alumnos</span>
                     </a>
-                    <a class="nav-link nav-link-custom" href="#" @click.prevent="abrirVentana('docentes')">
+                    <a class="nav-link nav-link-custom" :class="{ 'active': forms.docentes.mostrar || forms.busqueda_docentes.mostrar }" href="#" @click.prevent="abrirVentana('docentes')">
                         <i class="bi bi-person-workspace fs-5 me-3"></i> <span>Docentes</span>
                     </a>
-                    <a class="nav-link nav-link-custom" href="#" @click.prevent="abrirVentana('materias')">
+                    <a class="nav-link nav-link-custom" :class="{ 'active': forms.materias.mostrar || forms.busqueda_materias.mostrar }" href="#" @click.prevent="abrirVentana('materias')">
                         <i class="bi bi-journal-bookmark-fill fs-5 me-3"></i> <span>Materias</span>
                     </a>
                 </div>
                 
                 <p class="text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.05em; margin: 1.5rem 1.5rem 0.5rem 1.5rem;">Administración</p>
                 <div class="navbar-nav w-100 flex-column">
-                    <a class="nav-link nav-link-custom" href="#" @click.prevent="abrirVentana('matriculas')">
+                    <a class="nav-link nav-link-custom" :class="{ 'active': forms.matriculas.mostrar || forms.busqueda_matriculas.mostrar }" href="#" @click.prevent="abrirVentana('matriculas')">
                         <i class="bi bi-layout-text-sidebar-reverse fs-5 me-3"></i> <span>Matrículas</span>
                     </a>
-                    <a class="nav-link nav-link-custom" href="#" @click.prevent="abrirVentana('inscripciones')">
+                    <a class="nav-link nav-link-custom" :class="{ 'active': forms.inscripciones.mostrar || forms.busqueda_inscripciones.mostrar }" href="#" @click.prevent="abrirVentana('inscripciones')">
                         <i class="bi bi-pen fs-5 me-3"></i> <span>Inscripciones</span>
                     </a>
                 </div>
@@ -203,8 +244,13 @@
             <!-- Topbar -->
             <header class="topbar" style="justify-content: flex-end;">
                 <div class="d-flex align-items-center gap-4">
+                    <!-- Tema Claro/Oscuro Toggle -->
+                    <button id="themeToggle" class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;" title="Alternar Modo Oscuro">
+                        <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
+                    </button>
+
                     <div class="d-flex align-items-center cursor-pointer">
-                        <span class="me-2 fw-semibold text-secondary d-none d-md-block" style="font-size:0.9rem;">Admin</span>
+                        <span class="me-2 fw-semibold text-theme-secondary d-none d-md-block" style="font-size:0.9rem;">Admin</span>
                         <img src="https://ui-avatars.com/api/?name=Admin&background=eff6ff&color=1d4ed8&rounded=true" alt="User Avatar" class="rounded-circle shadow-sm" width="36" height="36">
                     </div>
                 </div>
@@ -224,11 +270,11 @@
                                 </p>
                                 <div class="d-flex gap-3 flex-wrap">
                                     <div class="stat-card">
-                                        <div class="text-muted small mb-1 uppercase tracking-wider">Fecha de Hoy</div>
+                                        <div class="text-white small mb-1 uppercase tracking-wider">Fecha de Hoy</div>
                                         <div class="fs-5 fw-bold text-white">@{{ new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</div>
                                     </div>
                                     <div class="stat-card">
-                                        <div class="text-muted small mb-1 uppercase tracking-wider">Estado Sistema</div>
+                                        <div class="text-white small mb-1 uppercase tracking-wider">Estado Sistema</div>
                                         <div class="fs-5 fw-bold text-success d-flex align-items-center">
                                             <span class="p-1 px-2 me-2 rounded-pill bg-success bg-opacity-20 fs-6">Activo</span>
                                             MySQL Conectado
@@ -237,37 +283,72 @@
                                 </div>
                             </div>
                             <div class="col-lg-5 d-none d-lg-block text-center">
-                                <img src="{{ asset('welcome_illustration.png') }}" alt="Illustration" class="welcome-illustration img-fluid">
+                                <img src="{{ asset('rei_ayanami.png') }}" alt="Rei Ayanami" class="welcome-illustration img-fluid rounded-4 shadow-lg" style="max-height: 380px; width: auto; object-fit: cover;">
                             </div>
                         </div>
                     </div>
 
+                    <!-- NUEVOS KPIs -->
+                    <div class="row g-3 mb-4 mt-2">
+                        <div class="col-md-4">
+                            <div class="surface-card p-3 rounded-4 d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded p-3 me-3 fs-4"><i class="bi bi-people-fill"></i></div>
+                                <div>
+                                    <div class="text-theme-secondary small fw-bold text-uppercase">Total Alumnos</div>
+                                    <div class="fs-3 fw-bolder">1,240 <span class="text-success fs-6 ms-2"><i class="bi bi-arrow-up-short"></i>5%</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="surface-card p-3 rounded-4 d-flex align-items-center">
+                                <div class="bg-warning bg-opacity-10 text-warning rounded p-3 me-3 fs-4"><i class="bi bi-person-workspace"></i></div>
+                                <div>
+                                    <div class="text-theme-secondary small fw-bold text-uppercase">Docentes Activos</div>
+                                    <div class="fs-3 fw-bolder">85</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="surface-card p-3 rounded-4 d-flex align-items-center">
+                                <div class="bg-success bg-opacity-10 text-success rounded p-3 me-3 fs-4"><i class="bi bi-journal-check"></i></div>
+                                <div>
+                                    <div class="text-theme-secondary small fw-bold text-uppercase">Matrículas Hoy</div>
+                                    <div class="fs-3 fw-bolder">312</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Accesos Rápidos Convertidos -->
+                    <h6 class="fw-bold mt-4 mb-3 text-theme-secondary">Accesos Rápidos</h6>
                     <div class="row g-4">
                         <div class="col-md-4">
-                            <div class="bg-white p-4 rounded-4 shadow-sm border border-light h-100 transition-all hover-shadow-md cursor-pointer" @click="abrirVentana('alumnos')">
+                            <div class="surface-card p-4 rounded-4 h-100 cursor-pointer" @click="abrirVentana('alumnos')">
                                 <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3 d-inline-block mb-3">
                                     <i class="bi bi-people fs-3"></i>
                                 </div>
                                 <h5 class="fw-bold">Gestión de Alumnos</h5>
-                                <p class="text-muted small">Registra nuevos ingresos, busca expedientes y actualiza información de contacto.</p>
+                                <p class="text-theme-secondary small">Registra nuevos ingresos, busca expedientes y actualiza información de contacto.</p>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="bg-white p-4 rounded-4 shadow-sm border border-light h-100 transition-all hover-shadow-md cursor-pointer" @click="abrirVentana('matriculas')">
+                            <div class="surface-card p-4 rounded-4 h-100 cursor-pointer" @click="abrirVentana('matriculas')">
                                 <div class="bg-success bg-opacity-10 text-success rounded-3 p-3 d-inline-block mb-3">
                                     <i class="bi bi-layout-text-sidebar-reverse fs-3"></i>
                                 </div>
                                 <h5 class="fw-bold">Trámites de Matrícula</h5>
-                                <p class="text-muted small">Controla el proceso de matriculación anual y el estado de pagos de los estudiantes.</p>
+                                <p class="text-theme-secondary small">Controla el proceso de matriculación anual y el estado de pagos de los estudiantes.</p>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="bg-white p-4 rounded-4 shadow-sm border border-light h-100 transition-all hover-shadow-md cursor-pointer" @click="abrirVentana('docentes')">
+                            <div class="surface-card p-4 rounded-4 h-100 cursor-pointer" @click="abrirVentana('docentes')">
                                 <div class="bg-warning bg-opacity-10 text-warning rounded-3 p-3 d-inline-block mb-3">
                                     <i class="bi bi-person-workspace fs-3"></i>
                                 </div>
                                 <h5 class="fw-bold">Directorio Docente</h5>
-                                <p class="text-muted small">Administra la planta académica, sus especialidades y registros contractuales.</p>
+                                <p class="text-theme-secondary small">Administra la planta académica, sus especialidades y registros contractuales.</p>
                             </div>
                         </div>
                     </div>
@@ -291,6 +372,7 @@
         </main>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/alertify.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
