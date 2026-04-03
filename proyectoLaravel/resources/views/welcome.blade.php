@@ -305,7 +305,7 @@
                 <div class="bg-primary text-white rounded p-1 me-2 d-flex justify-content-center align-items-center" style="width: 32px; height: 32px;">
                     <i class="bi bi-mortarboard-fill fs-5"></i>
                 </div>
-                <span class="fs-5 fw-bold tracking-wide">Académico Pro</span>
+                <span class="fs-5 fw-bold tracking-wide">Sistema Académico</span>
             </div>
             
             <div class="mt-4">
@@ -335,10 +335,6 @@
 
             <!-- Controles movidos a la esquina inferior -->
             <div class="mt-auto p-3 d-flex align-items-center justify-content-between border-top border-white border-opacity-10">
-                <button id="themeToggle" class="btn btn-sm btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;" title="Alternar Modo Oscuro">
-                    <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
-                </button>
-
                 <div class="d-flex align-items-center cursor-pointer">
                     <span class="me-2 fw-semibold text-white d-none d-md-block" style="font-size:0.85rem;">Admin</span>
                     <img src="https://ui-avatars.com/api/?name=Admin&background=eff6ff&color=1d4ed8&rounded=true" alt="User Avatar" class="rounded-circle shadow-sm" width="32" height="32">
@@ -361,6 +357,9 @@
                 </div>
 
                 <div class="d-flex align-items-center gap-3">
+                    <button id="themeToggle" class="btn btn-light rounded-circle d-flex align-items-center justify-content-center shadow-sm border" style="width: 42px; height: 42px;" title="Alternar Modo Oscuro">
+                        <i class="bi bi-moon-stars-fill fs-5" id="themeIcon"></i>
+                    </button>
                     <div class="d-none d-lg-block text-end me-2">
                         <div class="fw-bold small text-dark">Portal Académico</div>
                         <div class="text-success small d-flex align-items-center justify-content-end" style="font-size: 0.7rem;">
@@ -390,8 +389,8 @@
                                     <div class="stat-card">
                                         <div class="text-white small mb-1 uppercase tracking-wider">Estado Sistema</div>
                                         <div class="fs-5 fw-bold text-success d-flex align-items-center">
-                                            <span class="p-1 px-2 me-2 rounded-pill bg-success bg-opacity-20 fs-6">Activo</span>
-                                            MySQL Conectado
+                                            <span class="p-1 px-3 me-2 rounded-pill bg-success text-white fs-6 fw-bold">ON</span>
+                                            Servidor Activo
                                         </div>
                                     </div>
                                 </div>
