@@ -34,6 +34,49 @@
             --card-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);
             --sidebar-bg: rgba(8, 15, 30, 0.85); /* Glassmorphism dark */
         }
+        
+        /* Compatibilidad Dark Mode para Formularios Bootstrap */
+        [data-theme="dark"] .bg-white { background-color: var(--bg-surface) !important; }
+        [data-theme="dark"] .bg-light { background-color: rgba(0, 0, 0, 0.2) !important; }
+        [data-theme="dark"] .text-dark { color: #f8fafc !important; }
+        [data-theme="dark"] .text-muted { color: #94a3b8 !important; }
+        [data-theme="dark"] .text-secondary { color: #cbd5e1 !important; }
+        [data-theme="dark"] .small { color: #cbd5e1 !important; }
+        [data-theme="dark"] .border-light, [data-theme="dark"] .border { border-color: var(--border-color) !important; }
+        [data-theme="dark"] .table {
+            --bs-table-bg: transparent;
+            --bs-table-color: #f8fafc;
+            --bs-table-hover-bg: rgba(255, 255, 255, 0.05);
+            --bs-table-hover-color: #f8fafc;
+        }
+        [data-theme="dark"] .table > :not(caption) > * > * { border-bottom-color: var(--border-color); border-color: var(--border-color); }
+        [data-theme="dark"] .form-control, [data-theme="dark"] .form-select {
+            background-color: rgba(0, 0, 0, 0.15);
+            border-color: var(--border-color);
+            color: #f8fafc !important;
+        }
+        [data-theme="dark"] .form-control::placeholder {
+            color: rgba(248, 250, 252, 0.5) !important;
+        }
+        [data-theme="dark"] .form-control:focus, [data-theme="dark"] .form-select:focus {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-color: #3b82f6;
+            color: #f8fafc !important;
+            box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+        }
+        [data-theme="dark"] .input-group-text {
+            background-color: rgba(0, 0, 0, 0.15);
+            border-color: var(--border-color);
+            color: #94a3b8;
+        }
+        [data-theme="dark"] .btn-light {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            color: #f8fafc !important;
+        }
+        [data-theme="dark"] .btn-light:hover {
+            background-color: rgba(255, 255, 255, 0.2) !important;
+        }
 
         body {
             background-color: var(--bg-body);
