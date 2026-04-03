@@ -58,6 +58,11 @@
             box-shadow: 4px 0 15px rgba(0,0,0,0.05);
             z-index: 1000;
             transition: background-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: sticky;
+            top: 0;
         }
         
         .sidebar-brand {
@@ -238,7 +243,7 @@
                 </div>
             </div>
 
-            <!-- Controles movidos -->
+            <!-- Controles movidos a la esquina inferior -->
             <div class="mt-auto p-3 d-flex align-items-center justify-content-between border-top border-white border-opacity-10">
                 <button id="themeToggle" class="btn btn-sm btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;" title="Alternar Modo Oscuro">
                     <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
