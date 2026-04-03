@@ -237,24 +237,23 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Controles movidos -->
+            <div class="mt-auto p-3 d-flex align-items-center justify-content-between border-top border-white border-opacity-10">
+                <button id="themeToggle" class="btn btn-sm btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;" title="Alternar Modo Oscuro">
+                    <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
+                </button>
+
+                <div class="d-flex align-items-center cursor-pointer">
+                    <span class="me-2 fw-semibold text-white d-none d-md-block" style="font-size:0.85rem;">Admin</span>
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=eff6ff&color=1d4ed8&rounded=true" alt="User Avatar" class="rounded-circle shadow-sm" width="32" height="32">
+                </div>
+            </div>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Topbar -->
-            <header class="topbar" style="justify-content: flex-end;">
-                <div class="d-flex align-items-center gap-4">
-                    <!-- Tema Claro/Oscuro Toggle -->
-                    <button id="themeToggle" class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;" title="Alternar Modo Oscuro">
-                        <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
-                    </button>
 
-                    <div class="d-flex align-items-center cursor-pointer">
-                        <span class="me-2 fw-semibold text-theme-secondary d-none d-md-block" style="font-size:0.9rem;">Admin</span>
-                        <img src="https://ui-avatars.com/api/?name=Admin&background=eff6ff&color=1d4ed8&rounded=true" alt="User Avatar" class="rounded-circle shadow-sm" width="36" height="36">
-                    </div>
-                </div>
-            </header>
 
             <!-- App Container -->
             <div id="appSistema" class="container-fluid p-4 p-md-5 overflow-auto">
