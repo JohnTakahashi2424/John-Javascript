@@ -50,24 +50,42 @@
             --bs-table-hover-color: #f8fafc;
         }
         [data-theme="dark"] .table > :not(caption) > * > * { border-bottom-color: var(--border-color); border-color: var(--border-color); }
+        
+        /* Unified Input Group Backgrounds */
+        [data-theme="dark"] .input-group {
+            background-color: rgba(0, 0, 0, 0.15) !important;
+        }
+        [data-theme="dark"] .input-group .input-group-text,
+        [data-theme="dark"] .input-group .form-control {
+            background-color: transparent !important;
+        }
+        [data-theme="dark"] .input-group .input-group-text {
+            border-right: none !important;
+        }
+        [data-theme="dark"] .input-group .form-control {
+            border-left: none !important;
+        }
+        [data-theme="dark"] .input-group-text {
+            border-color: var(--border-color);
+            color: #94a3b8;
+        }
         [data-theme="dark"] .form-control, [data-theme="dark"] .form-select {
-            background-color: rgba(0, 0, 0, 0.15);
+            background-color: rgba(0, 0, 0, 0.15) !important; /* Fallback for non-grouped inputs */
             border-color: var(--border-color);
             color: #f8fafc !important;
         }
         [data-theme="dark"] .form-control::placeholder {
-            color: rgba(248, 250, 252, 0.5) !important;
+            color: rgba(248, 250, 252, 0.4) !important;
         }
         [data-theme="dark"] .form-control:focus, [data-theme="dark"] .form-select:focus {
-            background-color: rgba(0, 0, 0, 0.3);
+            background-color: rgba(0, 0, 0, 0.25) !important;
             border-color: #3b82f6;
             color: #f8fafc !important;
             box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
         }
-        [data-theme="dark"] .input-group-text {
-            background-color: rgba(0, 0, 0, 0.15);
-            border-color: var(--border-color);
-            color: #94a3b8;
+        /* Adjust alignment slightly for inputs that lost padding */
+        [data-theme="dark"] .form-control.ps-0 {
+            padding-left: 0.5rem !important;
         }
         [data-theme="dark"] .btn-light {
             background-color: rgba(255, 255, 255, 0.1) !important;
