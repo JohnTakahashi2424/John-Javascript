@@ -12,38 +12,95 @@ import busqueda_inscripciones from './componentes/busqueda_inscripciones.js';
 const { createApp } = Vue;
 window.sha256 = CryptoJS.SHA256;
 
-document.addEventListener('DOMContentLoaded', () => {
-    // === 1. LÓGICA DE MODO OSCURO ===
-    const themeToggle = document.getElementById('themeToggle');
-    const themeIcon = document.getElementById('themeIcon');
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('[Inicialización] DOM cargado. Preparando Delegación Global.');
+
+    /* -----------------------------------------------------
+       1. INICIALIZAR EL MODO OSCURO (Lectura de LocalStorage)
+       ----------------------------------------------------- */
     const htmlElement = document.documentElement;
     
-    // Cargar preferencia guardada
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    if(savedTheme === 'dark') {
-        htmlElement.setAttribute('data-theme', 'dark');
-        themeIcon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
-        themeIcon.classList.add('text-warning');
-    }
-
-    if(themeToggle) {
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = htmlElement.getAttribute('data-theme');
-            let newTheme = 'light';
+    try {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            htmlElement.setAttribute('data-theme', 'dark');
+            htmlElement.setAttribute('data-bs-theme', 'dark');
             
-            if(currentTheme === 'dark') {
-                htmlElement.removeAttribute('data-theme');
-                themeIcon.classList.replace('bi-sun-fill', 'bi-moon-stars-fill');
-                themeIcon.classList.remove('text-warning');
-            } else {
-                htmlElement.setAttribute('data-theme', 'dark');
-                newTheme = 'dark';
+            // Si Vue aún no monta el ícono no importa, lo busca si ya existe.
+            const themeIcon = document.getElementById('themeIcon');
+            if (themeIcon) {
                 themeIcon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
                 themeIcon.classList.add('text-warning');
             }
-            
-            localStorage.setItem('theme', newTheme);
+        }
+    } catch (error) {
+        console.error('Error cargando inicial el tema:', error);
+    }
+});
+
+/* -----------------------------------------------------
+   2. EL SECRETO: EVENT DELEGATION GLOBAL
+   Como Vue.js reconstruye el <div id="app"> al montarse, todos los 
+   listeners ("addEventListener") atados a los botones mueren.
+   Escuchamos directo al documento, que NUNCA muere.
+   ----------------------------------------------------- */
+document.addEventListener('click', function(e) {
+
+    // === NAVEGACIÓN SPA ===
+    const navLink = e.target.closest('.btn-nav-spa');
+    if (navLink) {
+        e.preventDefault(); 
+        console.log('[SPA] Link interceptado mediante delegación global.');
+        
+        const targetId = navLink.getAttribute('data-target');
+        
+        // 1. Ocultar todos los formularios activos en el DOM reestructurado
+        document.querySelectorAll('.modulo-seccion').forEach(function(section) {
+            section.classList.add('d-none');
         });
+        
+        // 2. Mostrar destino
+        if (targetId) {
+            const targetSection = document.getElementById(targetId);
+            if (targetSection) {
+                targetSection.classList.remove('d-none');
+                console.log(`[SPA] Módulo ${targetId} Abierto con Éxito`);
+            } else {
+                console.error(`[SPA Error] Se intentó abrir id="${targetId}" pero el DOM (Vue) no lo tiene.`);
+            }
+        }
+        return; // Detenemos la cadena de clics aquí
+    }
+
+    // === BOTÓN DE MODO OSCURO ===
+    const btnDarkMode = e.target.closest('#themeToggle');
+    if (btnDarkMode) {
+        e.preventDefault();
+        console.log('[Dark Mode] Botón interceptado mediante delegación global.');
+        
+        const htmlElement = document.documentElement;
+        const themeIcon = document.getElementById('themeIcon');
+        const isCurrentDark = htmlElement.getAttribute('data-theme') === 'dark';
+
+        if (isCurrentDark) { // Apagar Oscuro
+            htmlElement.removeAttribute('data-theme');
+            htmlElement.removeAttribute('data-bs-theme');
+            localStorage.setItem('theme', 'light');
+            
+            if (themeIcon) {
+                themeIcon.classList.replace('bi-sun-fill', 'bi-moon-stars-fill');
+                themeIcon.classList.remove('text-warning');
+            }
+        } else { // Encender Oscuro
+            htmlElement.setAttribute('data-theme', 'dark');
+            htmlElement.setAttribute('data-bs-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+            
+            if (themeIcon) {
+                themeIcon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
+                themeIcon.classList.add('text-warning');
+            }
+        }
     }
 });
 

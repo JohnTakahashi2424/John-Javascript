@@ -284,7 +284,7 @@
     <div id="app">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-brand cursor-pointer" @click="volverInicio" title="Ir al Inicio">
+            <div class="sidebar-brand cursor-pointer btn-nav-spa" data-target="welcome-screen" title="Ir al Inicio">
                 <div class="bg-primary text-white rounded p-1 me-2 d-flex justify-content-center align-items-center" style="width: 32px; height: 32px;">
                     <i class="bi bi-mortarboard-fill fs-5"></i>
                 </div>
@@ -294,23 +294,23 @@
             <div class="mt-4">
                 <p class="text-uppercase text-white fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.05em; margin: 0 1.5rem 0.5rem 1.5rem;">Gestión</p>
                 <div class="navbar-nav w-100 flex-column">
-                    <a class="nav-link nav-link-custom" :class="{ 'active': forms.alumnos.mostrar || forms.busqueda_alumnos.mostrar }" href="#" @click.prevent="abrirVentana('alumnos')">
+                    <a class="nav-link nav-link-custom btn-nav-spa" data-target="form-alumnos" href="#">
                         <i class="bi bi-people fs-5 me-3"></i> <span>Alumnos</span>
                     </a>
-                    <a class="nav-link nav-link-custom" :class="{ 'active': forms.docentes.mostrar || forms.busqueda_docentes.mostrar }" href="#" @click.prevent="abrirVentana('docentes')">
+                    <a class="nav-link nav-link-custom btn-nav-spa" data-target="form-docentes" href="#">
                         <i class="bi bi-person-workspace fs-5 me-3"></i> <span>Docentes</span>
                     </a>
-                    <a class="nav-link nav-link-custom" :class="{ 'active': forms.materias.mostrar || forms.busqueda_materias.mostrar }" href="#" @click.prevent="abrirVentana('materias')">
+                    <a class="nav-link nav-link-custom btn-nav-spa" data-target="form-materias" href="#">
                         <i class="bi bi-journal-bookmark-fill fs-5 me-3"></i> <span>Materias</span>
                     </a>
                 </div>
                 
                 <p class="text-uppercase text-white fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.05em; margin: 1.5rem 1.5rem 0.5rem 1.5rem;">Administración</p>
                 <div class="navbar-nav w-100 flex-column">
-                    <a class="nav-link nav-link-custom" :class="{ 'active': forms.matriculas.mostrar || forms.busqueda_matriculas.mostrar }" href="#" @click.prevent="abrirVentana('matriculas')">
+                    <a class="nav-link nav-link-custom btn-nav-spa" data-target="form-matriculas" href="#">
                         <i class="bi bi-layout-text-sidebar-reverse fs-5 me-3"></i> <span>Matrículas</span>
                     </a>
-                    <a class="nav-link nav-link-custom" :class="{ 'active': forms.inscripciones.mostrar || forms.busqueda_inscripciones.mostrar }" href="#" @click.prevent="abrirVentana('inscripciones')">
+                    <a class="nav-link nav-link-custom btn-nav-spa" data-target="form-inscripciones" href="#">
                         <i class="bi bi-pen fs-5 me-3"></i> <span>Inscripciones</span>
                     </a>
                 </div>
@@ -336,7 +336,7 @@
             <!-- App Container -->
             <div id="appSistema" class="container-fluid p-4 p-md-5 overflow-auto">
                 <!-- Welcome Home Screen -->
-                <div v-if="!anyFormActive" class="fade-in">
+                <div id="welcome-screen" class="modulo-seccion fade-in">
                     <div class="welcome-hero mb-5">
                         <div class="row align-items-center">
                             <div class="col-lg-7">
@@ -431,20 +431,30 @@
                     </div>
                 </div>
 
-                <alumnos @buscar='buscar("busqueda_alumnos","obtenerAlumnos")' :forms="forms" ref="alumnos" v-show="forms.alumnos.mostrar"></alumnos>
-                <busqueda_alumnos @modificar='modificar("alumnos","modificarAlumno", $event)' ref="busqueda_alumnos" v-show="forms.busqueda_alumnos.mostrar"></busqueda_alumnos>
+                <div id="form-alumnos" class="modulo-seccion d-none">
+                    <alumnos @buscar='buscar("busqueda_alumnos","obtenerAlumnos")' :forms="forms" ref="alumnos"></alumnos>
+                    <busqueda_alumnos @modificar='modificar("alumnos","modificarAlumno", $event)' ref="busqueda_alumnos"></busqueda_alumnos>
+                </div>
 
-                <materias @buscar='buscar("busqueda_materias","obtenerMaterias")' :forms="forms" ref="materias" v-show="forms.materias.mostrar"></materias>
-                <busqueda_materias @modificar='modificar("materias","modificarMateria", $event)' ref="busqueda_materias" v-show="forms.busqueda_materias.mostrar"></busqueda_materias>
+                <div id="form-materias" class="modulo-seccion d-none">
+                    <materias @buscar='buscar("busqueda_materias","obtenerMaterias")' :forms="forms" ref="materias"></materias>
+                    <busqueda_materias @modificar='modificar("materias","modificarMateria", $event)' ref="busqueda_materias"></busqueda_materias>
+                </div>
 
-                <docentes @buscar='buscar("busqueda_docentes","obtenerDocentes")' :forms="forms" ref="docentes" v-show="forms.docentes.mostrar"></docentes>
-                <busqueda_docentes @modificar='modificar("docentes","modificarDocente", $event)' ref="busqueda_docentes" v-show="forms.busqueda_docentes.mostrar"></busqueda_docentes>
+                <div id="form-docentes" class="modulo-seccion d-none">
+                    <docentes @buscar='buscar("busqueda_docentes","obtenerDocentes")' :forms="forms" ref="docentes"></docentes>
+                    <busqueda_docentes @modificar='modificar("docentes","modificarDocente", $event)' ref="busqueda_docentes"></busqueda_docentes>
+                </div>
 
-                <matriculas @buscar='buscar("busqueda_matriculas","obtenerMatriculas")' :forms="forms" ref="matriculas" v-show="forms.matriculas.mostrar"></matriculas>
-                <busqueda_matriculas @modificar='modificar("matriculas","modificarMatricula", $event)' ref="busqueda_matriculas" v-show="forms.busqueda_matriculas.mostrar"></busqueda_matriculas>
+                <div id="form-matriculas" class="modulo-seccion d-none">
+                    <matriculas @buscar='buscar("busqueda_matriculas","obtenerMatriculas")' :forms="forms" ref="matriculas"></matriculas>
+                    <busqueda_matriculas @modificar='modificar("matriculas","modificarMatricula", $event)' ref="busqueda_matriculas"></busqueda_matriculas>
+                </div>
 
-                <inscripciones @buscar='buscar("busqueda_inscripciones","obtenerInscripciones")' :forms="forms" ref="inscripciones" v-show="forms.inscripciones.mostrar"></inscripciones>
-                <busqueda_inscripciones @modificar='modificar("inscripciones","modificarInscripcion", $event)' ref="busqueda_inscripciones" v-show="forms.busqueda_inscripciones.mostrar"></busqueda_inscripciones>
+                <div id="form-inscripciones" class="modulo-seccion d-none">
+                    <inscripciones @buscar='buscar("busqueda_inscripciones","obtenerInscripciones")' :forms="forms" ref="inscripciones"></inscripciones>
+                    <busqueda_inscripciones @modificar='modificar("inscripciones","modificarInscripcion", $event)' ref="busqueda_inscripciones"></busqueda_inscripciones>
+                </div>
             </div>
         </main>
     </div>
