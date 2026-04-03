@@ -22,7 +22,7 @@
             --text-secondary: #64748b;
             --border-color: #e2e8f0;
             --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            --sidebar-bg: #0f172a;
+            --sidebar-bg: rgba(15, 23, 42, 0.85); /* Glassmorphism base */
         }
 
         [data-theme="dark"] {
@@ -32,7 +32,7 @@
             --text-secondary: #94a3b8;
             --border-color: rgba(255, 255, 255, 0.08);
             --card-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);
-            --sidebar-bg: #0a0f18;
+            --sidebar-bg: rgba(8, 15, 30, 0.85); /* Glassmorphism dark */
         }
 
         body {
@@ -49,10 +49,36 @@
             min-height: 100vh;
         }
         
+        /* Scrollbar Personalizado MAC OS Style */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.02); 
+        }
+        [data-theme="dark"] ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.4); 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.6); 
+        }
+
+        /* Utilidades Gradientes de Iconos */
+        .icon-gradient-blue { background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .icon-gradient-green { background: linear-gradient(135deg, #34d399 0%, #059669 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .icon-gradient-orange { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
         /* Sidebar Styles */
         .sidebar {
             width: 260px;
             background: var(--sidebar-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             color: #f8fafc;
             flex-shrink: 0;
             box-shadow: 4px 0 15px rgba(0,0,0,0.05);
@@ -63,6 +89,7 @@
             height: 100vh;
             position: sticky;
             top: 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
         
         .sidebar-brand {
@@ -326,33 +353,33 @@
 
 
                     <!-- Accesos Rápidos Convertidos -->
-                    <h6 class="fw-bold mt-4 mb-3 text-theme-secondary">Accesos Rápidos</h6>
-                    <div class="row g-4">
+                    <h6 class="fw-bold mt-5 mb-4 text-theme-secondary text-uppercase" style="letter-spacing: 0.1em; font-size: 0.85rem;">Accesos Rápidos</h6>
+                    <div class="row g-4 d-flex align-items-stretch">
                         <div class="col-md-4">
-                            <div class="surface-card p-4 rounded-4 h-100 cursor-pointer" @click="abrirVentana('alumnos')">
-                                <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3 d-inline-block mb-3">
-                                    <i class="bi bi-people fs-3"></i>
+                            <div class="surface-card p-4 rounded-4 h-100 cursor-pointer position-relative overflow-hidden" @click="abrirVentana('alumnos')">
+                                <div class="bg-primary bg-opacity-10 rounded-4 p-3 d-inline-flex mb-3 align-items-center justify-content-center" style="width: 56px; height: 56px;">
+                                    <i class="bi bi-people fs-2 icon-gradient-blue"></i>
                                 </div>
                                 <h5 class="fw-bold">Gestión de Alumnos</h5>
-                                <p class="text-theme-secondary small">Registra nuevos ingresos, busca expedientes y actualiza información de contacto.</p>
+                                <p class="text-theme-secondary small mb-0">Registra nuevos ingresos, busca expedientes y actualiza información de contacto.</p>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="surface-card p-4 rounded-4 h-100 cursor-pointer" @click="abrirVentana('matriculas')">
-                                <div class="bg-success bg-opacity-10 text-success rounded-3 p-3 d-inline-block mb-3">
-                                    <i class="bi bi-layout-text-sidebar-reverse fs-3"></i>
+                            <div class="surface-card p-4 rounded-4 h-100 cursor-pointer position-relative overflow-hidden" @click="abrirVentana('matriculas')">
+                                <div class="bg-success bg-opacity-10 rounded-4 p-3 d-inline-flex mb-3 align-items-center justify-content-center" style="width: 56px; height: 56px;">
+                                    <i class="bi bi-layout-text-sidebar-reverse fs-2 icon-gradient-green"></i>
                                 </div>
                                 <h5 class="fw-bold">Trámites de Matrícula</h5>
-                                <p class="text-theme-secondary small">Controla el proceso de matriculación anual y el estado de pagos de los estudiantes.</p>
+                                <p class="text-theme-secondary small mb-0">Controla el proceso de matriculación anual y el estado de pagos de los estudiantes.</p>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="surface-card p-4 rounded-4 h-100 cursor-pointer" @click="abrirVentana('docentes')">
-                                <div class="bg-warning bg-opacity-10 text-warning rounded-3 p-3 d-inline-block mb-3">
-                                    <i class="bi bi-person-workspace fs-3"></i>
+                            <div class="surface-card p-4 rounded-4 h-100 cursor-pointer position-relative overflow-hidden" @click="abrirVentana('docentes')">
+                                <div class="bg-warning bg-opacity-10 rounded-4 p-3 d-inline-flex mb-3 align-items-center justify-content-center" style="width: 56px; height: 56px;">
+                                    <i class="bi bi-person-workspace fs-2 icon-gradient-orange"></i>
                                 </div>
                                 <h5 class="fw-bold">Directorio Docente</h5>
-                                <p class="text-theme-secondary small">Administra la planta académica, sus especialidades y registros contractuales.</p>
+                                <p class="text-theme-secondary small mb-0">Administra la planta académica, sus especialidades y registros contractuales.</p>
                             </div>
                         </div>
                     </div>

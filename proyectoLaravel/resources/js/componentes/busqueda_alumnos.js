@@ -96,10 +96,16 @@ export default {
                                     </td>
                                 </tr>
                                 <tr v-if="alumnos.length == 0">
-                                    <td colspan="5" class="text-center py-5">
-                                        <div class="d-flex flex-column align-items-center text-muted">
-                                            <i class="bi bi-inbox fs-1 mb-3 opacity-50"></i>
-                                            <p class="mb-0 fw-medium">No se encontraron resultados para tu búsqueda.</p>
+                                    <td colspan="5" class="p-0 border-0">
+                                        <div class="m-4 text-center p-5 bg-light rounded-4 border border-info border-opacity-25 text-muted d-flex flex-column align-items-center justify-content-center" style="min-height: 300px; border-style: dashed !important; border-width: 2px !important;">
+                                            <div class="bg-white p-4 rounded-circle shadow-sm mb-4 d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                                <i class="bi bi-inbox fw-bold text-primary opacity-75" style="font-size: 2.5rem; line-height: 1;"></i>
+                                            </div>
+                                            <h5 class="fw-bold text-dark mb-2">Ningún alumno encontrado</h5>
+                                            <p class="text-muted mb-4 small" style="max-width: 350px;">No se encontraron registros que coincidan con la búsqueda. Puedes registrar un nuevo expediente.</p>
+                                            <button type="button" @click="mostrarFormulario('alumnos')" class="btn btn-primary rounded-pill px-4 shadow-sm border-0 d-inline-flex align-items-center transition-all" style="background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);">
+                                                <i class="bi bi-plus-lg me-2"></i> Añadir Nuevo Alumno
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
