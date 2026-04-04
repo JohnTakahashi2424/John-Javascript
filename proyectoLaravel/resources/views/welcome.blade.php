@@ -176,7 +176,7 @@
                         radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.1) 0, transparent 50%);
             border-radius: 1.5rem;
             color: white;
-            padding: 5rem;
+            padding: 3.5rem 4.5rem;
             position: relative;
             overflow: hidden;
             box-shadow: 0 40px 60px -15px rgba(0, 0, 0, 0.4);
@@ -369,9 +369,9 @@
                     <div class="welcome-hero mb-4">
                         <div class="row align-items-center">
                             <div class="col-lg-7">
-                                <span class="badge bg-primary bg-opacity-20 text-primary px-3 py-2 rounded-pill mb-3 fw-bold" style="font-size: 0.85rem;">v2.0 Premium</span>
-                                <h1 class="display-3 fw-extrabold mb-4 tracking-tight">¡Bienvenido, <span class="text-primary-emphasis" style="color: #60a5fa !important;">Admin</span>!</h1>
-                                <p class="mb-5 opacity-75" style="font-size: 1.25rem; line-height: 1.6; max-width: 90%;">
+                                <span class="badge bg-primary bg-opacity-20 text-primary px-3 py-2 rounded-pill mb-3 fw-bold" style="font-size: 0.8rem;">v2.0 Premium</span>
+                                <h1 class="display-5 fw-extrabold mb-3 tracking-tight">¡Bienvenido, <span class="text-primary-emphasis" style="color: #60a5fa !important;">Admin</span>!</h1>
+                                <p class="mb-4 opacity-75" style="font-size: 1.15rem; line-height: 1.5; max-width: 90%;">
                                     Gestiona la excelencia académica con herramientas de última generación en un solo lugar.
                                 </p>
                                 <div class="d-flex gap-4 flex-wrap">
@@ -402,82 +402,82 @@
                             <div class="col-lg-5 d-none d-lg-block text-center">
                                 <div class="position-relative d-inline-block">
                                     <div class="position-absolute top-50 start-50 translate-middle bg-primary rounded-circle blur-3xl opacity-20" style="width: 300px; height: 300px;"></div>
-                                    <img src="{{ asset('rei_ayanami.png') }}" alt="Dashboard Illustration" class="welcome-illustration img-fluid rounded-4 shadow-lg position-relative" style="max-height: 520px; border: 4px solid rgba(255,255,255,0.1); filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5));">
+                                    <img src="{{ asset('rei_ayanami.png') }}" alt="Dashboard Illustration" class="welcome-illustration img-fluid rounded-4 shadow-lg position-relative" style="max-height: 480px; border: 4px solid rgba(255,255,255,0.1); filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5));">
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- KPIs Refinados -->
-                    <div class="row g-3 mb-4">
+                    <!-- KPIs Reequilibrados -->
+                    <div class="row g-4 mb-4">
                         <div class="col-md-4">
-                            <div class="surface-card p-3">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div class="icon-gradient icon-blue p-2 mb-0">
-                                        <i class="bi bi-people-fill fs-4"></i>
+                            <div class="surface-card p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div class="icon-gradient icon-blue p-3 mb-0">
+                                        <i class="bi bi-people-fill fs-3"></i>
                                     </div>
-                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill" style="font-size: 0.7rem;">+5%</span>
+                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill" style="font-size: 0.75rem;">+5%</span>
                                 </div>
-                                <div class="text-theme-secondary fw-bold text-uppercase mb-1" style="font-size: 0.65rem;">Total Alumnos</div>
-                                <div class="h3 fw-extrabold mb-0">1,240</div>
+                                <div class="text-theme-secondary fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">Total Alumnos</div>
+                                <div class="h2 fw-extrabold mb-0">1,240</div>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="surface-card p-3">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div class="icon-gradient icon-orange p-2 mb-0">
-                                        <i class="bi bi-person-workspace fs-4"></i>
+                            <div class="surface-card p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div class="icon-gradient icon-orange p-3 mb-0">
+                                        <i class="bi bi-person-workspace fs-3"></i>
                                     </div>
                                 </div>
-                                <div class="text-theme-secondary fw-bold text-uppercase mb-1" style="font-size: 0.65rem;">Docentes Activos</div>
-                                <div class="h3 fw-extrabold mb-0">85</div>
+                                <div class="text-theme-secondary fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">Docentes Activos</div>
+                                <div class="h2 fw-extrabold mb-0">85</div>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="surface-card p-3">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div class="icon-gradient icon-green p-2 mb-0">
-                                        <i class="bi bi-journal-check fs-4"></i>
+                            <div class="surface-card p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div class="icon-gradient icon-green p-3 mb-0">
+                                        <i class="bi bi-journal-check fs-3"></i>
                                     </div>
                                 </div>
-                                <div class="text-theme-secondary fw-bold text-uppercase mb-1" style="font-size: 0.65rem;">Matrículas Hoy</div>
-                                <div class="h3 fw-extrabold mb-0">312</div>
+                                <div class="text-theme-secondary fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">Matrículas Hoy</div>
+                                <div class="h2 fw-extrabold mb-0">312</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Accesos Rápidos Premium -->
+                    <!-- Accesos Rápidos Mejorados -->
                     <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h6 class="fw-extrabold mb-0">Accesos Rápidos</h6>
-                        <hr class="flex-grow-1 mx-3 opacity-10">
+                        <h5 class="fw-extrabold mb-0">Accesos Rápidos</h5>
+                        <hr class="flex-grow-1 mx-4 opacity-10">
                     </div>
                     
-                    <div class="row g-3">
+                    <div class="row g-4">
                         <div class="col-md-4">
-                            <div class="surface-card p-3 h-100 cursor-pointer" @click="abrirVentana('alumnos')">
-                                <div class="icon-gradient icon-blue mb-3 p-2">
-                                    <i class="bi bi-people fs-3"></i>
+                            <div class="surface-card p-4 h-100 cursor-pointer" @click="abrirVentana('alumnos')">
+                                <div class="icon-gradient icon-blue mb-4 p-3">
+                                    <i class="bi bi-people fs-2"></i>
                                 </div>
-                                <h6 class="fw-bold mb-1">Alumnos</h6>
-                                <p class="text-theme-secondary extra-small mb-0" style="font-size: 0.7rem;">Gestión de expedientes.</p>
+                                <h5 class="fw-bold mb-2">Alumnos</h5>
+                                <p class="text-theme-secondary small mb-0">Control de expedientes.</p>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="surface-card p-3 h-100 cursor-pointer" @click="abrirVentana('matriculas')">
-                                <div class="icon-gradient icon-green mb-3 p-2">
-                                    <i class="bi bi-layout-text-sidebar-reverse fs-3"></i>
+                            <div class="surface-card p-4 h-100 cursor-pointer" @click="abrirVentana('matriculas')">
+                                <div class="icon-gradient icon-green mb-4 p-3">
+                                    <i class="bi bi-layout-text-sidebar-reverse fs-2"></i>
                                 </div>
-                                <h6 class="fw-bold mb-1">Matrículas</h6>
-                                <p class="text-theme-secondary extra-small mb-0" style="font-size: 0.7rem;">Trámites automatizados.</p>
+                                <h5 class="fw-bold mb-2">Matrículas</h5>
+                                <p class="text-theme-secondary small mb-0">Trámites de ciclo.</p>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="surface-card p-3 h-100 cursor-pointer" @click="abrirVentana('docentes')">
-                                <div class="icon-gradient icon-orange mb-3 p-2">
-                                    <i class="bi bi-person-workspace fs-3"></i>
+                            <div class="surface-card p-4 h-100 cursor-pointer" @click="abrirVentana('docentes')">
+                                <div class="icon-gradient icon-orange mb-4 p-3">
+                                    <i class="bi bi-person-workspace fs-2"></i>
                                 </div>
-                                <h6 class="fw-bold mb-1">Docentes</h6>
-                                <p class="text-theme-secondary extra-small mb-0" style="font-size: 0.7rem;">Administración de planta.</p>
+                                <h5 class="fw-bold mb-2">Docentes</h5>
+                                <p class="text-theme-secondary small mb-0">Planta académica.</p>
                             </div>
                         </div>
                     </div>
