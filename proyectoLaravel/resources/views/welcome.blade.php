@@ -81,6 +81,25 @@
             background-color: rgba(255, 255, 255, 0.2) !important;
         }
 
+        /* Dark Mode para la Barra de Búsqueda Superior */
+        [data-theme="dark"] .search-bar-top {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        [data-theme="dark"] .search-bar-top:focus-within {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-color: #3b82f6;
+        }
+
+        [data-theme="dark"] .search-bar-top input {
+            color: #f8fafc;
+        }
+        
+        [data-theme="dark"] .search-bar-top input::placeholder {
+            color: rgba(248, 250, 252, 0.4);
+        }
+
         body {
             background-color: var(--bg-body);
             color: var(--text-primary);
