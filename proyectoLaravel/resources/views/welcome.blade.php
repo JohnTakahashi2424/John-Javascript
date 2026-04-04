@@ -369,9 +369,9 @@
                     <div class="welcome-hero mb-4">
                         <div class="row align-items-center">
                             <div class="col-lg-7">
-                                <span class="badge bg-primary bg-opacity-20 text-primary px-3 py-2 rounded-pill mb-3 fw-bold" style="font-size: 0.8rem;">v2.0 Premium</span>
-                                <h1 class="display-5 fw-extrabold mb-3 tracking-tight">¡Bienvenido, <span class="text-primary-emphasis" style="color: #60a5fa !important;">Admin</span>!</h1>
-                                <p class="mb-4 opacity-75" style="font-size: 1.15rem; line-height: 1.5; max-width: 90%;">
+                                <span class="badge bg-primary bg-opacity-20 text-primary px-3 py-2 rounded-pill mb-3 fw-bold" style="font-size: 0.9rem;">v2.0 Premium Sync</span>
+                                <h1 class="display-2 fw-extrabold mb-4 tracking-tight">¡Bienvenido, <span class="text-primary-emphasis" style="color: #60a5fa !important;">Admin</span>!</h1>
+                                <p class="mb-5 opacity-75" style="font-size: 1.4rem; line-height: 1.6; max-width: 90%;">
                                     Gestiona la excelencia académica con herramientas de última generación en un solo lugar.
                                 </p>
                                 <div class="d-flex gap-4 flex-wrap">
