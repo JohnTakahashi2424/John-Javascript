@@ -371,7 +371,11 @@
                                         </div>
                                         <div>
                                             <div class="small opacity-50 text-uppercase fw-bold" style="font-size: 0.65rem;">Fecha Actual</div>
-                                            <div class="fw-bold fs-6">@{{ new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }) }}</div>
+                                            <div class="fw-bold fs-6">
+                                                <span id="dashboard-date"></span> 
+                                                <span class="mx-2 opacity-50">|</span> 
+                                                <span id="dashboard-time"></span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="d-flex align-items-center">
@@ -504,5 +508,24 @@
     
     <!-- Integración de Vite (Carga el frontend modular) -->
     @vite(['resources/js/main.js'])
+    <!-- Reloj en Tiempo Real (In-page para evitar problemas de compilación) -->
+    <script>
+        function updateDashboardClock() {
+            const dateEl = document.getElementById('dashboard-date');
+            const timeEl = document.getElementById('dashboard-time');
+            if (dateEl && timeEl) {
+                const now = new Date();
+                dateEl.textContent = now.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+                timeEl.textContent = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            }
+        }
+        // Ejecutar inmediatamente y cada segundo
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDashboardClock();
+            setInterval(updateDashboardClock, 1000);
+        });
+        // Si Vue ya cargó, forzar actualización
+        setTimeout(updateDashboardClock, 500);
+    </script>
 </body>
 </html>
