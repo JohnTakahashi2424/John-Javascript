@@ -9,8 +9,9 @@ class Matricula extends Model
 {
     use HasFactory;
 
+    protected $primaryKey = 'idMatricula';
     protected $fillable = [
-        'idMatricula', 'idAlumno', 'ciclo', 'fecha', 'pago'
+        'idAlumno', 'ciclo', 'fecha', 'pago'
     ];
 
     public function alumno() {

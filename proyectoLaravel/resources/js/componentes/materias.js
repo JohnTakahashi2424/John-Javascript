@@ -27,11 +27,13 @@ export default {
         },
         async guardarMateria() {
             let datos = {
-                idMateria: this.accion=='modificar' ? this.idMateria : this.getId(),
                 codigo: this.materia.codigo,
                 nombre: this.materia.nombre,
                 uv: this.materia.uv,
             };
+            if (this.accion === 'modificar') {
+                datos.idMateria = this.idMateria;
+            }
             this.buscar = datos.codigo;
             //await this.obtenerMaterias();
 
@@ -48,21 +50,41 @@ export default {
             })
                 .then(response=>response.json())
                 .then(data=>{
-                    if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                    if(data && typeof data === 'object') {
+                        // Sincronización de ID Real
+                        const refBusqueda = this.$parent.$refs.busqueda_materias;
+                        if (refBusqueda) {
+                            const searchId = this.accion === 'nuevo' ? datos._tempId : datos.idMateria;
+                            const index = refBusqueda.materias_cache.findIndex(x => x.idMateria === searchId);
+                            if (index !== -1) {
+                                // Reemplazar temporal por real con splice (reactividad)
+                                refBusqueda.materias_cache.splice(index, 1, data);
+                                refBusqueda.filtrarMaterias();
+                            }
+                        }
+                    } else {
+                        alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                    }
                 });
             
-            // Actualización Instantánea Optimista
+            // Actualización Instantánea Optimista (con ID temporal para la UI)
             const refBusqueda = this.$parent.$refs.busqueda_materias;
             if (refBusqueda) {
+                const tempId = this.getId();
+                const objOptimista = { ...datos, idMateria: this.accion === 'modificar' ? this.idMateria : tempId };
+
                 if (this.accion === 'nuevo') {
-                    refBusqueda.materias_cache.unshift({...datos}); 
+                    refBusqueda.materias_cache.unshift(objOptimista); 
                 } else {
                     const index = refBusqueda.materias_cache.findIndex(x => x.idMateria === this.idMateria);
                     if (index !== -1) {
-                        refBusqueda.materias_cache[index] = {...datos};
+                        refBusqueda.materias_cache.splice(index, 1, objOptimista);
                     }
                 }
                 refBusqueda.filtrarMaterias();
+
+                // Guardar referencia
+                datos._tempId = tempId;
             }
             
             this.limpiarFormulario();

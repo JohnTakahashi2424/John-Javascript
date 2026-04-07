@@ -9,7 +9,8 @@ class Docente extends Model
 {
     use HasFactory;
 
+    protected $primaryKey = 'idDocente';
     protected $fillable = [
-        'idDocente', 'codigo', 'nombre', 'direccion', 'email', 'telefono', 'escalafon'
+        'codigo', 'nombre', 'direccion', 'email', 'telefono', 'escalafon'
     ];
 }

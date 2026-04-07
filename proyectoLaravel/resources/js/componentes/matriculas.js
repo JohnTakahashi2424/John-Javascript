@@ -29,12 +29,14 @@ export default {
         },
         async guardarMatricula() {
             let datos = {
-                idMatricula: this.accion == 'modificar' ? this.idMatricula : this.getId(),
                 idAlumno: this.matricula.idAlumno,
                 ciclo: this.matricula.ciclo,
                 fecha: this.matricula.fecha,
                 pago: this.matricula.pago
             };
+            if (this.accion === 'modificar') {
+                datos.idMatricula = this.idMatricula;
+            }
             const method = this.accion === 'nuevo' ? 'POST' : 'PUT';
             const url = this.accion === 'nuevo' ? '/api/matriculas' : '/api/matriculas/' + this.idMatricula;
             fetch(url, {
@@ -44,16 +46,32 @@ export default {
             })
                 .then(response=>response.json())
                 .then(data=>{
-                    if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                    if(data && typeof data === 'object') {
+                        // Sincronización de ID Real
+                        const refBusqueda = this.$parent.$refs.busqueda_matriculas;
+                        if (refBusqueda) {
+                            const searchId = this.accion === 'nuevo' ? datos._tempId : datos.idMatricula;
+                            const index = refBusqueda.matriculas_cache.findIndex(x => x.idMatricula === searchId);
+                            if (index !== -1) {
+                                // Reemplazar temporal por real
+                                refBusqueda.matriculas_cache.splice(index, 1, data);
+                                refBusqueda.filtrarMatriculas();
+                            }
+                        }
+                    } else {
+                        alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                    }
                 });
             
-            // Actualización Instantánea Optimista
+            // Actualización Instantánea Optimista (con ID temporal para la UI)
             const refBusqueda = this.$parent.$refs.busqueda_matriculas;
             if (refBusqueda) {
                 // Resolver el nombre del alumno para la tabla
                 const alumnoSelect = this.alumnos.find(a => a.idAlumno === datos.idAlumno);
+                const tempId = this.getId();
                 const objParaTabla = {
                     ...datos,
+                    idMatricula: this.accion === 'modificar' ? this.idMatricula : tempId,
                     nombreAlumno: alumnoSelect ? alumnoSelect.nombre : 'Desconocido'
                 };
                 
@@ -62,10 +80,13 @@ export default {
                 } else {
                     const index = refBusqueda.matriculas_cache.findIndex(x => x.idMatricula === this.idMatricula);
                     if (index !== -1) {
-                        refBusqueda.matriculas_cache[index] = objParaTabla;
+                        refBusqueda.matriculas_cache.splice(index, 1, objParaTabla);
                     }
                 }
                 refBusqueda.filtrarMatriculas();
+
+                // Guardar referencia
+                datos._tempId = tempId;
             }
             
             this.limpiarFormulario();

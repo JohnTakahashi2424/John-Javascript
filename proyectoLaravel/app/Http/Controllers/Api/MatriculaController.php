@@ -29,7 +29,9 @@ class MatriculaController extends Controller
     public function store(Request $request)
     {
         $matricula = Matricula::create($request->all());
-        return response()->json(true);
+        $matricula->load('alumno');
+        $matricula->nombreAlumno = $matricula->alumno ? $matricula->alumno->nombre : 'Desconocido';
+        return response()->json($matricula);
     }
 
     public function show(Matricula $matricula)
@@ -40,7 +42,9 @@ class MatriculaController extends Controller
     public function update(Request $request, Matricula $matricula)
     {
         $matricula->update($request->all());
-        return response()->json(true);
+        $matricula->load('alumno');
+        $matricula->nombreAlumno = $matricula->alumno ? $matricula->alumno->nombre : 'Desconocido';
+        return response()->json($matricula);
     }
 
     public function destroy(Matricula $matricula)

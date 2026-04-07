@@ -9,8 +9,9 @@ class Materia extends Model
 {
     use HasFactory;
 
+    protected $primaryKey = 'idMateria';
     protected $fillable = [
-        'idMateria', 'codigo', 'nombre', 'uv'
+        'codigo', 'nombre', 'uv'
     ];
 
     public function inscripciones() {

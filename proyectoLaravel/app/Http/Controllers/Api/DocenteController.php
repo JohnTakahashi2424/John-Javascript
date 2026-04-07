@@ -22,7 +22,7 @@ class DocenteController extends Controller
     public function store(Request $request)
     {
         $docente = Docente::create($request->all());
-        return response()->json(true);
+        return response()->json($docente);
     }
 
     public function show(Docente $docente)
@@ -33,7 +33,7 @@ class DocenteController extends Controller
     public function update(Request $request, Docente $docente)
     {
         $docente->update($request->all());
-        return response()->json(true);
+        return response()->json($docente);
     }
 
     public function destroy(Docente $docente)

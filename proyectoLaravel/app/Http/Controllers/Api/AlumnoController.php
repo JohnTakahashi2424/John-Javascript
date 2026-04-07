@@ -22,7 +22,7 @@ class AlumnoController extends Controller
     public function store(Request $request)
     {
         $alumno = Alumno::create($request->all());
-        return response()->json(true);
+        return response()->json($alumno);
     }
 
     public function show(Alumno $alumno)
@@ -33,7 +33,7 @@ class AlumnoController extends Controller
     public function update(Request $request, Alumno $alumno)
     {
         $alumno->update($request->all());
-        return response()->json(true);
+        return response()->json($alumno);
     }
 
     public function destroy(Alumno $alumno)

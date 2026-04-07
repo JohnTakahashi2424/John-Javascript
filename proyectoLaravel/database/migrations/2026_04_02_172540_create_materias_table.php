@@ -9,8 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('materias', function (Blueprint $table) {
-            $table->id();
-            $table->uuid('idMateria')->unique();
+            $table->id('idMateria');
             $table->string('codigo', 10)->unique();
             $table->string('nombre', 100);
             $table->integer('uv');

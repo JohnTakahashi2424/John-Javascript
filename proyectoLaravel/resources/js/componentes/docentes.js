@@ -33,7 +33,6 @@ export default {
         },
         async guardarDocente() {
             let datos = {
-                idDocente: this.accion=='modificar' ? this.idDocente : this.getId(),
                 codigo: this.docente.codigo,
                 nombre: this.docente.nombre,
                 direccion: this.docente.direccion,
@@ -41,6 +40,9 @@ export default {
                 telefono: this.docente.telefono,
                 escalafon: this.docente.escalafon
             };
+            if (this.accion === 'modificar') {
+                datos.idDocente = this.idDocente;
+            }
             this.buscar = datos.codigo;
             //await this.obtenerDocentes();
 
@@ -50,6 +52,7 @@ export default {
             }
             const method = this.accion === 'nuevo' ? 'POST' : 'PUT';
             const url = this.accion === 'nuevo' ? '/api/docentes' : '/api/docentes/' + this.idDocente;
+            
             fetch(url, {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
@@ -57,21 +60,41 @@ export default {
             })
                 .then(response=>response.json())
                 .then(data=>{
-                    if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                    if(data && typeof data === 'object') {
+                        // Sincronización de ID Real
+                        const refBusqueda = this.$parent.$refs.busqueda_docentes;
+                        if (refBusqueda) {
+                            const searchId = this.accion === 'nuevo' ? datos._tempId : datos.idDocente;
+                            const index = refBusqueda.docentes_cache.findIndex(x => x.idDocente === searchId);
+                            if (index !== -1) {
+                                // Reemplazar temporal por real con splice (reactividad)
+                                refBusqueda.docentes_cache.splice(index, 1, data);
+                                refBusqueda.filtrarDocentes();
+                            }
+                        }
+                    } else {
+                        alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                    }
                 });
             
-            // Actualización Instantánea Optimista
+            // Actualización Instantánea Optimista (con ID temporal para la UI)
             const refBusqueda = this.$parent.$refs.busqueda_docentes;
             if (refBusqueda) {
+                const tempId = this.getId();
+                const objOptimista = { ...datos, idDocente: this.accion === 'modificar' ? this.idDocente : tempId };
+                
                 if (this.accion === 'nuevo') {
-                    refBusqueda.docentes_cache.unshift({...datos}); 
+                    refBusqueda.docentes_cache.unshift(objOptimista); 
                 } else {
                     const index = refBusqueda.docentes_cache.findIndex(x => x.idDocente === this.idDocente);
                     if (index !== -1) {
-                        refBusqueda.docentes_cache[index] = {...datos};
+                        refBusqueda.docentes_cache.splice(index, 1, objOptimista);
                     }
                 }
                 refBusqueda.filtrarDocentes();
+                
+                // Guardar referencia al ID temporal
+                datos._tempId = tempId;
             }
             
             this.limpiarFormulario();

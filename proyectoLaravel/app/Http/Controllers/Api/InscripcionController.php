@@ -32,7 +32,10 @@ class InscripcionController extends Controller
     public function store(Request $request)
     {
         $inscripcion = Inscripcion::create($request->all());
-        return response()->json(true);
+        $inscripcion->load(['alumno', 'materia']);
+        $inscripcion->nombreAlumno = $inscripcion->alumno ? $inscripcion->alumno->nombre : 'Desconocido';
+        $inscripcion->nombreMateria = $inscripcion->materia ? $inscripcion->materia->nombre : 'Desconocida';
+        return response()->json($inscripcion);
     }
 
     public function show(Inscripcion $inscripcion)
@@ -43,7 +46,10 @@ class InscripcionController extends Controller
     public function update(Request $request, Inscripcion $inscripcion)
     {
         $inscripcion->update($request->all());
-        return response()->json(true);
+        $inscripcion->load(['alumno', 'materia']);
+        $inscripcion->nombreAlumno = $inscripcion->alumno ? $inscripcion->alumno->nombre : 'Desconocido';
+        $inscripcion->nombreMateria = $inscripcion->materia ? $inscripcion->materia->nombre : 'Desconocida';
+        return response()->json($inscripcion);
     }
 
     public function destroy(Inscripcion $inscripcion)

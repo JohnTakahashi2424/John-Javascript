@@ -9,9 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('matriculas', function (Blueprint $table) {
-            $table->id();
-            $table->uuid('idMatricula')->unique();
-            $table->foreignId('idAlumno')->constrained('alumnos')->onDelete('cascade');
+            $table->id('idMatricula');
+            $table->unsignedBigInteger('idAlumno');
+            $table->foreign('idAlumno')->references('idAlumno')->on('alumnos')->onDelete('cascade');
             $table->string('ciclo', 20);
             $table->date('fecha');
             $table->string('pago', 5);

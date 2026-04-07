@@ -11,8 +11,9 @@ class Inscripcion extends Model
     
     protected $table = 'inscripciones';
 
+    protected $primaryKey = 'idInscripcion';
     protected $fillable = [
-        'idInscripcion', 'idAlumno', 'idMateria', 'ciclo', 'fecha'
+        'idAlumno', 'idMateria', 'ciclo', 'fecha'
     ];
 
     public function alumno() {

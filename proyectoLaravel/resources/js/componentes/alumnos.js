@@ -31,13 +31,17 @@ export default {
         },
         async guardarAlumno() {
             let datos = {
-                idAlumno: this.accion=='modificar' ? this.idAlumno : this.getId(),
                 codigo: this.alumno.codigo,
                 nombre: this.alumno.nombre,
                 direccion: this.alumno.direccion,
                 email: this.alumno.email,
                 telefono: this.alumno.telefono
             };
+            // El ID solo se envía si estamos modificando
+            if (this.accion === 'modificar') {
+                datos.idAlumno = this.idAlumno;
+            }
+            
             datos.hash = sha256(JSON.stringify(datos));
             this.buscar = datos.codigo;
             //await this.obtenerAlumnos();
@@ -55,21 +59,42 @@ export default {
             })
                 .then(response=>response.json())
                 .then(data=>{
-                    if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                    if(data && typeof data === 'object') {
+                        // Sincronización de ID Real
+                        const refBusqueda = this.$parent.$refs.busqueda_alumnos;
+                        if (refBusqueda) {
+                            // Buscar el registro por el ID que usamos en el paso optimista
+                            const searchId = this.accion === 'nuevo' ? datos._tempId : datos.idAlumno;
+                            const index = refBusqueda.alumnos_cache.findIndex(x => x.idAlumno === searchId);
+                            if (index !== -1) {
+                                // Reemplazar el objeto temporal por el real (con ID de la BD)
+                                refBusqueda.alumnos_cache.splice(index, 1, data);
+                                refBusqueda.filtrarAlumnos();
+                            }
+                        }
+                    } else {
+                        alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                    }
                 });
             
-            // Actualización Instantánea Optimista
+            // Actualización Instantánea Optimista (con ID temporal para la UI)
             const refBusqueda = this.$parent.$refs.busqueda_alumnos;
             if (refBusqueda) {
+                const tempId = this.getId();
+                const objOptimista = { ...datos, idAlumno: this.accion === 'modificar' ? this.idAlumno : tempId };
+                
                 if (this.accion === 'nuevo') {
-                    refBusqueda.alumnos_cache.unshift({...datos}); 
+                    refBusqueda.alumnos_cache.unshift(objOptimista); 
                 } else {
                     const index = refBusqueda.alumnos_cache.findIndex(x => x.idAlumno === this.idAlumno);
                     if (index !== -1) {
-                        refBusqueda.alumnos_cache[index] = {...datos};
+                        refBusqueda.alumnos_cache.splice(index, 1, objOptimista);
                     }
                 }
                 refBusqueda.filtrarAlumnos();
+
+                // Guardar la referencia al ID temporal para después de la respuesta
+                datos._tempId = tempId;
             }
             
             this.limpiarFormulario();

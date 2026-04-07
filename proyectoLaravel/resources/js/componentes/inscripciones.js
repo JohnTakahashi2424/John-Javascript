@@ -30,12 +30,14 @@ export default {
         },
         async guardarInscripcion() {
             let datos = {
-                idInscripcion: this.accion == 'modificar' ? this.idInscripcion : this.getId(),
                 idAlumno: this.inscripcion.idAlumno,
                 idMateria: this.inscripcion.idMateria,
                 ciclo: this.inscripcion.ciclo,
                 fecha: this.inscripcion.fecha
             };
+            if (this.accion === 'modificar') {
+                datos.idInscripcion = this.idInscripcion;
+            }
             const method = this.accion === 'nuevo' ? 'POST' : 'PUT';
             const url = this.accion === 'nuevo' ? '/api/inscripciones' : '/api/inscripciones/' + this.idInscripcion;
             fetch(url, {
@@ -45,16 +47,33 @@ export default {
             })
                 .then(response=>response.json())
                 .then(data=>{
-                    if(data!=true) alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                    if(data && typeof data === 'object') {
+                        // Sincronización de ID Real
+                        const refBusqueda = this.$parent.$refs.busqueda_inscripciones;
+                        if (refBusqueda) {
+                            const searchId = this.accion === 'nuevo' ? datos._tempId : datos.idInscripcion;
+                            const index = refBusqueda.inscripciones_cache.findIndex(x => x.idInscripcion === searchId);
+                            if (index !== -1) {
+                                // Reemplazar temporal por real con splice (reactividad)
+                                refBusqueda.inscripciones_cache.splice(index, 1, data);
+                                refBusqueda.filtrarInscripciones();
+                            }
+                        }
+                    } else {
+                        alertify.error(`Error al sincronizar con el servidor: ${data}`);
+                    }
                 });
             
-            // Actualización Instantánea Optimista
+            // Actualización Instantánea Optimista (con ID temporal para la UI)
             const refBusqueda = this.$parent.$refs.busqueda_inscripciones;
             if (refBusqueda) {
+                // Resolver nombres para la tabla
                 const alumnoSelect = this.alumnos.find(a => a.idAlumno === datos.idAlumno);
                 const materiaSelect = this.materias.find(m => m.idMateria === datos.idMateria);
+                const tempId = this.getId();
                 const objParaTabla = {
                     ...datos,
+                    idInscripcion: this.accion === 'modificar' ? this.idInscripcion : tempId,
                     nombreAlumno: alumnoSelect ? alumnoSelect.nombre : 'Desconocido',
                     nombreMateria: materiaSelect ? materiaSelect.nombre : 'Desconocida'
                 };
@@ -64,10 +83,13 @@ export default {
                 } else {
                     const index = refBusqueda.inscripciones_cache.findIndex(x => x.idInscripcion === this.idInscripcion);
                     if (index !== -1) {
-                        refBusqueda.inscripciones_cache[index] = objParaTabla;
+                        refBusqueda.inscripciones_cache.splice(index, 1, objParaTabla);
                     }
                 }
                 refBusqueda.filtrarInscripciones();
+
+                // Guardar referencia
+                datos._tempId = tempId;
             }
             
             this.limpiarFormulario();

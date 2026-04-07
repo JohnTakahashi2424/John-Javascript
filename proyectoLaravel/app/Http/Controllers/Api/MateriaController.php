@@ -22,7 +22,7 @@ class MateriaController extends Controller
     public function store(Request $request)
     {
         $materia = Materia::create($request->all());
-        return response()->json(true);
+        return response()->json($materia);
     }
 
     public function show(Materia $materia)
@@ -33,7 +33,7 @@ class MateriaController extends Controller
     public function update(Request $request, Materia $materia)
     {
         $materia->update($request->all());
-        return response()->json(true);
+        return response()->json($materia);
     }
 
     public function destroy(Materia $materia)
