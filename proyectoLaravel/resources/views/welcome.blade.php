@@ -419,7 +419,7 @@
                                     <span class="badge bg-success bg-opacity-10 text-success rounded-pill" style="font-size: 0.75rem;">+5%</span>
                                 </div>
                                 <div class="text-theme-secondary fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">Total Alumnos</div>
-                                <div class="h2 fw-extrabold mb-0">1,240</div>
+                                <div class="h2 fw-extrabold mb-0">{{ number_format($totalAlumnos) }}</div>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -430,7 +430,7 @@
                                     </div>
                                 </div>
                                 <div class="text-theme-secondary fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">Docentes Activos</div>
-                                <div class="h2 fw-extrabold mb-0">85</div>
+                                <div class="h2 fw-extrabold mb-0">{{ number_format($totalDocentes) }}</div>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -441,7 +441,7 @@
                                     </div>
                                 </div>
                                 <div class="text-theme-secondary fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">Matrículas Hoy</div>
-                                <div class="h2 fw-extrabold mb-0">312</div>
+                                <div class="h2 fw-extrabold mb-0">{{ number_format($matriculasHoy) }}</div>
                             </div>
                         </div>
                     </div>
