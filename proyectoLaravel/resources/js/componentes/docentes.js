@@ -81,7 +81,7 @@ export default {
             const refBusqueda = this.$parent.$refs.busqueda_docentes;
             if (refBusqueda) {
                 const tempId = this.getId();
-                const objOptimista = { ...datos, idDocente: this.accion === 'modificar' ? this.idDocente : tempId };
+                const objOptimista = { ...datos, idDocente: this.accion === 'modificar' ? this.idDocente : tempId, _isNew: true };
                 
                 if (this.accion === 'nuevo') {
                     refBusqueda.docentes_cache.unshift(objOptimista); 
@@ -93,9 +93,16 @@ export default {
                 }
                 refBusqueda.filtrarDocentes();
                 
+                // Quitar el resaltado después de animar
+                setTimeout(() => {
+                    const idx = refBusqueda.docentes_cache.findIndex(x => x.idDocente === (this.accion === 'modificar' ? this.idDocente : tempId));
+                    if(idx !== -1) delete refBusqueda.docentes_cache[idx]._isNew;
+                }, 2000);
+
                 // Guardar referencia al ID temporal
                 datos._tempId = tempId;
             }
+
             
             this.limpiarFormulario();
             alertify.success(`${datos.nombre} guardado correctamente`);
@@ -135,7 +142,7 @@ export default {
                             <label class="form-label text-muted fw-semibold text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.05em;">Código de Docente</label>
                             <div class="input-group input-group-lg shadow-sm">
                                 <span class="input-group-text bg-white text-muted border-end-0 px-3"><i class="bi bi-upc-scan"></i></span>
-                                <input placeholder="Ej. D001" required v-model="docente.codigo" type="text" class="form-control border-start-0 ps-0 text-dark fs-6 font-monospace" style="outline: none; box-shadow: none;">
+                                <input v-focus placeholder="Ej. D001" required v-model="docente.codigo" type="text" class="form-control border-start-0 ps-0 text-dark fs-6 font-monospace" style="outline: none; box-shadow: none;">
                             </div>
                         </div>
                         <div class="col-md-8">

@@ -110,10 +110,27 @@ document.addEventListener('click', function(e) {
         console.log('[Sidebar] Alternando visibilidad (Colapso)');
         document.body.classList.toggle('sidebar-collapsed');
     }
+
+    // === BOTÓN DE RECARGA DE SISTEMA ===
+    const btnReload = e.target.closest('#btnReloadApp');
+    if (btnReload) {
+        e.preventDefault();
+        console.log('[Sistema] Reiniciando aplicación...');
+        // Animación de rotación antes de recargar
+        const icon = btnReload.querySelector('i');
+        if (icon) icon.style.transition = 'transform 0.5s ease-in-out';
+        if (icon) icon.style.transform = 'rotate(360deg)';
+        
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
+    }
 });
 
 
-createApp({
+
+
+const app = createApp({
     components:{
         alumnos,
         busqueda_alumnos,
@@ -126,7 +143,15 @@ createApp({
         inscripciones,
         busqueda_inscripciones
     },
+    directives: {
+        focus: {
+            mounted(el) {
+                el.focus();
+            }
+        }
+    },
     data(){
+
         return{
             forms:{
                 alumnos:{mostrar:false},

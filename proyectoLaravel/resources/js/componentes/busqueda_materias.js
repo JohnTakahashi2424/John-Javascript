@@ -94,12 +94,17 @@ export default {
                                     <th class="py-3 px-4 text-end text-muted fw-semibold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr v-for="materia in materias" :key="materia.idMateria" @click="modificarMateria(materia)" class="cursor-pointer transition-all">
+                            <transition-group name="list" tag="tbody">
+                                <tr v-for="materia in materias" :key="materia.idMateria" @click="modificarMateria(materia)" 
+                                    class="cursor-pointer transition-all"
+                                    :class="{ 'row-syncing': materia.idMateria > 1000000000000, 'row-highlight-new': materia._isNew }">
                                     <td class="py-3 px-4">
                                         <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1 rounded font-monospace">{{ materia.codigo }}</span>
                                     </td>
-                                    <td class="py-3 px-4 fw-semibold text-dark">{{ materia.nombre }}</td>
+                                    <td class="py-3 px-4 fw-semibold text-dark">
+                                        {{ materia.nombre }}
+                                        <span v-if="materia.idMateria > 1000000000000" class="badge bg-info bg-opacity-10 text-info ms-2" style="font-size: 0.6rem;">Sincronizando...</span>
+                                    </td>
                                     <td class="py-3 px-4">
                                         <div class="d-flex align-items-center">
                                             <i class="bi bi-123 text-muted me-2"></i>
@@ -117,7 +122,7 @@ export default {
                                         </div>
                                     </td>
                                 </tr>
-                                <tr v-if="materias.length == 0">
+                                <tr v-if="materias.length == 0" key="empty-state">
                                     <td colspan="4" class="text-center py-5">
                                         <div class="d-flex flex-column align-items-center text-muted">
                                             <i class="bi bi-inbox fs-1 mb-3 opacity-50"></i>
@@ -125,7 +130,8 @@ export default {
                                         </div>
                                     </td>
                                 </tr>
-                            </tbody>
+                            </transition-group>
+
                         </table>
                     </div>
                 </div>

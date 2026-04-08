@@ -150,6 +150,50 @@
             box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
         }
 
+        /* Instant UX Animations */
+        @keyframes fadeInUpCustom {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes highlightSuccess {
+            0% { background-color: rgba(16, 185, 129, 0.2); }
+            100% { background-color: transparent; }
+        }
+
+        @keyframes pulseSyncing {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        .modulo-seccion:not(.d-none) {
+            animation: fadeInUpCustom 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .row-syncing {
+            animation: pulseSyncing 1.5s infinite ease-in-out;
+            opacity: 0.7;
+        }
+
+        .row-highlight-new {
+            animation: highlightSuccess 2s ease-out forwards;
+        }
+
+        /* Vue Transition Classes */
+        .list-enter-active, .list-leave-active {
+            transition: all 0.4s ease;
+        }
+        .list-enter-from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        .list-leave-to {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+
+
         /* Topbar Elevada */
         .topbar {
             height: 80px;
@@ -321,8 +365,12 @@
                 </div>
             </div>
 
-            <!-- Perfil de Usuario Premium en Sidebar -->
+            <!-- Botón de Recarga y Perfil -->
             <div class="mt-auto p-4 border-top border-white border-opacity-10">
+                <button id="btnReloadApp" class="btn btn-outline-light w-100 mb-3 border-opacity-10 py-2 rounded-4 d-flex align-items-center justify-content-center transition-all hover-translate" style="font-size: 0.85rem;">
+                    <i class="bi bi-arrow-clockwise me-2 fs-5"></i> Reiniciar Sistema
+                </button>
+
                 <div class="d-flex align-items-center p-2 rounded-4 cursor-pointer transition-all hover-translate" style="background: rgba(255,255,255,0.03);">
                     <div class="position-relative me-3">
                         <img src="https://ui-avatars.com/api/?name=Admin&background=3b82f6&color=fff&rounded=true" alt="User Avatar" class="rounded-circle shadow-lg" width="42" height="42">
@@ -335,6 +383,7 @@
                 </div>
             </div>
         </aside>
+
 
         <!-- Main Content -->
         <main class="main-content">

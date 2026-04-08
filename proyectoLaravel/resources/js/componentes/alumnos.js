@@ -81,7 +81,7 @@ export default {
             const refBusqueda = this.$parent.$refs.busqueda_alumnos;
             if (refBusqueda) {
                 const tempId = this.getId();
-                const objOptimista = { ...datos, idAlumno: this.accion === 'modificar' ? this.idAlumno : tempId };
+                const objOptimista = { ...datos, idAlumno: this.accion === 'modificar' ? this.idAlumno : tempId, _isNew: true };
                 
                 if (this.accion === 'nuevo') {
                     refBusqueda.alumnos_cache.unshift(objOptimista); 
@@ -93,9 +93,16 @@ export default {
                 }
                 refBusqueda.filtrarAlumnos();
 
+                // Quitar el resaltado después de animar
+                setTimeout(() => {
+                    const idx = refBusqueda.alumnos_cache.findIndex(x => x.idAlumno === (this.accion === 'modificar' ? this.idAlumno : tempId));
+                    if(idx !== -1) delete refBusqueda.alumnos_cache[idx]._isNew;
+                }, 2000);
+
                 // Guardar la referencia al ID temporal para después de la respuesta
                 datos._tempId = tempId;
             }
+
             
             this.limpiarFormulario();
             alertify.success(`${datos.nombre} guardado correctamente`);
@@ -134,7 +141,7 @@ export default {
                             <label class="form-label text-muted fw-semibold text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.05em;">Código del Alumno</label>
                             <div class="input-group input-group-lg shadow-sm">
                                 <span class="input-group-text bg-white text-muted border-end-0 px-3"><i class="bi bi-upc-scan"></i></span>
-                                <input placeholder="Ej. A001" required v-model="alumno.codigo" type="text" class="form-control border-start-0 ps-0 text-dark fs-6 font-monospace" style="outline: none; box-shadow: none;">
+                                <input v-focus placeholder="Ej. A001" required v-model="alumno.codigo" type="text" class="form-control border-start-0 ps-0 text-dark fs-6 font-monospace" style="outline: none; box-shadow: none;">
                             </div>
                         </div>
                         <div class="col-md-8">

@@ -96,12 +96,17 @@ export default {
                                     <th class="py-3 px-4 text-end text-muted fw-semibold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr v-for="docente in docentes" :key="docente.idDocente" @click="modificarDocente(docente)" class="cursor-pointer transition-all">
+                            <transition-group name="list" tag="tbody">
+                                <tr v-for="docente in docentes" :key="docente.idDocente" @click="modificarDocente(docente)" 
+                                    class="cursor-pointer transition-all"
+                                    :class="{ 'row-syncing': docente.idDocente > 1000000000000, 'row-highlight-new': docente._isNew }">
                                     <td class="py-3 px-4">
                                         <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1 rounded font-monospace">{{ docente.codigo }}</span>
                                     </td>
-                                    <td class="py-3 px-4 fw-semibold text-dark">{{ docente.nombre }}</td>
+                                    <td class="py-3 px-4 fw-semibold text-dark">
+                                        {{ docente.nombre }}
+                                        <span v-if="docente.idDocente > 1000000000000" class="badge bg-info bg-opacity-10 text-info ms-2" style="font-size: 0.6rem;">Sincronizando...</span>
+                                    </td>
                                     <td class="py-3 px-4 text-muted small">{{ docente.direccion }}</td>
                                     <td class="py-3 px-4">
                                         <div class="d-flex flex-column gap-1">
@@ -123,7 +128,7 @@ export default {
                                         </div>
                                     </td>
                                 </tr>
-                                <tr v-if="docentes.length == 0">
+                                <tr v-if="docentes.length == 0" key="empty-state">
                                     <td colspan="6" class="text-center py-5">
                                         <div class="d-flex flex-column align-items-center text-muted">
                                             <i class="bi bi-inbox fs-1 mb-3 opacity-50"></i>
@@ -131,7 +136,8 @@ export default {
                                         </div>
                                     </td>
                                 </tr>
-                            </tbody>
+                            </transition-group>
+
                         </table>
                     </div>
                 </div>

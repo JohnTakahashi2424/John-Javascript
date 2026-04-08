@@ -75,7 +75,8 @@ export default {
                     ...datos,
                     idInscripcion: this.accion === 'modificar' ? this.idInscripcion : tempId,
                     nombreAlumno: alumnoSelect ? alumnoSelect.nombre : 'Desconocido',
-                    nombreMateria: materiaSelect ? materiaSelect.nombre : 'Desconocida'
+                    nombreMateria: materiaSelect ? materiaSelect.nombre : 'Desconocida',
+                    _isNew: true
                 };
                 
                 if (this.accion === 'nuevo') {
@@ -87,6 +88,12 @@ export default {
                     }
                 }
                 refBusqueda.filtrarInscripciones();
+
+                // Quitar el resaltado después de animar
+                setTimeout(() => {
+                    const idx = refBusqueda.inscripciones_cache.findIndex(x => x.idInscripcion === (this.accion === 'modificar' ? this.idInscripcion : tempId));
+                    if(idx !== -1) delete refBusqueda.inscripciones_cache[idx]._isNew;
+                }, 2000);
 
                 // Guardar referencia
                 datos._tempId = tempId;
@@ -142,7 +149,7 @@ export default {
                             <label class="form-label text-muted fw-semibold text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.05em;">Estudiante</label>
                             <div class="input-group input-group-lg shadow-sm">
                                 <span class="input-group-text bg-white text-muted border-end-0 px-3"><i class="bi bi-person-badge"></i></span>
-                                <select title="Seleccione un alumno" required v-model="inscripcion.idAlumno" class="form-select border-start-0 ps-0 text-dark fs-6" style="outline: none; box-shadow: none;">
+                                <select v-focus title="Seleccione un alumno" required v-model="inscripcion.idAlumno" class="form-select border-start-0 ps-0 text-dark fs-6" style="outline: none; box-shadow: none;">
                                     <option value="0" disabled>Seleccione un alumno...</option>
                                     <option v-for="alumno in alumnos" :key="alumno.idAlumno" :value="alumno.idAlumno">
                                         {{ alumno.nombre }}
@@ -150,6 +157,7 @@ export default {
                                 </select>
                             </div>
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label text-muted fw-semibold text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.05em;">Asignatura</label>
                             <div class="input-group input-group-lg shadow-sm">

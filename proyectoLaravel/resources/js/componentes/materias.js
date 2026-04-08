@@ -71,7 +71,7 @@ export default {
             const refBusqueda = this.$parent.$refs.busqueda_materias;
             if (refBusqueda) {
                 const tempId = this.getId();
-                const objOptimista = { ...datos, idMateria: this.accion === 'modificar' ? this.idMateria : tempId };
+                const objOptimista = { ...datos, idMateria: this.accion === 'modificar' ? this.idMateria : tempId, _isNew: true };
 
                 if (this.accion === 'nuevo') {
                     refBusqueda.materias_cache.unshift(objOptimista); 
@@ -83,9 +83,16 @@ export default {
                 }
                 refBusqueda.filtrarMaterias();
 
+                // Quitar el resaltado después de animar
+                setTimeout(() => {
+                    const idx = refBusqueda.materias_cache.findIndex(x => x.idMateria === (this.accion === 'modificar' ? this.idMateria : tempId));
+                    if(idx !== -1) delete refBusqueda.materias_cache[idx]._isNew;
+                }, 2000);
+
                 // Guardar referencia
                 datos._tempId = tempId;
             }
+
             
             this.limpiarFormulario();
             alertify.success(`Materia ${datos.nombre} guardada correctamente`);
@@ -122,7 +129,7 @@ export default {
                             <label class="form-label text-muted fw-semibold text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.05em;">Código de Materia</label>
                             <div class="input-group input-group-lg shadow-sm">
                                 <span class="input-group-text bg-white text-muted border-end-0 px-3"><i class="bi bi-upc-scan"></i></span>
-                                <input placeholder="Ej. MAT-101" required v-model="materia.codigo" type="text" class="form-control border-start-0 ps-0 text-dark fs-6 font-monospace" style="outline: none; box-shadow: none;">
+                                <input v-focus placeholder="Ej. MAT-101" required v-model="materia.codigo" type="text" class="form-control border-start-0 ps-0 text-dark fs-6 font-monospace" style="outline: none; box-shadow: none;">
                             </div>
                         </div>
                         <div class="col-md-8">

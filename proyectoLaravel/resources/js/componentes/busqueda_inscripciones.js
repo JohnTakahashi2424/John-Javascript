@@ -93,14 +93,19 @@ export default {
                                     <th class="py-3 px-4 text-end text-muted fw-semibold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr v-for="inscripcion in inscripciones" :key="inscripcion.idInscripcion" @click="modificarInscripcion(inscripcion)" class="cursor-pointer transition-all">
+                            <transition-group name="list" tag="tbody">
+                                <tr v-for="inscripcion in inscripciones" :key="inscripcion.idInscripcion" @click="modificarInscripcion(inscripcion)" 
+                                    class="cursor-pointer transition-all"
+                                    :class="{ 'row-syncing': inscripcion.idInscripcion > 1000000000000, 'row-highlight-new': inscripcion._isNew }">
                                     <td class="py-3 px-4">
                                         <div class="d-flex align-items-center">
                                             <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 36px; height: 36px;">
                                                 <i class="bi bi-person"></i>
                                             </div>
-                                            <span class="fw-semibold text-dark">{{ inscripcion.nombreAlumno }}</span>
+                                            <div>
+                                                <span class="fw-semibold text-dark">{{ inscripcion.nombreAlumno }}</span>
+                                                <div v-if="inscripcion.idInscripcion > 1000000000000" class="badge bg-info bg-opacity-10 text-info smaller ms-1" style="font-size: 0.6rem;">Enviando...</div>
+                                            </div>
                                         </div>
                                     </td>
                                     <td class="py-3 px-4">
@@ -121,7 +126,7 @@ export default {
                                         </div>
                                     </td>
                                 </tr>
-                                <tr v-if="inscripciones.length == 0">
+                                <tr v-if="inscripciones.length == 0" key="empty-state">
                                     <td colspan="5" class="text-center py-5">
                                         <div class="d-flex flex-column align-items-center text-muted">
                                             <i class="bi bi-inbox fs-1 mb-3 opacity-50"></i>
@@ -129,7 +134,8 @@ export default {
                                         </div>
                                     </td>
                                 </tr>
-                            </tbody>
+                            </transition-group>
+
                         </table>
                     </div>
                 </div>

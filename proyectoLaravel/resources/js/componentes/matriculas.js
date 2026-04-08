@@ -72,7 +72,8 @@ export default {
                 const objParaTabla = {
                     ...datos,
                     idMatricula: this.accion === 'modificar' ? this.idMatricula : tempId,
-                    nombreAlumno: alumnoSelect ? alumnoSelect.nombre : 'Desconocido'
+                    nombreAlumno: alumnoSelect ? alumnoSelect.nombre : 'Desconocido',
+                    _isNew: true
                 };
                 
                 if (this.accion === 'nuevo') {
@@ -84,6 +85,12 @@ export default {
                     }
                 }
                 refBusqueda.filtrarMatriculas();
+
+                // Quitar el resaltado después de animar
+                setTimeout(() => {
+                    const idx = refBusqueda.matriculas_cache.findIndex(x => x.idMatricula === (this.accion === 'modificar' ? this.idMatricula : tempId));
+                    if(idx !== -1) delete refBusqueda.matriculas_cache[idx]._isNew;
+                }, 2000);
 
                 // Guardar referencia
                 datos._tempId = tempId;
@@ -134,7 +141,7 @@ export default {
                             <label class="form-label text-muted fw-semibold text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.05em;">Estudiante</label>
                             <div class="input-group input-group-lg shadow-sm">
                                 <span class="input-group-text bg-white text-muted border-end-0 px-3"><i class="bi bi-person-badge"></i></span>
-                                <select title="Seleccione un alumno" required v-model="matricula.idAlumno" class="form-select border-start-0 ps-0 text-dark fs-6" style="outline: none; box-shadow: none;">
+                                <select v-focus title="Seleccione un alumno" required v-model="matricula.idAlumno" class="form-select border-start-0 ps-0 text-dark fs-6" style="outline: none; box-shadow: none;">
                                     <option value="0" disabled>Seleccione un alumno...</option>
                                     <option v-for="alumno in alumnos" :key="alumno.idAlumno" :value="alumno.idAlumno">
                                         {{ alumno.nombre }}
@@ -149,6 +156,7 @@ export default {
                                 <input placeholder="Ej. 01-2026" required v-model="matricula.ciclo" type="text" class="form-control border-start-0 ps-0 text-dark fs-6 font-monospace" style="outline: none; box-shadow: none;">
                             </div>
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label text-muted fw-semibold text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.05em;">Fecha de Matrícula</label>
                             <div class="input-group input-group-lg shadow-sm">
