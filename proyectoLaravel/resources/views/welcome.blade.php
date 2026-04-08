@@ -4,10 +4,10 @@
 
 @section('content')
 <div id="welcome-screen" class="modulo-seccion">
-    <div class="welcome-hero mb-4 p-4 rounded-4 shadow-lg text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <span class="badge bg-primary bg-opacity-20 text-primary px-3 py-2 rounded-pill mb-3 fw-bold">v3.1 Pure Blade</span>
+    <div class="welcome-hero mb-4 p-4 p-md-5 rounded-4 shadow-lg text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 380px; display: flex; align-items: center;">
+        <div class="row align-items-center w-100">
+            <div class="col-lg-8 d-flex flex-column justify-content-center">
+                <span class="badge bg-primary bg-opacity-20 text-primary px-3 py-2 rounded-pill mb-3 fw-bold align-self-start">v3.2 Pure Blade</span>
                 <h1 class="display-4 fw-bold mb-3">¡Bienvenido, <span class="text-info">Admin</span>!</h1>
                 <p class="mb-4 opacity-75 fs-5">
                     Gestiona la excelencia académica con herramientas de última generación en un entorno limpio y rápido.
@@ -23,7 +23,7 @@
                 </div>
             </div>
             <div class="col-lg-4 d-none d-lg-block text-end">
-                <img src="{{ asset('rei_ayanami.png') }}" alt="Illustration" class="img-fluid rounded-4 shadow-lg" style="max-height: 180px; object-fit: cover; object-position: center; width: 100%; border: 2px solid rgba(255,255,255,0.1);">
+                <img src="{{ asset('rei_ayanami.png') }}" alt="Illustration" class="img-fluid rounded-4 shadow-lg" style="height: 340px; width: 100%; object-fit: cover; object-position: top center; border: 2px solid rgba(255,255,255,0.1);">
             </div>
         </div>
     </div>
