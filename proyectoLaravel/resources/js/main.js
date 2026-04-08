@@ -139,10 +139,17 @@ const app = createApp({
                 inscripciones:{mostrar:false},
                 busqueda_inscripciones:{mostrar:false}
             },
-            stats: JSON.parse(document.getElementById('app').dataset.stats || '{}')
+            stats: (function() {
+                try {
+                    const el = document.getElementById('app');
+                    const data = el ? el.dataset.stats : null;
+                    return data ? JSON.parse(data) : { totalAlumnos: 0, totalDocentes: 0, matriculasHoy: 0 };
+                } catch (e) {
+                    console.error('[Vue Init] Error cargando stats iniciales:', e);
+                    return { totalAlumnos: 0, totalDocentes: 0, matriculasHoy: 0 };
+                }
+            })()
         }
-
-
     },
     methods:{
         buscar(ventana, metodo){
