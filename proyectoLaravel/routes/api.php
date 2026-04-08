@@ -9,14 +9,12 @@ use App\Http\Controllers\Api\MatriculaController;
 use App\Http\Controllers\Api\InscripcionController;
 use App\Http\Controllers\DashboardController;
 
-Route::get('/stats', [DashboardController::class, 'getStats']);
+Route::name('api.')->group(function() {
+    Route::get('/stats', [DashboardController::class, 'getStats']);
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
-Route::apiResource('alumnos', AlumnoController::class);
-Route::apiResource('docentes', DocenteController::class);
-Route::apiResource('materias', MateriaController::class);
-Route::apiResource('matriculas', MatriculaController::class);
-Route::apiResource('inscripciones', InscripcionController::class);
+    Route::apiResource('alumnos', AlumnoController::class);
+    Route::apiResource('docentes', DocenteController::class);
+    Route::apiResource('materias', MateriaController::class);
+    Route::apiResource('matriculas', MatriculaController::class);
+    Route::apiResource('inscripciones', InscripcionController::class);
+});
