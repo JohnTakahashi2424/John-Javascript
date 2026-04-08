@@ -22,14 +22,14 @@
                 <input type="hidden" id="accion" name="accion" value="nuevo">
 
                 <div class="row g-4 mt-1">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label text-muted fw-semibold text-uppercase" style="font-size: 0.75rem;">Código de Docente</label>
                         <div class="input-group input-group-lg shadow-sm">
                             <span class="input-group-text bg-white text-muted border-end-0 px-3"><i class="bi bi-upc-scan"></i></span>
                             <input id="codigo" name="codigo" placeholder="Ej. D001" required type="text" class="form-control border-start-0 ps-0 text-dark fs-6 font-monospace">
                         </div>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-md-6">
                         <label class="form-label text-muted fw-semibold text-uppercase" style="font-size: 0.75rem;">Nombre Completo</label>
                         <div class="input-group input-group-lg shadow-sm">
                             <span class="input-group-text bg-white text-muted border-end-0 px-3"><i class="bi bi-person"></i></span>
@@ -43,14 +43,14 @@
                             <input id="direccion" name="direccion" placeholder="Calle, Avenida, Casa..." required type="text" class="form-control border-start-0 ps-0 text-dark fs-6">
                         </div>
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <label class="form-label text-muted fw-semibold text-uppercase" style="font-size: 0.75rem;">Correo Electrónico</label>
                         <div class="input-group input-group-lg shadow-sm">
                             <span class="input-group-text bg-white text-muted border-end-0 px-3"><i class="bi bi-envelope"></i></span>
                             <input id="email" name="email" placeholder="profesor@institucion.edu" required type="email" class="form-control border-start-0 ps-0 text-dark fs-6">
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label text-muted fw-semibold text-uppercase" style="font-size: 0.75rem;">Teléfono</label>
                         <div class="input-group input-group-lg shadow-sm">
                             <span class="input-group-text bg-white text-muted border-end-0 px-3"><i class="bi bi-telephone"></i></span>
