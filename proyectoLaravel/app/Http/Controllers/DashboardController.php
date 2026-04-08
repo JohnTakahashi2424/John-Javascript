@@ -15,15 +15,26 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        // Conteo total de alumnos
-        $totalAlumnos = Alumno::count();
+        $stats = $this->getStatsData();
+        return view('welcome', compact('stats'));
+    }
 
-        // Conteo total de docentes
-        $totalDocentes = Docente::count();
 
-        // Conteo de matrículas realizadas hoy
-        $matriculasHoy = Matricula::whereDate('fecha', Carbon::today())->count();
+    /**
+     * Retorna estadísticas en formato JSON para la SPA.
+     */
+    public function getStats()
+    {
+        return response()->json($this->getStatsData());
+    }
 
-        return view('welcome', compact('totalAlumnos', 'totalDocentes', 'matriculasHoy'));
+    private function getStatsData()
+    {
+        return [
+            'totalAlumnos' => Alumno::count(),
+            'totalDocentes' => Docente::count(),
+            'matriculasHoy' => Matricula::whereDate('fecha', Carbon::today())->count(),
+        ];
     }
 }
+

@@ -34,9 +34,16 @@ export default {
                 // Borrado Optimista (Inmediato)
                 const index = this.matriculas_cache.findIndex(x => x.idMatricula === matricula.idMatricula);
                 if (index !== -1) {
+                    const eliminada = this.matriculas_cache[index];
+                    const hoy = new Date().toLocaleDateString('en-CA');
+                    if (eliminada.fecha === hoy) {
+                        if(this.$parent.stats) this.$parent.stats.matriculasHoy--;
+                    }
                     this.matriculas_cache.splice(index, 1);
                     this.filtrarMatriculas();
                 }
+
+
                 
                 // Transacción en segundo plano
                 fetch(`/api/matriculas/${matricula.idMatricula}`, { method: 'DELETE' })

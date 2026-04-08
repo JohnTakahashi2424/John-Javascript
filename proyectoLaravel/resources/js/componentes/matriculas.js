@@ -94,7 +94,15 @@ export default {
 
                 // Guardar referencia
                 datos._tempId = tempId;
+
+                // Actualizar contador del Dashboard en tiempo real
+                const hoy = new Date().toLocaleDateString('en-CA'); // Formato YYYY-MM-DD local
+                if (this.accion === 'nuevo' && datos.fecha === hoy) {
+                    if(this.$parent.stats) this.$parent.stats.matriculasHoy++;
+                }
             }
+
+
             
             this.limpiarFormulario();
             alertify.success(`Matrícula guardada correctamente`);

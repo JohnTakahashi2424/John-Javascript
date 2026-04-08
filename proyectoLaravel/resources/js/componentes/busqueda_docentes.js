@@ -35,7 +35,13 @@ export default {
                 if (index !== -1) {
                     this.docentes_cache.splice(index, 1);
                     this.filtrarDocentes();
+
+                    // Actualizar estadísticas del dashboard
+                    if (this.$parent.stats) {
+                        this.$parent.stats.totalDocentes--;
+                    }
                 }
+
                 
                 // Petición en segundo plano
                 fetch(`/api/docentes/${docente.idDocente}`, { method: 'DELETE' })

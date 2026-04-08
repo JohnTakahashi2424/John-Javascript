@@ -330,40 +330,46 @@
     </style>
 </head>
 <body>
-    <div id="app">
+    <div id="app" data-stats='@json($stats)'>
         <!-- Sidebar -->
         <aside class="sidebar shadow-lg">
-            <div class="sidebar-brand cursor-pointer btn-nav-spa" data-target="welcome-screen" title="Ir al Inicio">
+            <div class="sidebar-brand cursor-pointer" @click="volverInicio" title="Ir al Inicio">
                 <div class="rounded-3 p-1 me-3 d-flex justify-content-center align-items-center shadow-lg" style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
                     <i class="bi bi-mortarboard-fill fs-5 text-white"></i>
                 </div>
                 <span class="fs-5 fw-extrabold tracking-tight" style="letter-spacing: -0.02em;">Sistema Académico</span>
             </div>
+
             
             <div class="mt-4">
-                <p class="text-uppercase text-white fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.05em; margin: 0 1.5rem 0.5rem 1.5rem;">Gestión</p>
+                <div class="px-4 mb-2">
+                    <p class="text-uppercase text-white opacity-50 fw-bold mb-3" style="font-size: 0.7rem; letter-spacing: 0.05em;">Gestión</p>
+                </div>
                 <div class="navbar-nav w-100 flex-column">
-                    <a class="nav-link nav-link-custom btn-nav-spa" data-target="form-alumnos" href="#">
+                    <a class="nav-link nav-link-custom mb-1" :class="{'active': forms.busqueda_alumnos.mostrar || forms.alumnos.mostrar}" @click.prevent="abrirVentana('alumnos')" href="#">
                         <i class="bi bi-people fs-5 me-3"></i> <span>Alumnos</span>
                     </a>
-                    <a class="nav-link nav-link-custom btn-nav-spa" data-target="form-docentes" href="#">
-                        <i class="bi bi-person-workspace fs-5 me-3"></i> <span>Docentes</span>
+                    <a class="nav-link nav-link-custom mb-1" :class="{'active': forms.busqueda_docentes.mostrar || forms.docentes.mostrar}" @click.prevent="abrirVentana('docentes')" href="#">
+                        <i class="bi bi-person-badge fs-5 me-3"></i> <span>Docentes</span>
                     </a>
-                    <a class="nav-link nav-link-custom btn-nav-spa" data-target="form-materias" href="#">
-                        <i class="bi bi-journal-bookmark-fill fs-5 me-3"></i> <span>Materias</span>
+                    <a class="nav-link nav-link-custom mb-1" :class="{'active': forms.busqueda_materias.mostrar || forms.materias.mostrar}" @click.prevent="abrirVentana('materias')" href="#">
+                        <i class="bi bi-book fs-5 me-3"></i> <span>Materias</span>
                     </a>
                 </div>
                 
-                <p class="text-uppercase text-white fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.05em; margin: 1.5rem 1.5rem 0.5rem 1.5rem;">Administración</p>
+                <div class="px-4 mt-4 mb-2">
+                    <p class="text-uppercase text-white opacity-50 fw-bold mb-3" style="font-size: 0.7rem; letter-spacing: 0.05em;">Administración</p>
+                </div>
                 <div class="navbar-nav w-100 flex-column">
-                    <a class="nav-link nav-link-custom btn-nav-spa" data-target="form-matriculas" href="#">
-                        <i class="bi bi-layout-text-sidebar-reverse fs-5 me-3"></i> <span>Matrículas</span>
+                    <a class="nav-link nav-link-custom mb-1" :class="{'active': forms.busqueda_matriculas.mostrar || forms.matriculas.mostrar}" @click.prevent="abrirVentana('matriculas')" href="#">
+                        <i class="bi bi-journal-check fs-5 me-3"></i> <span>Matrículas</span>
                     </a>
-                    <a class="nav-link nav-link-custom btn-nav-spa" data-target="form-inscripciones" href="#">
-                        <i class="bi bi-pen fs-5 me-3"></i> <span>Inscripciones</span>
+                    <a class="nav-link nav-link-custom mb-1" :class="{'active': forms.busqueda_inscripciones.mostrar || forms.inscripciones.mostrar}" @click.prevent="abrirVentana('inscripciones')" href="#">
+                        <i class="bi bi-journal-plus fs-5 me-3"></i> <span>Inscripciones</span>
                     </a>
                 </div>
             </div>
+
 
             <!-- Botón de Recarga y Perfil -->
             <div class="mt-auto p-4 border-top border-white border-opacity-10">
@@ -414,7 +420,7 @@
 
             <!-- App Container -->
             <div id="appSistema" class="container-fluid p-4 p-md-5 overflow-auto">
-                <div id="welcome-screen" class="modulo-seccion">
+                <div id="welcome-screen" class="modulo-seccion" v-if="Object.values(forms).every(f => !f.mostrar)">
                     <div class="welcome-hero mb-4">
                         <div class="row align-items-center">
                             <div class="col-lg-7">
@@ -461,27 +467,28 @@
                     <div class="row g-4 mb-4">
                         <div class="col-md-4">
                             <div class="surface-card p-4">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
                                     <div class="icon-gradient icon-blue p-3 mb-0">
                                         <i class="bi bi-people-fill fs-3"></i>
                                     </div>
                                     <span class="badge bg-success bg-opacity-10 text-success rounded-pill" style="font-size: 0.75rem;">+5%</span>
                                 </div>
                                 <div class="text-theme-secondary fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">Total Alumnos</div>
-                                <div class="h2 fw-extrabold mb-0">{{ number_format($totalAlumnos) }}</div>
+                                <div class="h2 fw-extrabold mb-0" v-text="stats.totalAlumnos"></div>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="surface-card p-4">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
                                     <div class="icon-gradient icon-orange p-3 mb-0">
                                         <i class="bi bi-person-workspace fs-3"></i>
                                     </div>
                                 </div>
                                 <div class="text-theme-secondary fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">Docentes Activos</div>
-                                <div class="h2 fw-extrabold mb-0">{{ number_format($totalDocentes) }}</div>
+                                <div class="h2 fw-extrabold mb-0" v-text="stats.totalDocentes"></div>
                             </div>
                         </div>
+
                         <div class="col-md-4">
                             <div class="surface-card p-4">
                                 <div class="d-flex justify-content-between align-items-start mb-3">
@@ -490,9 +497,10 @@
                                     </div>
                                 </div>
                                 <div class="text-theme-secondary fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">Matrículas Hoy</div>
-                                <div class="h2 fw-extrabold mb-0">{{ number_format($matriculasHoy) }}</div>
+                                <div class="h2 fw-extrabold mb-0" v-text="stats.matriculasHoy"></div>
                             </div>
                         </div>
+
                     </div>
 
                     <!-- Accesos Rápidos Mejorados -->
@@ -532,27 +540,27 @@
                     </div>
                 </div>
 
-                <div id="form-alumnos" class="modulo-seccion d-none">
+                <div id="form-alumnos" class="modulo-seccion" v-if="forms.alumnos.mostrar || forms.busqueda_alumnos.mostrar">
                     <alumnos @buscar='buscar("busqueda_alumnos","obtenerAlumnos")' :forms="forms" ref="alumnos"></alumnos>
                     <busqueda_alumnos @modificar='modificar("alumnos","modificarAlumno", $event)' ref="busqueda_alumnos"></busqueda_alumnos>
                 </div>
 
-                <div id="form-materias" class="modulo-seccion d-none">
+                <div id="form-materias" class="modulo-seccion" v-if="forms.materias.mostrar || forms.busqueda_materias.mostrar">
                     <materias @buscar='buscar("busqueda_materias","obtenerMaterias")' :forms="forms" ref="materias"></materias>
                     <busqueda_materias @modificar='modificar("materias","modificarMateria", $event)' ref="busqueda_materias"></busqueda_materias>
                 </div>
 
-                <div id="form-docentes" class="modulo-seccion d-none">
+                <div id="form-docentes" class="modulo-seccion" v-if="forms.docentes.mostrar || forms.busqueda_docentes.mostrar">
                     <docentes @buscar='buscar("busqueda_docentes","obtenerDocentes")' :forms="forms" ref="docentes"></docentes>
                     <busqueda_docentes @modificar='modificar("docentes","modificarDocente", $event)' ref="busqueda_docentes"></busqueda_docentes>
                 </div>
 
-                <div id="form-matriculas" class="modulo-seccion d-none">
+                <div id="form-matriculas" class="modulo-seccion" v-if="forms.matriculas.mostrar || forms.busqueda_matriculas.mostrar">
                     <matriculas @buscar='buscar("busqueda_matriculas","obtenerMatriculas")' :forms="forms" ref="matriculas"></matriculas>
                     <busqueda_matriculas @modificar='modificar("matriculas","modificarMatricula", $event)' ref="busqueda_matriculas"></busqueda_matriculas>
                 </div>
 
-                <div id="form-inscripciones" class="modulo-seccion d-none">
+                <div id="form-inscripciones" class="modulo-seccion" v-if="forms.inscripciones.mostrar || forms.busqueda_inscripciones.mostrar">
                     <inscripciones @buscar='buscar("busqueda_inscripciones","obtenerInscripciones")' :forms="forms" ref="inscripciones"></inscripciones>
                     <busqueda_inscripciones @modificar='modificar("inscripciones","modificarInscripcion", $event)' ref="busqueda_inscripciones"></busqueda_inscripciones>
                 </div>
@@ -565,6 +573,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     
+    <!-- El estado inicial se lee desde data-stats en #app para evitar errores de linter en el script -->
+
+
     <!-- Integración de Vite (Carga el frontend modular) -->
     @vite(['resources/js/main.js'])
     <!-- Reloj en Tiempo Real (In-page para evitar problemas de compilación) -->

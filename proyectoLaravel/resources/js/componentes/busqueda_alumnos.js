@@ -35,7 +35,13 @@ export default {
                 if (index !== -1) {
                     this.alumnos_cache.splice(index, 1);
                     this.filtrarAlumnos();
+                    
+                    // Actualizar estadísticas del dashboard
+                    if (this.$parent.stats) {
+                        this.$parent.stats.totalAlumnos--;
+                    }
                 }
+
                 
                 // 2. Transacción de fondo
                 fetch(`/api/alumnos/${alumno.idAlumno}`, { method: 'DELETE' })

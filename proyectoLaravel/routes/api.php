@@ -7,6 +7,9 @@ use App\Http\Controllers\Api\DocenteController;
 use App\Http\Controllers\Api\MateriaController;
 use App\Http\Controllers\Api\MatriculaController;
 use App\Http\Controllers\Api\InscripcionController;
+use App\Http\Controllers\DashboardController;
+
+Route::get('/stats', [DashboardController::class, 'getStats']);
 
 Route::get('/user', function (Request $request) {
     return $request->user();

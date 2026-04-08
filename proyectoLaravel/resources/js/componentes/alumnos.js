@@ -101,7 +101,13 @@ export default {
 
                 // Guardar la referencia al ID temporal para después de la respuesta
                 datos._tempId = tempId;
+
+                // Actualizar estadísticas del dashboard
+                if (this.accion === 'nuevo' && this.$parent.stats) {
+                    this.$parent.stats.totalAlumnos++;
+                }
             }
+
 
             
             this.limpiarFormulario();

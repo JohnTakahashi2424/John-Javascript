@@ -46,32 +46,6 @@ document.addEventListener('DOMContentLoaded', function() {
    ----------------------------------------------------- */
 document.addEventListener('click', function(e) {
 
-    // === NAVEGACIÓN SPA ===
-    const navLink = e.target.closest('.btn-nav-spa');
-    if (navLink) {
-        e.preventDefault(); 
-        console.log('[SPA] Link interceptado mediante delegación global.');
-        
-        const targetId = navLink.getAttribute('data-target');
-        
-        // 1. Ocultar todos los formularios activos en el DOM reestructurado
-        document.querySelectorAll('.modulo-seccion').forEach(function(section) {
-            section.classList.add('d-none');
-        });
-        
-        // 2. Mostrar destino
-        if (targetId) {
-            const targetSection = document.getElementById(targetId);
-            if (targetSection) {
-                targetSection.classList.remove('d-none');
-                console.log(`[SPA] Módulo ${targetId} Abierto con Éxito`);
-            } else {
-                console.error(`[SPA Error] Se intentó abrir id="${targetId}" pero el DOM (Vue) no lo tiene.`);
-            }
-        }
-        return; // Detenemos la cadena de clics aquí
-    }
-
     // === BOTÓN DE MODO OSCURO ===
     const btnDarkMode = e.target.closest('#themeToggle');
     if (btnDarkMode) {
@@ -164,26 +138,51 @@ const app = createApp({
                 busqueda_matriculas:{mostrar:false},
                 inscripciones:{mostrar:false},
                 busqueda_inscripciones:{mostrar:false}
-            }
+            },
+            stats: JSON.parse(document.getElementById('app').dataset.stats || '{}')
         }
+
+
     },
     methods:{
         buscar(ventana, metodo){
             this.$refs[ventana][metodo]();
         },
         abrirVentana(ventana){
-            // Comportamiento SPA: Ocultar todas las ventanas primero
+            // 1. Ocultar todas las ventanas
             for (const key in this.forms) {
                 this.forms[key].mostrar = false;
             }
-            // Mostrar únicamente el módulo solicitado
+            // 2. Mostrar módulo solicitado
             this.forms[ventana].mostrar = true;
+
+            // 3. Forzar refresco de datos en tiempo real al entrar
+            const refBusqueda = `busqueda_${ventana}`;
+            if (this.$refs[refBusqueda]) {
+                const metodosDeCarga = {
+                    'busqueda_alumnos': 'obtenerAlumnos',
+                    'busqueda_materias': 'obtenerMaterias',
+                    'busqueda_docentes': 'obtenerDocentes',
+                    'busqueda_matriculas': 'obtenerMatriculas',
+                    'busqueda_inscripciones': 'obtenerInscripciones'
+                };
+                const metodo = metodosDeCarga[refBusqueda];
+                if (metodo && typeof this.$refs[refBusqueda][metodo] === 'function') {
+                    this.$refs[refBusqueda][metodo]();
+                }
+            }
         },
+
         volverInicio() {
             // Ocultar todos los formularios para volver a ver el Dashboard (Inicio)
             for (const key in this.forms) {
                 this.forms[key].mostrar = false;
             }
+            // Actualizar estadísticas al volver al inicio
+            fetch('/api/stats')
+                .then(res => res.json())
+                .then(data => { this.stats = data; })
+                .catch(err => console.error('Error actualizando stats:', err));
         },
         modificar(ventana, metodo, data){
             this.$refs[ventana][metodo](data);
