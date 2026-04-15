@@ -16,7 +16,7 @@ class DocenteController extends Controller
             $query->where('nombre', 'like', "%{$buscar}%")
                   ->orWhere('codigo', 'like', "%{$buscar}%");
         }
-        return response()->json($query->orderBy('nombre')->get());
+        return response()->json($query->orderBy('codigo', 'asc')->get());
     }
 
     public function store(Request $request)
