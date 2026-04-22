@@ -17,7 +17,6 @@ class ReporteConductorController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'usuario_id' => 'required|exists:usuarios,id',
             'referencia_ubicacion' => 'required|string',
             'tipo_incidente' => 'required|string|max:100',
             'descripcion_hechos' => 'required|string',
@@ -25,6 +24,9 @@ class ReporteConductorController extends Controller
             'fecha_siniestro' => 'required|date',
             'estado' => 'in:Enviado,En proceso,Resuelto',
         ]);
+
+        // Hardcode del usuario_id para evitar error de FK en este entorno público
+        $validatedData['usuario_id'] = 1;
 
         $reporte = ReporteConductor::create($validatedData);
 
@@ -39,13 +41,18 @@ class ReporteConductorController extends Controller
         $reporte = ReporteConductor::findOrFail($id);
 
         $validatedData = $request->validate([
-            'estado' => 'required|in:Enviado,En proceso,Resuelto',
+            'referencia_ubicacion' => 'required|string',
+            'tipo_incidente' => 'required|string|max:100',
+            'descripcion_hechos' => 'required|string',
+            'placa_avistada' => 'nullable|string|max:20',
+            'fecha_siniestro' => 'required|date',
+            'estado' => 'in:Enviado,En proceso,Resuelto',
         ]);
 
         $reporte->update($validatedData);
 
         return response()->json([
-            'message' => 'Estado del reporte actualizado',
+            'message' => 'Reporte actualizado exitosamente',
             'data' => $reporte
         ]);
     }

@@ -17,7 +17,6 @@ class AccidentePncController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'oficial_id' => 'required|exists:usuarios,id',
             'reporte_conductor_id' => 'nullable|exists:reportes_conductor,id',
             'direccion_exacta' => 'required|string',
             'vehiculos_involucrados' => 'required|string',
@@ -26,6 +25,9 @@ class AccidentePncController extends Controller
             'informe_pericial' => 'required|string',
             'estado_caso' => 'in:En proceso,Cerrado',
         ]);
+
+        // Hardcode del oficial_id
+        $validatedData['oficial_id'] = 1;
 
         $accidente = AccidentePnc::create($validatedData);
 
@@ -40,6 +42,10 @@ class AccidentePncController extends Controller
         $accidente = AccidentePnc::findOrFail($id);
 
         $validatedData = $request->validate([
+            'direccion_exacta' => 'required|string',
+            'vehiculos_involucrados' => 'required|string',
+            'numero_heridos' => 'integer|min:0',
+            'numero_fallecidos' => 'integer|min:0',
             'estado_caso' => 'required|in:En proceso,Cerrado',
             'informe_pericial' => 'string'
         ]);

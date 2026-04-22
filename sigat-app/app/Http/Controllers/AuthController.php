@@ -18,12 +18,8 @@ class AuthController extends Controller
 
         $usuario = Usuario::where('correo_electronico', $request->correo_electronico)->first();
 
-        // Verificamos si existe el usuario o si la password es incorrecta
-        // Nota: en producción $usuario->password debería estar hasheada.
-        // Si tienes las contraseñas en texto plano (por ser un entorno de desarrollo simple), puedes comparar directamente.
-        // Aquí usamos Hash::check que es el estándar de Laravel.
-        if (! $usuario || ! Hash::check($request->password, $usuario->password)) {
-            // Si la db tiene contraseñas en texto plano, cambia la linea anterior por: if (!$usuario || $request->password !== $usuario->password) {
+        // Verificación adaptada para entornos académicos (contraseñas en texto plano o hasheadas)
+        if (! $usuario || ! (Hash::check($request->password, $usuario->password) || $request->password === $usuario->password)) {
             throw ValidationException::withMessages([
                 'correo_electronico' => ['Las credenciales son incorrectas.'],
             ]);
