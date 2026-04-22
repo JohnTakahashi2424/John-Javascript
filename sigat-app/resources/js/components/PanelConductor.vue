@@ -73,10 +73,17 @@
         <div class="premium-card p-4 p-md-5 h-100">
           <h4 class="fw-bold mb-4 subtitle-text d-flex justify-content-between align-items-center">
             <span>Mis Reportes Previos</span>
-            <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-2 fs-6 border">{{ misReportes.length }} Totales</span>
+            <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-2 fs-6 border">{{ filteredReportes.length }} Totales</span>
           </h4>
+
+          <!-- Buscador Unificado -->
+          <div class="mb-4">
+            <div class="position-relative">
+              <input type="text" v-model="searchQuery" class="form-control premium-input px-4 py-2" placeholder="🔎 Filtrar por referencia, placa o incidente...">
+            </div>
+          </div>
           
-          <div class="table-responsive mt-4">
+          <div class="table-responsive">
             <table class="table premium-table align-middle">
               <thead>
                 <tr>
@@ -87,7 +94,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="reporte in misReportes" :key="reporte.id" class="table-row-hover">
+                <tr v-for="reporte in filteredReportes" :key="reporte.id" class="table-row-hover">
                   <td class="ps-0 py-3 text-muted small">
                     {{ new Date(reporte.fecha_siniestro).toLocaleDateString() }}
                   </td>
@@ -103,8 +110,8 @@
                     <button @click="deleteReport(reporte.id)" class="btn btn-sm btn-outline-danger rounded-circle" title="Eliminar">🗑️</button>
                   </td>
                 </tr>
-                <tr v-if="misReportes.length === 0">
-                  <td colspan="3" class="text-center py-5 text-muted">
+                <tr v-if="filteredReportes.length === 0">
+                  <td colspan="4" class="text-center py-5 text-muted">
                     No existen reportes previos en el historial.
                   </td>
                 </tr>
@@ -126,6 +133,7 @@ export default {
   data() {
     return {
       misReportes: [],
+      searchQuery: '',
       isEditing: false,
       editId: null,
       form: {
@@ -137,6 +145,17 @@ export default {
         fecha_siniestro: '',
         estado: 'Enviado'
       }
+    }
+  },
+  computed: {
+    filteredReportes() {
+      if (!this.searchQuery) return this.misReportes;
+      const term = this.searchQuery.toLowerCase();
+      return this.misReportes.filter(r => 
+        r.referencia_ubicacion.toLowerCase().includes(term) || 
+        r.tipo_incidente.toLowerCase().includes(term) ||
+        (r.placa_avistada && r.placa_avistada.toLowerCase().includes(term))
+      );
     }
   },
   mounted() {
