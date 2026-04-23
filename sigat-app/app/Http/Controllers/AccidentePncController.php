@@ -42,6 +42,7 @@ class AccidentePncController extends Controller
         $accidente = AccidentePnc::findOrFail($id);
 
         $validatedData = $request->validate([
+            'reporte_conductor_id' => 'nullable|exists:reportes_conductor,id',
             'direccion_exacta' => 'required|string',
             'vehiculos_involucrados' => 'required|string',
             'numero_heridos' => 'integer|min:0',

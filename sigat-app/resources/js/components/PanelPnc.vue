@@ -59,7 +59,12 @@
               <tbody>
                 <tr v-for="res in searchResults" :key="res.id" class="table-row-hover">
                   <td class="ps-0 py-3 text-muted small">{{ new Date(res.fecha_registro).toLocaleDateString() }}</td>
-                  <td class="py-3 fw-bold text-main">{{ res.direccion_exacta }}</td>
+                  <td class="py-3 fw-bold text-main">
+                    {{ res.direccion_exacta }}
+                    <div v-if="res.reporte_conductor_id" class="small text-info mt-1" style="font-size: 0.75rem;">
+                      🔗 Alerta Ciudadana Vinculada
+                    </div>
+                  </td>
                   <td class="text-center py-3 text-muted"><span class="badge bg-secondary-subtle text-secondary rounded-circle px-2 py-1">{{ res.vehiculos_involucrados.split(',').length || 1 }}</span></td>
                   <td class="py-3">
                     <span :class="badgeClass(res.estado_caso)" class="badge rounded-pill px-3 py-2 subtle-badge">{{ res.estado_caso }}</span>
@@ -93,6 +98,16 @@
             
             <form @submit.prevent="submitAccidente">
               <div class="row g-4">
+                <div class="col-md-12 mb-2">
+                  <label class="form-label text-muted small fw-bold">Vincular a Alerta Ciudadana (Opcional)</label>
+                  <select v-model="form.reporte_conductor_id" class="form-select premium-input px-3 py-2" @change="vincularReporte">
+                    <option :value="null">Ninguno (Caso Autónomo)</option>
+                    <option v-for="rep in reportesCiudadanos" :key="rep.id" :value="rep.id">
+                      {{ new Date(rep.fecha_siniestro).toLocaleDateString() }} - {{ rep.tipo_incidente }} (Placa: {{ rep.placa_avistada || 'N/A' }})
+                    </option>
+                  </select>
+                </div>
+
                 <div class="col-md-8">
                   <label class="form-label text-muted small fw-bold">Geolocalización Descriptiva del Siniestro</label>
                   <input type="text" v-model="form.direccion_exacta" class="form-control premium-input px-3 py-2" required placeholder="Nomenclatura vial, kilómetro de la carretera...">
@@ -145,6 +160,7 @@ export default {
     return {
       searchFilters: { estado_caso: '', direccion: '' },
       searchResults: [],
+      reportesCiudadanos: [],
       isEditing: false,
       editId: null,
       form: {
@@ -159,7 +175,25 @@ export default {
       }
     }
   },
+  mounted() {
+    this.fetchReportesCiudadanos();
+  },
   methods: {
+    async fetchReportesCiudadanos() {
+      try {
+        const response = await fetch('/api/reportes-conductor');
+        this.reportesCiudadanos = await response.json();
+      } catch(e) {}
+    },
+    vincularReporte() {
+      if (this.form.reporte_conductor_id) {
+        const reporteAsociado = this.reportesCiudadanos.find(r => r.id === this.form.reporte_conductor_id);
+        if (reporteAsociado && !this.form.direccion_exacta) {
+          // Completar mágicamente
+          this.form.direccion_exacta = reporteAsociado.referencia_ubicacion;
+        }
+      }
+    },
     async searchAccidents() {
       try {
         const response = await fetch('/api/accidentes-pnc/search', {
