@@ -58,7 +58,7 @@
               </thead>
               <tbody>
                 <tr v-for="res in searchResults" :key="res.id" class="table-row-hover">
-                  <td class="ps-0 py-3 text-muted small">{{ new Date(res.fecha_registro).toLocaleDateString() }}</td>
+                  <td class="ps-0 py-3 text-muted small">{{ new Date(res.fecha_registro_oficial).toLocaleDateString() }}</td>
                   <td class="py-3 fw-bold text-main">
                     {{ res.direccion_exacta }}
                     <div v-if="res.reporte_conductor_id" class="small text-info mt-1" style="font-size: 0.75rem;">
